@@ -43,14 +43,14 @@
 - **UI Framework**: WPF (Windows Presentation Foundation)
 - **Protocol**: WebSockets (System.Net.WebSockets)
 - **Dependencies**: 
-  - \Websocket.Client\ (Robust reconnection)
-  - \CommunityToolkit.Mvvm\ (Efficient MVVM pattern)
-  - \System.Text.Json\ (High-performance JSON parsing)
+  - `Websocket.Client` (Robust reconnection)
+  - `CommunityToolkit.Mvvm` (Efficient MVVM pattern)
+  - `System.Text.Json` (High-performance JSON parsing)
 
 ###  How to Use
 
 1. **Download**:
-   - Click the **Download EXE** badge above, or go to [Releases](https://github.com/beka2nt/TS6-SpeakerOverlay/releases/latest) to get \TS6-SpeakerOverlay.exe\.
+   - Click the **Download EXE** badge above, or go to [Releases](https://github.com/beka2nt/TS6-SpeakerOverlay/releases/latest) to get `TS6-SpeakerOverlay.exe`.
 
 2. **Run**:
    - Run the EXE file. 
@@ -58,12 +58,12 @@
 
 3. **Controls**:
    - **[Unlock Mode]**: Default on startup. Click and hold the black background to drag the overlay.
-   - **[Lock Mode]**: Press **\Ctrl + L\**. The window will lock and enable **Click-Through**.
+   - **[Lock Mode]**: Press **`Ctrl + L`**. The window will lock and enable **Click-Through**.
 
 ###  Notes
 
-- The program generates an \pikey.txt\ file. **Do not share this file.**
-- If you move the EXE and it fails to connect, delete the old \pikey.txt\ and re-authorize.
+- The program generates an `apikey.txt` file in its directory to save your authorization. **Do not share this file.**
+- If you move the EXE and it fails to connect, delete the old `apikey.txt` and re-authorize.
 
 ###  License
 
@@ -89,26 +89,26 @@ MIT License
 - **UI 框架**: WPF (Windows Presentation Foundation)
 - **通信协议**: WebSockets (System.Net.WebSockets)
 - **依赖库**: 
-  - \Websocket.Client\ (稳健的断线重连)
-  - \CommunityToolkit.Mvvm\ (高效 MVVM 模式)
-  - \System.Text.Json\ (高性能 JSON 解析)
+  - `Websocket.Client` (稳健的断线重连)
+  - `CommunityToolkit.Mvvm` (高效 MVVM 模式)
+  - `System.Text.Json` (高性能 JSON 解析)
 
 ###  如何使用
 
 1. **下载程序**：
-   - 点击顶部的 **Download EXE** 按钮，或前往 [Releases](https://github.com/beka2nt/TS6-SpeakerOverlay/releases/latest) 页面下载 \TS6-SpeakerOverlay.exe\。
+   - 点击顶部的 **Download EXE** 按钮，或前往 [Releases](https://github.com/beka2nt/TS6-SpeakerOverlay/releases/latest) 页面下载 `TS6-SpeakerOverlay.exe`。
 
 2. **首次运行**：
    - 双击运行程序。TS6 客户端会弹出请求连接的窗口，请点击 **"允许 (Allow)"**。
 
 3. **操作说明**：
    - **[解锁模式]**：启动后默认为解锁状态，按住黑色背景可随意拖拽位置。
-   - **[锁定模式]**：位置满意后，按下 **\Ctrl + L\**。此时窗口将**锁定并开启鼠标穿透**，你可以开始游戏了。
+   - **[锁定模式]**：位置满意后，按下 **`Ctrl + L`**。此时窗口将**锁定并开启鼠标穿透**，你可以开始游戏了。
 
 ###  注意事项
 
-- 程序会在同级目录下生成 \pikey.txt\ 用于保存授权信息，请勿将此文件发送给他人。
-- 如果移动了 EXE 文件位置导致无法自动连接，请删除旧的 \pikey.txt\ 并重新授权。
+- 程序会在同级目录下生成 `apikey.txt` 用于保存授权信息，请勿将此文件发送给他人。
+- 如果移动了 EXE 文件位置导致无法自动连接，请删除旧的 `apikey.txt` 并重新授权。
 
 ###  开源协议
 
