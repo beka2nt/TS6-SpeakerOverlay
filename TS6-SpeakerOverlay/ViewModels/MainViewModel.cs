@@ -30,7 +30,7 @@ namespace TS6_SpeakerOverlay.ViewModels
                 _currentChannelId = myChannelId;
                 
                 // 必须在 UI 线程更新 ObservableCollection
-                Application.Current.Dispatcher.Invoke(() => 
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     Users.Clear();
                     // 只显示和我同频道的用户
@@ -44,7 +44,7 @@ namespace TS6_SpeakerOverlay.ViewModels
             // 订阅事件：说话状态改变
             _tsService.OnTalkStatusChanged += (clientId, isTalking) =>
             {
-                Application.Current.Dispatcher.Invoke(() =>
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
                     // 在当前列表中找这个人
                     var user = Users.FirstOrDefault(u => u.ClientId == clientId);

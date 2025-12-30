@@ -18,18 +18,11 @@
         <vm:MainViewModel/>
     </Window.DataContext>
 
-    <!-- 快捷键绑定 -->
-    <Window.InputBindings>
-        <!-- 按 Ctrl+L 切换“锁定/解锁”模式 -->
-        <KeyBinding Key="L" Modifiers="Control" 
-                    Command="{Binding ToggleLockStateCommand}" 
-                    CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}}"/>
-    </Window.InputBindings>
 
     <Grid>
         <!-- 背景层：解锁时显示微弱黑色，锁定(穿透)时全透明 -->
         <Border Background="#01000000" CornerRadius="10">
-            
+
             <!-- 用户列表 -->
             <ItemsControl ItemsSource="{Binding Users}" Margin="10">
                 <ItemsControl.ItemTemplate>
@@ -56,8 +49,8 @@
                             <!-- 说话状态：高亮 -->
                             <DataTrigger Binding="{Binding IsTalking}" Value="True">
                                 <Setter TargetName="UserCard" Property="BorderThickness" Value="2"/>
-                                <Setter TargetName="UserCard" Property="BorderBrush" Value="#00FF00"/>
-                                <Setter TargetName="StatusLight" Property="Fill" Value="#00FF00"/>
+                                <Setter TargetName="UserCard" Property="BorderBrush" Value="#4FCD8E"/>
+                                <Setter TargetName="StatusLight" Property="Fill" Value="#4FCD8E"/>
                             </DataTrigger>
                             
                             <!-- 没说话：半透明 -->
@@ -83,7 +76,7 @@
                     </Style.Triggers>
                 </Style>
             </Border.Style>
-            <TextBlock Text="[解锁模式] 拖拽调整位置 | 按 Ctrl+L 锁定并穿透" Foreground="Yellow"/>
+            <TextBlock Text="[解锁模式] 拖拽调整位置 | 按 Ctrl+L 锁定并穿透" Foreground="#FFAB53"/>
         </Border>
     </Grid>
 </Window>
