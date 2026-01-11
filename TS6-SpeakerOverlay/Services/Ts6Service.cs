@@ -18,15 +18,10 @@ namespace TS6_SpeakerOverlay.Services
         private const string KEY_FILE = "apikey.txt"; 
         private WebsocketClient _client;
         private string _savedApiKey = "";
-        
-        // 保存当前我的频道ID
-        private string _myChannelId = ""; 
 
         public event Action<List<User>, string>? OnChannelListUpdated;
         public event Action<int, bool>? OnTalkStatusChanged;
         public event Action<int, bool?, bool?, bool?>? OnUserPropertiesChanged;
-        
-        // 新增：通知 ViewModel 有人移动了 (clientId, newChannelId, oldChannelId)
         public event Action<int, string, string>? OnClientMoved;
 
         public Ts6Service()
@@ -66,11 +61,10 @@ namespace TS6_SpeakerOverlay.Services
                     case "auth": HandleAuthResponse(node); break;
                     case "talkStatusChanged": HandleTalkStatus(node); break;
                     case "clientPropertiesUpdated": HandlePropertiesUpdated(node); break;
-                    // 新增：监听移动
                     case "clientMoved": HandleClientMoved(node); break;
                 }
             }
-            catch { /* Ignore */ }
+            catch { }
         }
 
         private void HandleAuthResponse(JsonNode? node)
@@ -93,6 +87,7 @@ namespace TS6_SpeakerOverlay.Services
             if (clientInfos == null) return;
 
             var allUsers = new List<User>();
+            string myChannelId = "";
 
             foreach (var client in clientInfos)
             {
@@ -100,36 +95,42 @@ namespace TS6_SpeakerOverlay.Services
                 var props = client["properties"];
                 string chId = client["channelId"]?.ToString() ?? "";
 
-                if (id == myClientId) _myChannelId = chId; // 更新我的频道
+                if (id == myClientId) myChannelId = chId;
+
+                // --- [新增] 解析头像 URL ---
+                string avatarRaw = props?["myteamspeakAvatar"]?.ToString() ?? "";
+                string avatarUrl = "";
+                // 格式通常是 "type,url"，我们需要逗号后面的部分
+                if (!string.IsNullOrEmpty(avatarRaw) && avatarRaw.Contains(','))
+                {
+                    var parts = avatarRaw.Split(',');
+                    if (parts.Length > 1) avatarUrl = parts[1];
+                }
+                // -------------------------
 
                 allUsers.Add(new User 
                 { 
                     ClientId = id,
                     Name = props?["nickname"]?.ToString() ?? "Unknown",
                     ChannelId = chId, 
+                    AvatarUrl = avatarUrl, // 赋值
                     IsTalking = props?["flagTalking"]?.GetValue<bool>() ?? false,
                     IsInputMuted = props?["inputMuted"]?.GetValue<bool>() ?? false,
                     IsOutputMuted = props?["outputMuted"]?.GetValue<bool>() ?? false,
                     IsAway = props?["away"]?.GetValue<bool>() ?? false
                 });
             }
-            OnChannelListUpdated?.Invoke(allUsers, _myChannelId);
+            OnChannelListUpdated?.Invoke(allUsers, myChannelId);
         }
 
         private void HandleClientMoved(JsonNode? node)
         {
             var payload = node?["payload"];
             if (payload == null) return;
-
             int clientId = payload["clientId"]?.GetValue<int>() ?? 0;
-            string newChannelId = payload["newChannelId"]?.ToString() ?? "";
-            string oldChannelId = payload["oldChannelId"]?.ToString() ?? "";
-
-            // 如果是我自己移动了，更新记录
-            // 注意：这里简化处理，如果是我移动，通常会触发全量刷新或需要特殊处理
-            // 这里主要抛出事件给 UI 判断
-            
-            OnClientMoved?.Invoke(clientId, newChannelId, oldChannelId);
+            string newCh = payload["newChannelId"]?.ToString() ?? "";
+            string oldCh = payload["oldChannelId"]?.ToString() ?? "";
+            OnClientMoved?.Invoke(clientId, newCh, oldCh);
         }
 
         private void HandleTalkStatus(JsonNode? node)

@@ -1,0 +1,30 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+    <s:String x:Key="Lang_Settings_Title">设置</s:String>
+    <s:String x:Key="Lang_Appearance">外观设置</s:String>
+    <s:String x:Key="Lang_FontSize">字体大小</s:String>
+    <s:String x:Key="Lang_AvatarSize">头像大小</s:String>
+    <s:String x:Key="Lang_Spacing">列表间距</s:String>
+    <s:String x:Key="Lang_Opacity">背景深度</s:String>
+    <s:String x:Key="Lang_Scale">界面缩放</s:String>
+    <s:String x:Key="Lang_Behavior">行为设置</s:String>
+    <s:String x:Key="Lang_EnableNotify">启用进出通知</s:String>
+    <s:String x:Key="Lang_ShowOnlyTalking">仅显示说话者</s:String>
+    <s:String x:Key="Lang_Reset">恢复默认</s:String>
+    <s:String x:Key="Lang_Save">保存并关闭</s:String>
+    <s:String x:Key="Lang_Unlocked">当前解锁：拖拽移动 | Ctrl+L 锁定</s:String>
+    <s:String x:Key="Lang_Locked">当前锁定：鼠标穿透中 | Ctrl+L 解锁</s:String>
+    <s:String x:Key="Lang_ShowAvatar">显示头像/指示灯</s:String>
+    <s:String x:Key="Lang_AvatarMode">头像显示模式</s:String>
+    <s:String x:Key="Lang_Mode_Avatar">显示头像</s:String>
+    <s:String x:Key="Lang_Mode_Indicator">仅指示灯</s:String>
+    <s:String x:Key="Lang_Mode_None">仅显示名字</s:String>
+
+    <s:String x:Key="Lang_Tray_Show">显示窗口</s:String>
+    <s:String x:Key="Lang_Tray_Hide">隐藏窗口</s:String>
+    <s:String x:Key="Lang_Tray_Lock">锁定 (穿透)</s:String>
+    <s:String x:Key="Lang_Tray_Unlock">解锁 (拖拽)</s:String>
+    <s:String x:Key="Lang_Tray_Settings">设置 (Settings)</s:String>
+    <s:String x:Key="Lang_Tray_Exit">退出程序</s:String>
+</ResourceDictionary>

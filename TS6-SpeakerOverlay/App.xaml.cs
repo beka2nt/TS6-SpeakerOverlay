@@ -9,6 +9,8 @@ namespace TS6_SpeakerOverlay
     {
         protected override void OnStartup(StartupEventArgs e)
         {
+            var config = Services.ConfigService.Load();
+            Helpers.LanguageHelper.SetLanguage(config.Language);
             // 强制软件渲染
             RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
 

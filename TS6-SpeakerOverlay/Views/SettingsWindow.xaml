@@ -1,18 +1,18 @@
 <Window x:Class="TS6_SpeakerOverlay.Views.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TS6 Overlay Settings" Height="500" Width="340"
+        xmlns:models="clr-namespace:TS6_SpeakerOverlay.Models"
+        Title="{DynamicResource Lang_Settings_Title}" Height="600" Width="360"
         WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent">
 
-    <!-- [修复关键] 资源必须定义在最前面，否则后面引用会崩 -->
+    <!-- [关键修复] 必须定义在这里，否则下面的 Slider 会报错 -->
     <Window.Resources>
-        <!-- 基础文字样式 -->
         <Style TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe UI"/>
         </Style>
         
-        <!-- 滑块样式 (ModernSlider) -->
+        <!-- 这就是报错找不到的 ModernSlider 样式 -->
         <Style x:Key="ModernSlider" TargetType="Slider">
             <Setter Property="IsMoveToPointEnabled" Value="True"/>
             <Setter Property="Foreground" Value="#4FCD8E"/>
@@ -20,7 +20,6 @@
         </Style>
     </Window.Resources>
 
-    <!-- 主容器 -->
     <Border Background="#2F3136" CornerRadius="10" BorderThickness="1" BorderBrush="#40444B">
         <Border.Effect>
             <DropShadowEffect BlurRadius="15" ShadowDepth="5" Opacity="0.5"/>
@@ -35,7 +34,7 @@
 
             <!-- 1. 标题栏 -->
             <Grid Grid.Row="0" Margin="0,0,0,15" MouseDown="TitleBar_MouseDown" Background="Transparent">
-                <TextBlock Text="SETTINGS" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                <TextBlock Text="{DynamicResource Lang_Settings_Title}" FontSize="18" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
                 <Button Content="✕" HorizontalAlignment="Right" Click="BtnClose_Click"
                         Foreground="#AAAAAA" Background="Transparent" BorderThickness="0" FontSize="16" FontWeight="Bold" Cursor="Hand"/>
             </Grid>
@@ -44,36 +43,63 @@
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" PanningMode="VerticalOnly">
                 <StackPanel>
                     
+                    <!-- 语言 -->
+                    <TextBlock Text="LANGUAGE" Foreground="#8E9297" FontSize="11" FontWeight="Bold" Margin="2,0,0,5"/>
+                    <Border Background="#36393F" CornerRadius="5" Padding="10" Margin="0,0,0,15">
+                        <DockPanel>
+                            <TextBlock Text="Language / 语言" DockPanel.Dock="Left" Foreground="#DCDDDE" VerticalAlignment="Center"/>
+                            <ComboBox DockPanel.Dock="Right" Width="120" 
+                                      SelectedValuePath="Tag"
+                                      SelectedValue="{Binding Config.Language}"
+                                      SelectionChanged="LanguageComboBox_SelectionChanged">
+                                <ComboBoxItem Content="English" Tag="en-US"/>
+                                <ComboBoxItem Content="中文 (简体)" Tag="zh-CN"/>
+                                <ComboBoxItem Content="Français" Tag="fr-FR"/>
+                            </ComboBox>
+                        </DockPanel>
+                    </Border>
+
                     <!-- 外观 -->
-                    <TextBlock Text="APPEARANCE (外观)" Foreground="#8E9297" FontSize="11" FontWeight="Bold" Margin="2,0,0,5"/>
+                    <TextBlock Text="{DynamicResource Lang_Appearance}" Foreground="#8E9297" FontSize="11" FontWeight="Bold" Margin="2,0,0,5"/>
                     <Border Background="#36393F" CornerRadius="5" Padding="10" Margin="0,0,0,15">
                         <StackPanel>
+                            
+                            <!-- 头像显示模式 -->
+                            <DockPanel Margin="0,0,0,10">
+                                <TextBlock Text="{DynamicResource Lang_AvatarMode}" DockPanel.Dock="Left" Foreground="#DCDDDE" VerticalAlignment="Center"/>
+                                <ComboBox DockPanel.Dock="Right" Width="130" SelectedIndex="{Binding Config.AvatarDisplayMode}">
+                                    <ComboBoxItem Content="{DynamicResource Lang_Mode_Avatar}"/>
+                                    <ComboBoxItem Content="{DynamicResource Lang_Mode_Indicator}"/>
+                                    <ComboBoxItem Content="{DynamicResource Lang_Mode_None}"/>
+                                </ComboBox>
+                            </DockPanel>
+
                             <DockPanel Margin="0,0,0,5">
-                                <TextBlock Text="字体大小" Foreground="#DCDDDE"/>
+                                <TextBlock Text="{DynamicResource Lang_FontSize}" Foreground="#DCDDDE"/>
                                 <TextBlock Text="{Binding Config.FontSize, StringFormat=N0}" DockPanel.Dock="Right" Foreground="#4FCD8E"/>
                             </DockPanel>
                             <Slider Minimum="10" Maximum="24" Value="{Binding Config.FontSize}" Style="{StaticResource ModernSlider}"/>
 
                             <DockPanel Margin="0,10,0,5">
-                                <TextBlock Text="头像大小" Foreground="#DCDDDE"/>
+                                <TextBlock Text="{DynamicResource Lang_AvatarSize}" Foreground="#DCDDDE"/>
                                 <TextBlock Text="{Binding Config.AvatarSize, StringFormat=N0}" DockPanel.Dock="Right" Foreground="#4FCD8E"/>
                             </DockPanel>
                             <Slider Minimum="0" Maximum="40" Value="{Binding Config.AvatarSize}" Style="{StaticResource ModernSlider}"/>
 
                             <DockPanel Margin="0,10,0,5">
-                                <TextBlock Text="列表间距" Foreground="#DCDDDE"/>
+                                <TextBlock Text="{DynamicResource Lang_Spacing}" Foreground="#DCDDDE"/>
                                 <TextBlock Text="{Binding Config.ItemSpacing, StringFormat=N0}" DockPanel.Dock="Right" Foreground="#4FCD8E"/>
                             </DockPanel>
                             <Slider Minimum="0" Maximum="20" Value="{Binding Config.ItemSpacing}" Style="{StaticResource ModernSlider}"/>
 
                             <DockPanel Margin="0,10,0,5">
-                                <TextBlock Text="背景深度" Foreground="#DCDDDE"/>
+                                <TextBlock Text="{DynamicResource Lang_Opacity}" Foreground="#DCDDDE"/>
                                 <TextBlock Text="{Binding Config.BackgroundOpacity, StringFormat=P0}" DockPanel.Dock="Right" Foreground="#4FCD8E"/>
                             </DockPanel>
                             <Slider Minimum="0.0" Maximum="1.0" Value="{Binding Config.BackgroundOpacity}" TickFrequency="0.05" IsSnapToTickEnabled="True" Style="{StaticResource ModernSlider}"/>
 
                             <DockPanel Margin="0,10,0,5">
-                                <TextBlock Text="整体缩放" Foreground="#DCDDDE"/>
+                                <TextBlock Text="{DynamicResource Lang_Scale}" Foreground="#DCDDDE"/>
                                 <TextBlock Text="{Binding Config.UiScale, StringFormat=N1}" DockPanel.Dock="Right" Foreground="#4FCD8E"/>
                             </DockPanel>
                             <Slider Minimum="0.5" Maximum="2.0" Value="{Binding Config.UiScale}" TickFrequency="0.1" IsSnapToTickEnabled="True" Style="{StaticResource ModernSlider}"/>
@@ -81,19 +107,18 @@
                     </Border>
 
                     <!-- 行为 -->
-                    <TextBlock Text="BEHAVIOR (行为)" Foreground="#8E9297" FontSize="11" FontWeight="Bold" Margin="2,0,0,5"/>
+                    <TextBlock Text="{DynamicResource Lang_Behavior}" Foreground="#8E9297" FontSize="11" FontWeight="Bold" Margin="2,0,0,5"/>
                     <Border Background="#36393F" CornerRadius="5" Padding="10">
                         <StackPanel>
                             <CheckBox IsChecked="{Binding Config.EnableNotifications}" Margin="0,5">
-                                <TextBlock Text="启用进出频道通知 (Toast)" Foreground="#DCDDDE" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource Lang_EnableNotify}" Foreground="#DCDDDE" VerticalAlignment="Center"/>
                             </CheckBox>
                             
                             <Separator Background="#4F545C" Margin="0,10" Opacity="0.5"/>
 
                             <CheckBox IsChecked="{Binding Config.ShowOnlyTalking}" Margin="0,5">
-                                <TextBlock Text="仅显示说话者 (Hide Idle)" Foreground="#DCDDDE" VerticalAlignment="Center"/>
+                                <TextBlock Text="{DynamicResource Lang_ShowOnlyTalking}" Foreground="#DCDDDE" VerticalAlignment="Center"/>
                             </CheckBox>
-                            <TextBlock Text="开启后，不说话的成员将自动隐藏" Foreground="#72767D" FontSize="10" Margin="20,0,0,0"/>
                         </StackPanel>
                     </Border>
 
@@ -107,14 +132,14 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
                 
-                <Button Content="恢复默认" Click="BtnReset_Click" 
+                <Button Content="{DynamicResource Lang_Reset}" Click="BtnReset_Click" 
                         Foreground="#FF5555" Background="Transparent" BorderThickness="0" 
                         Cursor="Hand" FontSize="12"/>
 
-                <Button Grid.Column="1" Content="保存配置" Click="BtnSave_Click" 
+                <Button Grid.Column="1" Content="{DynamicResource Lang_Save}" Click="BtnSave_Click" 
                         Background="#4FCD8E" Foreground="#202225" FontWeight="Bold"
                         BorderThickness="0" Cursor="Hand" Height="35"
-                        HorizontalAlignment="Right" Width="100">
+                        HorizontalAlignment="Right" Width="120">
                     <Button.Resources>
                         <Style TargetType="Border">
                             <Setter Property="CornerRadius" Value="5"/>

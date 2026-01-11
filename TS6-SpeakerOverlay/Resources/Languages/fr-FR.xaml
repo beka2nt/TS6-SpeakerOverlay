@@ -1,0 +1,30 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+    <s:String x:Key="Lang_Settings_Title">Paramètres</s:String>
+    <s:String x:Key="Lang_Appearance">APPARENCE</s:String>
+    <s:String x:Key="Lang_FontSize">Taille Police</s:String>
+    <s:String x:Key="Lang_AvatarSize">Taille Avatar</s:String>
+    <s:String x:Key="Lang_Spacing">Espacement</s:String>
+    <s:String x:Key="Lang_Opacity">Opacité</s:String>
+    <s:String x:Key="Lang_Scale">Échelle UI</s:String>
+    <s:String x:Key="Lang_Behavior">COMPORTEMENT</s:String>
+    <s:String x:Key="Lang_EnableNotify">Notifications</s:String>
+    <s:String x:Key="Lang_ShowOnlyTalking">Voir qui parle</s:String>
+    <s:String x:Key="Lang_Reset">Réinitialiser</s:String>
+    <s:String x:Key="Lang_Save">Sauvegarder</s:String>
+    <s:String x:Key="Lang_Unlocked">DÉVERROUILLÉ: Glisser pour déplacer</s:String>
+    <s:String x:Key="Lang_Locked">VERROUILLÉ: Clics traversants</s:String>
+    <s:String x:Key="Lang_ShowAvatar">Afficher Avatar</s:String>
+    <s:String x:Key="Lang_AvatarMode">Mode Avatar</s:String>
+    <s:String x:Key="Lang_Mode_Avatar">Avatar</s:String>
+    <s:String x:Key="Lang_Mode_Indicator">Indicateur</s:String>
+    <s:String x:Key="Lang_Mode_None">Nom Seulement</s:String>
+
+    <s:String x:Key="Lang_Tray_Show">Afficher</s:String>
+    <s:String x:Key="Lang_Tray_Hide">Masquer</s:String>
+    <s:String x:Key="Lang_Tray_Lock">Verrouiller</s:String>
+    <s:String x:Key="Lang_Tray_Unlock">Déverrouiller</s:String>
+    <s:String x:Key="Lang_Tray_Settings">Paramètres</s:String>
+    <s:String x:Key="Lang_Tray_Exit">Quitter</s:String>
+</ResourceDictionary>

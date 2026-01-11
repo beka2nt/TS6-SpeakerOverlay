@@ -15,7 +15,7 @@
 
     <Window.Resources>
         <helpers:SpacingConverter x:Key="SpacingConverter"/>
-        <!-- 图标资源 -->
+        <!-- 图标保持不变 -->
         <Geometry x:Key="IconMicOff">M19,11C19,12.19 18.66,13.3 18.1,14.28L16.87,13.05C17.14,12.43 17.3,11.74 17.3,11H19M14.86,11.04L19.42,15.6L18,17L13.44,12.44L14.86,11.04M12,3.3C13.66,3.3 15,4.64 15,6.3V9.18L11.11,5.29C11.36,5.17 11.66,5.1 12,5.1C12.66,5.1 13.2,5.64 13.2,6.3V8H15V6.3C15,4.64 13.66,3.3 12,3.3M9,13.89L10.37,15.26C9.94,15.17 9.53,15 9.17,14.77C7.62,13.79 6.6,12.1 6.6,10.2H4.8C4.8,12.9 6.82,15.2 9.4,15.7V19H14.6L16.6,21L18,19.6L4.4,6L3,7.4L9,13.39V13.89M12,14C12.22,14 12.44,13.97 12.65,13.93L13.8,15.08C13.26,15.34 12.65,15.5 12,15.5C11.35,15.5 10.74,15.34 10.2,15.08L11.35,13.93C11.56,13.97 11.78,14 12,14Z</Geometry>
         <Geometry x:Key="IconHeadsetOff">M12,4C7.58,4 4,7.58 4,12V18H7V12C7,9.24 9.24,7 12,7C14.76,7 17,9.24 17,12V13.17L19.76,15.93C19.91,15.65 20,15.33 20,15V12C20,7.58 16.42,4 12,4M2.28,3L1,4.27L4.75,8.02C3.06,8.88 1.96,10.59 2,12.5V19H8V13H6.81L10,16.19V19H12.81L16,22.19L17.27,20.92L2.28,3M19,16.19V19H22V16.19C22,15.33 21.65,14.56 21.09,14L19,11.91L18.09,12.82C18.65,13.38 19,14.24 19,16.19Z</Geometry>
         <Geometry x:Key="IconAway">M17.75,4.09L15.22,6.03L16.13,9.09L13.5,7.28L10.87,9.09L11.78,6.03L9.25,4.09L12.44,4L13.5,1L14.56,4L17.75,4.09M21.25,11L19.61,12.25L20.2,14.23L18.5,13.06L16.8,14.23L17.39,12.25L15.75,11L17.81,10.95L18.5,9L19.19,10.95L21.25,11M18.97,15.95C19.8,15.87 20.69,17.05 20.16,17.8C19.84,18.25 19.5,18.67 19.08,19.07C15.17,23 8.84,23 4.94,19.07C1.03,15.17 1.03,8.83 4.94,4.93C5.34,4.53 5.76,4.17 6.21,3.85C6.96,3.32 8.14,4.21 8.06,5.04C6.94,10.39 9.79,15.72 15.05,17.77C16.32,18.26 17.67,18.39 18.97,15.95Z</Geometry>
@@ -37,7 +37,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- 1. 气泡通知 -->
         <ItemsControl ItemsSource="{Binding Notifications}" Grid.Row="0" Margin="10,5">
             <ItemsControl.ItemsPanel><ItemsPanelTemplate><StackPanel VerticalAlignment="Bottom"/></ItemsPanelTemplate></ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
@@ -62,7 +61,6 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <!-- 2. 用户列表 -->
         <Border Grid.Row="1" Background="#01000000" CornerRadius="8">
             <ItemsControl ItemsSource="{Binding Users}" Margin="8">
                 <ItemsControl.ItemTemplate>
@@ -77,16 +75,40 @@
                                 BorderBrush="Transparent">
                             
                             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                <!-- [修改] 头像大小绑定 -->
-                                <Border x:Name="AvatarRing" 
+                                
+                                <!-- [修改] 头像区域 -->
+                                <!-- 只有当 ShowAvatar=True 时显示 -->
+                                <Border x:Name="AvatarContainer"
                                         Width="{Binding DataContext.Config.AvatarSize, RelativeSource={RelativeSource AncestorType=Window}}" 
                                         Height="{Binding DataContext.Config.AvatarSize, RelativeSource={RelativeSource AncestorType=Window}}" 
-                                        CornerRadius="20" 
-                                        Background="#72767d" 
                                         Margin="0,0,10,0">
-                                    <Border.Effect>
-                                        <DropShadowEffect Color="#000000" BlurRadius="4" ShadowDepth="1" Opacity="0.5"/>
-                                    </Border.Effect>
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding DataContext.Config.ShowAvatar, RelativeSource={RelativeSource AncestorType=Window}}" Value="False">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+
+                                    <!-- 这是一个Grid：底层是默认颜色，上层是图片 -->
+                                    <Grid>
+                                        <!-- 1. 底层：默认灰色圆（无头像时显示） -->
+                                        <Border CornerRadius="20" Background="#72767d"/>
+                                        
+                                        <!-- 2. 上层：图片（用 ImageBrush 填充 Border 以实现圆形） -->
+                                        <Border x:Name="AvatarImage" CornerRadius="20">
+                                            <Border.Background>
+                                                <!-- ImageSource 绑定 AvatarUrl，如果不为空则显示 -->
+                                                <ImageBrush ImageSource="{Binding AvatarUrl}" Stretch="UniformToFill"/>
+                                            </Border.Background>
+                                        </Border>
+
+                                        <!-- 3. 边框：说话时显示绿色光圈 -->
+                                        <Border x:Name="SpeakingRing" CornerRadius="20" BorderThickness="2" BorderBrush="Transparent"/>
+                                    </Grid>
                                 </Border>
 
                                 <TextBlock Text="{Binding Name}" 
@@ -102,7 +124,6 @@
                                 </TextBlock>
 
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <!-- 状态图标们... 保持不变 -->
                                     <Grid Margin="2,0" ToolTip="麦克风已禁用">
                                         <Grid.Style><Style TargetType="Grid"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding IsInputMuted}" Value="True"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Grid.Style>
                                         <Path Data="{StaticResource IconMicOff}" Fill="#FF453A" Width="16" Height="16" Stretch="Uniform"><Path.Effect><DropShadowEffect Color="#FF453A" BlurRadius="6" ShadowDepth="0" Opacity="0.6"/></Path.Effect></Path>
@@ -123,33 +144,28 @@
                             <DataTrigger Binding="{Binding IsTalking}" Value="True">
                                 <Setter TargetName="UserCard" Property="BorderBrush" Value="#4FCD8E"/>
                                 <Setter TargetName="UserCard" Property="Background" Value="#E6202225"/>
-                                <Setter TargetName="AvatarRing" Property="Background" Value="#4FCD8E"/>
-                                <Setter TargetName="AvatarRing" Property="Effect">
-                                    <Setter.Value><DropShadowEffect Color="#4FCD8E" BlurRadius="10" ShadowDepth="0" Opacity="0.9"/></Setter.Value>
+                                <!-- 说话时，显示绿色边框，而不是变色 -->
+                                <Setter TargetName="SpeakingRing" Property="BorderBrush" Value="#4FCD8E"/>
+                                <Setter TargetName="AvatarContainer" Property="Effect">
+                                    <Setter.Value><DropShadowEffect Color="#4FCD8E" BlurRadius="10" ShadowDepth="0" Opacity="0.8"/></Setter.Value>
                                 </Setter>
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsTalking}" Value="False">
                                 <Setter TargetName="UserCard" Property="Opacity" Value="{Binding DataContext.Config.BackgroundOpacity, RelativeSource={RelativeSource AncestorType=Window}}"/>
                             </DataTrigger>
-
-                            <!-- [新增] 核心功能：仅显示说话者 (Hide Idle) -->
                             <MultiDataTrigger>
                                 <MultiDataTrigger.Conditions>
-                                    <!-- 条件1：开关已打开 -->
                                     <Condition Binding="{Binding DataContext.Config.ShowOnlyTalking, RelativeSource={RelativeSource AncestorType=Window}}" Value="True"/>
-                                    <!-- 条件2：用户没在说话 -->
                                     <Condition Binding="{Binding IsTalking}" Value="False"/>
                                 </MultiDataTrigger.Conditions>
                                 <Setter TargetName="UserCard" Property="Visibility" Value="Collapsed"/>
                             </MultiDataTrigger>
-                            
                         </DataTemplate.Triggers>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </Border>
 
-        <!-- 3. 底部提示 -->
         <Border Grid.Row="2" VerticalAlignment="Bottom" HorizontalAlignment="Center" Background="#AA000000" CornerRadius="4" Padding="8,3" Margin="10">
             <Border.Style>
                 <Style TargetType="Border">
@@ -161,7 +177,7 @@
                     </Style.Triggers>
                 </Style>
             </Border.Style>
-            <TextBlock Text="[UNLOCKED] Drag | Ctrl+L Lock" Foreground="#FFAB53" FontSize="11" FontWeight="Bold" FontFamily="Segoe UI"/>
+            <TextBlock Text="{DynamicResource Lang_Unlocked}" Foreground="#FFAB53" FontSize="11" FontWeight="Bold" FontFamily="Segoe UI"/>
         </Border>
     </Grid>
 </Window>

@@ -13,16 +13,18 @@ namespace TS6_SpeakerOverlay.Helpers
         private readonly Func<bool> _getIsLocked;
         private readonly Action _lockAction;
         private readonly Action _unlockAction;
-        private readonly Action _openSettingsAction; // [新增] 打开设置的回调
+        private readonly Action _openSettingsAction;
         private readonly Action<TrayIconHelper?> _setTrayIconRef;
         private bool _isExiting;
 
+        // 菜单项引用，用于后续更新文字
+        private ToolStripMenuItem? _settingsMenuItem;
         private ToolStripMenuItem? _showMenuItem;
         private ToolStripMenuItem? _hideMenuItem;
         private ToolStripMenuItem? _lockMenuItem;
         private ToolStripMenuItem? _unlockMenuItem;
+        private ToolStripMenuItem? _exitMenuItem;
 
-        // [修改] 构造函数增加了 openSettingsAction
         public TrayIconHelper(Window mainWindow, Func<bool> getIsLocked, Action lockAction, Action unlockAction, Action openSettingsAction, Action<TrayIconHelper?> setTrayIconRef)
         {
             _mainWindow = mainWindow;
@@ -56,26 +58,27 @@ namespace TS6_SpeakerOverlay.Helpers
 
             var contextMenu = new ContextMenuStrip();
 
-            // [新增] 设置菜单
-            var settingsItem = new ToolStripMenuItem("设置 (Settings)");
-            settingsItem.Click += (_, _) => _openSettingsAction.Invoke();
+            // 初始化菜单项
+            _settingsMenuItem = new ToolStripMenuItem("Settings");
+            _settingsMenuItem.Click += (_, _) => _openSettingsAction.Invoke();
 
-            _showMenuItem = new ToolStripMenuItem("显示");
+            _showMenuItem = new ToolStripMenuItem("Show");
             _showMenuItem.Click += (_, _) => { ShowWindow(); UpdateTrayIcon(); };
 
-            _hideMenuItem = new ToolStripMenuItem("隐藏");
+            _hideMenuItem = new ToolStripMenuItem("Hide");
             _hideMenuItem.Click += (_, _) => { HideWindow(); UpdateTrayIcon(); };
 
-            _lockMenuItem = new ToolStripMenuItem("锁定 (穿透)");
+            _lockMenuItem = new ToolStripMenuItem("Lock");
             _lockMenuItem.Click += (_, _) => { _lockAction.Invoke(); UpdateTrayIcon(); };
 
-            _unlockMenuItem = new ToolStripMenuItem("解锁 (拖拽)");
+            _unlockMenuItem = new ToolStripMenuItem("Unlock");
             _unlockMenuItem.Click += (_, _) => { _unlockAction.Invoke(); UpdateTrayIcon(); };
 
-            var exitMenuItem = new ToolStripMenuItem("退出程序");
-            exitMenuItem.Click += (_, _) => ExitApplication();
+            _exitMenuItem = new ToolStripMenuItem("Exit");
+            _exitMenuItem.Click += (_, _) => ExitApplication();
 
-            contextMenu.Items.Add(settingsItem); // 加入菜单
+            // 组装菜单
+            contextMenu.Items.Add(_settingsMenuItem);
             contextMenu.Items.Add(new ToolStripSeparator());
             contextMenu.Items.Add(_showMenuItem);
             contextMenu.Items.Add(_hideMenuItem);
@@ -83,10 +86,28 @@ namespace TS6_SpeakerOverlay.Helpers
             contextMenu.Items.Add(_lockMenuItem);
             contextMenu.Items.Add(_unlockMenuItem);
             contextMenu.Items.Add(new ToolStripSeparator());
-            contextMenu.Items.Add(exitMenuItem);
+            contextMenu.Items.Add(_exitMenuItem);
 
-            contextMenu.Opening += (_, _) => UpdateTrayIcon();
+            // [关键] 每次打开菜单时，刷新文字（以防语言变了）
+            contextMenu.Opening += (_, _) => UpdateMenuText();
+
             _notifyIcon.ContextMenuStrip = contextMenu;
+            
+            // 初次加载文字
+            UpdateMenuText();
+        }
+
+        // [新增] 从资源字典读取最新语言并更新菜单
+        private void UpdateMenuText()
+        {
+            if (_settingsMenuItem == null) return;
+
+            _settingsMenuItem.Text = LanguageHelper.GetString("Lang_Tray_Settings");
+            _showMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Show");
+            _hideMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Hide");
+            _lockMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Lock");
+            _unlockMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Unlock");
+            _exitMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Exit");
         }
 
         private Icon CreateIcon(Color color)
@@ -112,21 +133,25 @@ namespace TS6_SpeakerOverlay.Helpers
             var isLocked = _getIsLocked();
 
             Color iconColor;
+            string statusKey; // 状态提示也支持多语言
+
             if (!isVisible)
             {
                 iconColor = Color.Gray;
-                _notifyIcon.Text = "TS6 Overlay - 已隐藏";
+                statusKey = " (Hidden)"; 
             }
             else if (isLocked)
             {
                 iconColor = Color.FromArgb(79, 205, 142);
-                _notifyIcon.Text = "TS6 Overlay - 已锁定";
+                statusKey = " (Locked)";
             }
             else
             {
                 iconColor = Color.DodgerBlue;
-                _notifyIcon.Text = "TS6 Overlay - 未锁定";
+                statusKey = " (Unlocked)";
             }
+
+            _notifyIcon.Text = "TS6 Speaker Overlay" + statusKey;
 
             var oldIcon = _notifyIcon.Icon;
             _notifyIcon.Icon = CreateIcon(iconColor);
@@ -136,6 +161,9 @@ namespace TS6_SpeakerOverlay.Helpers
             if (_hideMenuItem != null) _hideMenuItem.Enabled = isVisible;
             if (_lockMenuItem != null) _lockMenuItem.Enabled = !isLocked;
             if (_unlockMenuItem != null) _unlockMenuItem.Enabled = isLocked;
+            
+            // 每次状态改变也顺便刷一下文字（双保险）
+            UpdateMenuText();
         }
 
         private void ShowWindow() { _mainWindow.Show(); _mainWindow.Activate(); }
