@@ -1,0 +1,33 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+    <s:String x:Key="Lang_Settings_Title">Настройки</s:String>
+    <s:String x:Key="Lang_Appearance">ОТОБРАЖЕНИЕ</s:String>
+    <s:String x:Key="Lang_FontSize">Размер шрифта</s:String>
+    <s:String x:Key="Lang_AvatarSize">Размер Аватара</s:String>
+    <s:String x:Key="Lang_Spacing">Разделитель</s:String>
+    <s:String x:Key="Lang_Opacity">Непрозрачность</s:String>
+    <s:String x:Key="Lang_Scale">Масштабирование UI</s:String>
+    <s:String x:Key="Lang_Behavior">РЕЖИМ</s:String>
+    <s:String x:Key="Lang_EnableNotify">Включить уведомления</s:String>
+    <s:String x:Key="Lang_ShowOnlyTalking">Показывать только говорящих</s:String>
+    <s:String x:Key="Lang_Reset">Сброс настроек</s:String>
+    <s:String x:Key="Lang_Save">Сохранить</s:String>
+    <s:String x:Key="Lang_Unlocked">РАЗБЛОКИРОВАНО: Перетащите для перемещения</s:String>
+    <s:String x:Key="Lang_Locked">ЗАБЛОКИРОВАНО: Прозрачность для кликов</s:String>
+    <s:String x:Key="Lang_AvatarMode">Режим аватара</s:String>
+    <s:String x:Key="Lang_Mode_Avatar">Аватар</s:String>
+    <s:String x:Key="Lang_Mode_Indicator">Индикатор</s:String>
+    <s:String x:Key="Lang_Mode_None">Только имя</s:String>
+
+    <s:String x:Key="Lang_Status_Waiting">Ожидание сервера...</s:String>
+    <s:String x:Key="Lang_Status_Refreshing">Обновление...</s:String>
+    
+    <s:String x:Key="Lang_Tray_Show">Показать</s:String>
+    <s:String x:Key="Lang_Tray_Hide">Скрыть</s:String>
+    <s:String x:Key="Lang_Tray_Refresh">Обновить</s:String>
+    <s:String x:Key="Lang_Tray_Lock">Заблокировать</s:String>
+    <s:String x:Key="Lang_Tray_Unlock">Разблокировать</s:String>
+    <s:String x:Key="Lang_Tray_Settings">Настройки</s:String>
+    <s:String x:Key="Lang_Tray_Exit">Выход</s:String>
+</ResourceDictionary>

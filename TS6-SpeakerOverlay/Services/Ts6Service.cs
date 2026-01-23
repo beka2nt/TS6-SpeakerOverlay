@@ -18,19 +18,35 @@ namespace TS6_SpeakerOverlay.Services
         private const string KEY_FILE = "apikey.txt"; 
         private WebsocketClient _client;
         private string _savedApiKey = "";
+        
+        private DateTime _lastRefreshTime = DateTime.MinValue;
 
         public event Action<List<User>, string>? OnChannelListUpdated;
         public event Action<int, bool>? OnTalkStatusChanged;
         public event Action<int, bool?, bool?, bool?>? OnUserPropertiesChanged;
         public event Action<int, string, string>? OnClientMoved;
+        public event Action<bool>? OnConnectionStateChanged;
 
         public Ts6Service()
         {
             LoadApiKey(); 
             var factory = new Func<ClientWebSocket>(() => new ClientWebSocket());
             _client = new WebsocketClient(new Uri(URL), factory);
-            _client.ReconnectTimeout = TimeSpan.FromSeconds(5);
-            _client.ReconnectionHappened.Subscribe(info => SendAuth());
+            
+            _client.ReconnectTimeout = TimeSpan.FromSeconds(5); 
+            _client.ErrorReconnectTimeout = TimeSpan.FromSeconds(5);
+
+            _client.ReconnectionHappened.Subscribe(info => 
+            {
+                OnConnectionStateChanged?.Invoke(true); 
+                SendAuth();
+            });
+
+            _client.DisconnectionHappened.Subscribe(info => 
+            {
+                OnConnectionStateChanged?.Invoke(false);
+            });
+
             _client.MessageReceived.Subscribe(msg => HandleMessage(msg.Text));
         }
 
@@ -41,7 +57,7 @@ namespace TS6_SpeakerOverlay.Services
             if (File.Exists(KEY_FILE)) _savedApiKey = File.ReadAllText(KEY_FILE).Trim();
         }
 
-        private void SendAuth()
+        public void SendAuth()
         {
             var auth = new AuthRequest();
             if (!string.IsNullOrEmpty(_savedApiKey)) auth.Payload.Content.ApiKey = _savedApiKey;
@@ -79,12 +95,29 @@ namespace TS6_SpeakerOverlay.Services
                 File.WriteAllText(KEY_FILE, newKey);
             }
 
-            var conn = payload["connections"]?.AsArray().FirstOrDefault();
+            var connections = payload["connections"]?.AsArray();
+            
+            // [核心修复] 如果没有连接任何服务器，或者连接列表为空
+            if (connections == null || connections.Count == 0) 
+            {
+                Console.WriteLine("[Info] 未连接到任何 TS 服务器，清空列表。");
+                // 发送空列表，通知 UI 清屏
+                OnChannelListUpdated?.Invoke(new List<User>(), ""); 
+                return;
+            }
+
+            var conn = connections.FirstOrDefault();
             if (conn == null) return;
 
             int myClientId = conn["clientId"]?.GetValue<int>() ?? 0;
             var clientInfos = conn["clientInfos"]?.AsArray();
-            if (clientInfos == null) return;
+            
+            // 如果连上了服务器，但还没加载出用户列表
+            if (clientInfos == null) 
+            {
+                OnChannelListUpdated?.Invoke(new List<User>(), "");
+                return;
+            }
 
             var allUsers = new List<User>();
             string myChannelId = "";
@@ -97,23 +130,20 @@ namespace TS6_SpeakerOverlay.Services
 
                 if (id == myClientId) myChannelId = chId;
 
-                // --- [新增] 解析头像 URL ---
                 string avatarRaw = props?["myteamspeakAvatar"]?.ToString() ?? "";
                 string avatarUrl = "";
-                // 格式通常是 "type,url"，我们需要逗号后面的部分
                 if (!string.IsNullOrEmpty(avatarRaw) && avatarRaw.Contains(','))
                 {
                     var parts = avatarRaw.Split(',');
                     if (parts.Length > 1) avatarUrl = parts[1];
                 }
-                // -------------------------
 
                 allUsers.Add(new User 
                 { 
                     ClientId = id,
                     Name = props?["nickname"]?.ToString() ?? "Unknown",
                     ChannelId = chId, 
-                    AvatarUrl = avatarUrl, // 赋值
+                    AvatarUrl = avatarUrl,
                     IsTalking = props?["flagTalking"]?.GetValue<bool>() ?? false,
                     IsInputMuted = props?["inputMuted"]?.GetValue<bool>() ?? false,
                     IsOutputMuted = props?["outputMuted"]?.GetValue<bool>() ?? false,
@@ -127,10 +157,18 @@ namespace TS6_SpeakerOverlay.Services
         {
             var payload = node?["payload"];
             if (payload == null) return;
+
             int clientId = payload["clientId"]?.GetValue<int>() ?? 0;
             string newCh = payload["newChannelId"]?.ToString() ?? "";
             string oldCh = payload["oldChannelId"]?.ToString() ?? "";
+
             OnClientMoved?.Invoke(clientId, newCh, oldCh);
+
+            if ((DateTime.Now - _lastRefreshTime).TotalSeconds > 0.2)
+            {
+                _lastRefreshTime = DateTime.Now;
+                SendAuth();
+            }
         }
 
         private void HandleTalkStatus(JsonNode? node)

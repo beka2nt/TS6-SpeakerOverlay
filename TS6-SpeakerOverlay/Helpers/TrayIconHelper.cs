@@ -14,24 +14,28 @@ namespace TS6_SpeakerOverlay.Helpers
         private readonly Action _lockAction;
         private readonly Action _unlockAction;
         private readonly Action _openSettingsAction;
+        private readonly Action _refreshAction; // [新增] 刷新回调
         private readonly Action<TrayIconHelper?> _setTrayIconRef;
         private bool _isExiting;
 
-        // 菜单项引用，用于后续更新文字
+        // 菜单项引用
         private ToolStripMenuItem? _settingsMenuItem;
+        private ToolStripMenuItem? _refreshMenuItem; // [新增]
         private ToolStripMenuItem? _showMenuItem;
         private ToolStripMenuItem? _hideMenuItem;
         private ToolStripMenuItem? _lockMenuItem;
         private ToolStripMenuItem? _unlockMenuItem;
         private ToolStripMenuItem? _exitMenuItem;
 
-        public TrayIconHelper(Window mainWindow, Func<bool> getIsLocked, Action lockAction, Action unlockAction, Action openSettingsAction, Action<TrayIconHelper?> setTrayIconRef)
+        // [修改] 构造函数增加 refreshAction
+        public TrayIconHelper(Window mainWindow, Func<bool> getIsLocked, Action lockAction, Action unlockAction, Action openSettingsAction, Action refreshAction, Action<TrayIconHelper?> setTrayIconRef)
         {
             _mainWindow = mainWindow;
             _getIsLocked = getIsLocked;
             _lockAction = lockAction;
             _unlockAction = unlockAction;
             _openSettingsAction = openSettingsAction;
+            _refreshAction = refreshAction;
             _setTrayIconRef = setTrayIconRef;
             InitializeTrayIcon();
             UpdateTrayIcon();
@@ -58,9 +62,12 @@ namespace TS6_SpeakerOverlay.Helpers
 
             var contextMenu = new ContextMenuStrip();
 
-            // 初始化菜单项
             _settingsMenuItem = new ToolStripMenuItem("Settings");
             _settingsMenuItem.Click += (_, _) => _openSettingsAction.Invoke();
+
+            // [新增] 刷新菜单
+            _refreshMenuItem = new ToolStripMenuItem("Refresh");
+            _refreshMenuItem.Click += (_, _) => _refreshAction.Invoke();
 
             _showMenuItem = new ToolStripMenuItem("Show");
             _showMenuItem.Click += (_, _) => { ShowWindow(); UpdateTrayIcon(); };
@@ -77,8 +84,8 @@ namespace TS6_SpeakerOverlay.Helpers
             _exitMenuItem = new ToolStripMenuItem("Exit");
             _exitMenuItem.Click += (_, _) => ExitApplication();
 
-            // 组装菜单
             contextMenu.Items.Add(_settingsMenuItem);
+            contextMenu.Items.Add(_refreshMenuItem); // 加入菜单
             contextMenu.Items.Add(new ToolStripSeparator());
             contextMenu.Items.Add(_showMenuItem);
             contextMenu.Items.Add(_hideMenuItem);
@@ -88,21 +95,19 @@ namespace TS6_SpeakerOverlay.Helpers
             contextMenu.Items.Add(new ToolStripSeparator());
             contextMenu.Items.Add(_exitMenuItem);
 
-            // [关键] 每次打开菜单时，刷新文字（以防语言变了）
             contextMenu.Opening += (_, _) => UpdateMenuText();
 
             _notifyIcon.ContextMenuStrip = contextMenu;
-            
-            // 初次加载文字
             UpdateMenuText();
         }
 
-        // [新增] 从资源字典读取最新语言并更新菜单
         private void UpdateMenuText()
         {
             if (_settingsMenuItem == null) return;
 
             _settingsMenuItem.Text = LanguageHelper.GetString("Lang_Tray_Settings");
+            // 刷新按钮的多语言 key，如果没加翻译就默认显示 Refresh
+            _refreshMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Refresh"); 
             _showMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Show");
             _hideMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Hide");
             _lockMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Lock");
@@ -133,7 +138,7 @@ namespace TS6_SpeakerOverlay.Helpers
             var isLocked = _getIsLocked();
 
             Color iconColor;
-            string statusKey; // 状态提示也支持多语言
+            string statusKey;
 
             if (!isVisible)
             {
@@ -162,7 +167,6 @@ namespace TS6_SpeakerOverlay.Helpers
             if (_lockMenuItem != null) _lockMenuItem.Enabled = !isLocked;
             if (_unlockMenuItem != null) _unlockMenuItem.Enabled = isLocked;
             
-            // 每次状态改变也顺便刷一下文字（双保险）
             UpdateMenuText();
         }
 

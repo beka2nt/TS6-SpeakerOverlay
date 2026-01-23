@@ -26,13 +26,13 @@ namespace TS6_SpeakerOverlay.Views
 
         private void BtnSave_Click(object sender, RoutedEventArgs e)
         {
-            _viewModel.SaveConfig();
+            //_viewModel.SaveConfig();
             this.Close();
         }
 
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
-            _viewModel.SaveConfig(); 
+            //_viewModel.SaveConfig(); 
             this.Close();
         }
 

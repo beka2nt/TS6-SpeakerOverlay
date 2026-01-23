@@ -1,13 +1,13 @@
 {
-  "WindowTop": 117.60000000000001,
-  "WindowLeft": 1593.6000000000001,
+  "WindowTop": 169.60000000000002,
+  "WindowLeft": 1657.6000000000001,
   "UiScale": 0.9,
-  "BackgroundOpacity": 0.6000000000000001,
-  "FontSize": 15.868057425824322,
+  "BackgroundOpacity": 0.7000000000000001,
+  "FontSize": 16.142030028564047,
   "ItemSpacing": 3.610389214670596,
   "AvatarSize": 16.679477325134513,
   "AvatarDisplayMode": 0,
-  "EnableNotifications": true,
+  "EnableNotifications": false,
   "ShowOnlyTalking": false,
   "Language": "zh-CN"
 }

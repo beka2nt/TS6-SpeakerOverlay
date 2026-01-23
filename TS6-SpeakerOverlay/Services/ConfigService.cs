@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
+using System.ComponentModel; // 需要引用
 using TS6_SpeakerOverlay.Models;
 
 namespace TS6_SpeakerOverlay.Services
@@ -8,23 +9,41 @@ namespace TS6_SpeakerOverlay.Services
     public static class ConfigService
     {
         private const string CONFIG_FILE = "config.json";
+        private static AppConfig? _currentConfig;
 
         public static AppConfig Load()
         {
+            AppConfig config;
             if (!File.Exists(CONFIG_FILE))
             {
-                return new AppConfig(); // 如果文件不存在，返回默认配置
+                config = new AppConfig();
+            }
+            else
+            {
+                try
+                {
+                    string json = File.ReadAllText(CONFIG_FILE);
+                    config = JsonSerializer.Deserialize<AppConfig>(json) ?? new AppConfig();
+                }
+                catch
+                {
+                    config = new AppConfig(); // 解析失败用默认
+                }
             }
 
-            try
+            _currentConfig = config;
+            
+            // [关键] 监听属性变化，实现自动保存
+            config.PropertyChanged += Config_PropertyChanged;
+            
+            return config;
+        }
+
+        private static void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (_currentConfig != null)
             {
-                string json = File.ReadAllText(CONFIG_FILE);
-                var config = JsonSerializer.Deserialize<AppConfig>(json);
-                return config ?? new AppConfig();
-            }
-            catch
-            {
-                return new AppConfig(); // 解析失败也返回默认
+                Save(_currentConfig);
             }
         }
 
@@ -32,7 +51,6 @@ namespace TS6_SpeakerOverlay.Services
         {
             try
             {
-                // WriteIndented = true 让生成的 JSON 有换行和缩进，方便用户手动修改
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 string json = JsonSerializer.Serialize(config, options);
                 File.WriteAllText(CONFIG_FILE, json);

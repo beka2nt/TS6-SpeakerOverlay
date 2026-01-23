@@ -15,14 +15,17 @@
     <s:String x:Key="Lang_Save">保存并关闭</s:String>
     <s:String x:Key="Lang_Unlocked">当前解锁：拖拽移动 | Ctrl+L 锁定</s:String>
     <s:String x:Key="Lang_Locked">当前锁定：鼠标穿透中 | Ctrl+L 解锁</s:String>
-    <s:String x:Key="Lang_ShowAvatar">显示头像/指示灯</s:String>
     <s:String x:Key="Lang_AvatarMode">头像显示模式</s:String>
     <s:String x:Key="Lang_Mode_Avatar">显示头像</s:String>
     <s:String x:Key="Lang_Mode_Indicator">仅指示灯</s:String>
     <s:String x:Key="Lang_Mode_None">仅显示名字</s:String>
 
+    <s:String x:Key="Lang_Status_Waiting">等待加入服务器...</s:String>
+    <s:String x:Key="Lang_Status_Refreshing">正在刷新...</s:String>
+
     <s:String x:Key="Lang_Tray_Show">显示窗口</s:String>
     <s:String x:Key="Lang_Tray_Hide">隐藏窗口</s:String>
+    <s:String x:Key="Lang_Tray_Refresh">刷新状态</s:String>
     <s:String x:Key="Lang_Tray_Lock">锁定 (穿透)</s:String>
     <s:String x:Key="Lang_Tray_Unlock">解锁 (拖拽)</s:String>
     <s:String x:Key="Lang_Tray_Settings">设置 (Settings)</s:String>

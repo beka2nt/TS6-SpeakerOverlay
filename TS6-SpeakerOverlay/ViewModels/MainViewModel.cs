@@ -3,7 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows; 
+using System.Windows;
 using TS6_SpeakerOverlay.Models;
 using TS6_SpeakerOverlay.Helpers;
 using TS6_SpeakerOverlay.Services;
@@ -15,29 +15,83 @@ namespace TS6_SpeakerOverlay.ViewModels
         public ObservableCollection<User> Users { get; } = new();
         public ObservableCollection<Notification> Notifications { get; } = new();
         
-        // 新增：配置对象，供界面绑定
         public AppConfig Config { get; }
 
         private readonly Ts6Service _tsService;
         private string _currentChannelId = ""; 
 
         [ObservableProperty] private bool _isOverlayLocked = false;
+        
+        // 连接状态文本
+        [ObservableProperty] private string _connectionStatus = "Connecting...";
+        [ObservableProperty] private bool _isConnected = false;
 
         public MainViewModel()
         {
-            // 1. 加载配置
             Config = ConfigService.Load();
+            LanguageHelper.SetLanguage(Config.Language); 
 
             _tsService = new Ts6Service();
             
+                // 1. 连接状态变化
+            _tsService.OnConnectionStateChanged += async (isConnected) =>
+            {
+                if (isConnected)
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        IsConnected = true;
+                        ConnectionStatus = ""; // 连上瞬间清空提示
+                    });
+                }
+                else
+                {
+                    System.Windows.Application.Current.Dispatcher.Invoke(() => IsConnected = false);
+
+                    // [极速优化] 将防抖动延迟从 2000 改为 500
+                    // 0.5秒足够过滤掉网络波动，同时让用户感觉反应很快
+                    await Task.Delay(500);
+
+                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        if (!IsConnected)
+                        {
+                            ConnectionStatus = LanguageHelper.GetString("Lang_Status_Waiting");
+                            Users.Clear();
+                        }
+                    });
+                }
+            };
+
+            // 2. 列表更新 (核心修改)
             _tsService.OnChannelListUpdated += (allUsers, myChannelId) => 
             {
                 _currentChannelId = myChannelId;
                 System.Windows.Application.Current.Dispatcher.Invoke(() => 
                 {
+                    // 暂存说话状态
+                    var talkingStates = Users.ToDictionary(u => u.ClientId, u => u.IsTalking);
+
                     Users.Clear();
-                    var roomUsers = allUsers.Where(u => u.ChannelId == _currentChannelId).OrderBy(u => u.Name);
-                    foreach(var u in roomUsers) Users.Add(u);
+                    
+                    // [新增] 判断列表是否为空
+                    if (allUsers.Count == 0)
+                    {
+                        // 如果列表为空，说明连上了 TS6 但没进服务器
+                        ConnectionStatus = LanguageHelper.GetString("Lang_Status_Waiting");
+                    }
+                    else
+                    {
+                        // 列表有人，清空提示
+                        ConnectionStatus = "";
+                        
+                        var roomUsers = allUsers.Where(u => u.ChannelId == _currentChannelId).OrderBy(u => u.Name);
+                        foreach(var u in roomUsers) 
+                        {
+                            if (talkingStates.ContainsKey(u.ClientId)) u.IsTalking = talkingStates[u.ClientId];
+                            Users.Add(u);
+                        }
+                    }
                 });
             };
 
@@ -70,29 +124,32 @@ namespace TS6_SpeakerOverlay.ViewModels
                 {
                     if (newCh == _currentChannelId)
                     {
-                        ShowNotification("有新成员进入频道", "#43B581", "📥");
+                        ShowNotification("Someone joined", "#4FCD8E", "📥");
                     }
                     else if (oldCh == _currentChannelId)
                     {
                         var user = Users.FirstOrDefault(u => u.ClientId == clientId);
-                        if (user != null)
-                        {
-                            ShowNotification($"{user.Name} 离开了频道", "#F04747", "📤");
-                            Users.Remove(user);
-                        }
+                        string name = user?.Name ?? "Someone";
+                        ShowNotification($"{name} left", "#ED4245", "📤");
                     }
                 });
             };
 
             Task.Run(async () => await _tsService.StartAsync());
-            Users.Add(new User { Name = "Connecting..." });
+        }
+
+        // [新增] 手动刷新方法
+        public void RefreshData()
+        {
+            // 给用户一个瞬间反馈，证明他点到了
+            ConnectionStatus = LanguageHelper.GetString("Lang_Status_Refreshing");
+
+            _tsService.SendAuth();
         }
 
         private async void ShowNotification(string msg, string color, string icon)
         {
-            // 2. 判断配置开关：如果用户关了通知，直接返回
             if (!Config.EnableNotifications) return;
-
             var note = new Notification { Message = msg, Color = color, Icon = icon };
             Notifications.Add(note);
             await Task.Delay(3000);
@@ -107,10 +164,6 @@ namespace TS6_SpeakerOverlay.ViewModels
             else WindowHelper.DisableClickThrough(window);
         }
         
-        // 新增：保存配置的方法（给 MainWindow 关闭时调用）
-        public void SaveConfig()
-        {
-            ConfigService.Save(Config);
-        }
+        public void SaveConfig() => ConfigService.Save(Config);
     }
 }

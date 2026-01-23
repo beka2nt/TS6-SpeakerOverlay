@@ -15,15 +15,19 @@
     <s:String x:Key="Lang_Save">Save &amp; Close</s:String>
     <s:String x:Key="Lang_Unlocked">UNLOCKED: Drag to move</s:String>
     <s:String x:Key="Lang_Locked">LOCKED: Click-Through active</s:String>
-    <s:String x:Key="Lang_ShowAvatar">Show Avatar/Indicator</s:String>
     <s:String x:Key="Lang_AvatarMode">Avatar Display Mode</s:String>
     <s:String x:Key="Lang_Mode_Avatar">Show Avatar</s:String>
     <s:String x:Key="Lang_Mode_Indicator">Indicator Only</s:String>
     <s:String x:Key="Lang_Mode_None">Name Only</s:String>
     
+    <!-- 状态提示 -->
+    <s:String x:Key="Lang_Status_Waiting">Waiting for Server...</s:String>
+    <s:String x:Key="Lang_Status_Refreshing">Refreshing...</s:String>
+
     <!-- 托盘菜单 -->
     <s:String x:Key="Lang_Tray_Show">Show</s:String>
     <s:String x:Key="Lang_Tray_Hide">Hide</s:String>
+    <s:String x:Key="Lang_Tray_Refresh">Refresh</s:String>
     <s:String x:Key="Lang_Tray_Lock">Lock (Click-Through)</s:String>
     <s:String x:Key="Lang_Tray_Unlock">Unlock (Drag)</s:String>
     <s:String x:Key="Lang_Tray_Settings">Settings</s:String>

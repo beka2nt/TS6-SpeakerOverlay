@@ -15,14 +15,17 @@
     <s:String x:Key="Lang_Save">Sauvegarder</s:String>
     <s:String x:Key="Lang_Unlocked">DÉVERROUILLÉ: Glisser pour déplacer</s:String>
     <s:String x:Key="Lang_Locked">VERROUILLÉ: Clics traversants</s:String>
-    <s:String x:Key="Lang_ShowAvatar">Afficher Avatar</s:String>
     <s:String x:Key="Lang_AvatarMode">Mode Avatar</s:String>
     <s:String x:Key="Lang_Mode_Avatar">Avatar</s:String>
     <s:String x:Key="Lang_Mode_Indicator">Indicateur</s:String>
     <s:String x:Key="Lang_Mode_None">Nom Seulement</s:String>
 
+    <s:String x:Key="Lang_Status_Waiting">En attente du serveur...</s:String>
+    <s:String x:Key="Lang_Status_Refreshing">Actualisation...</s:String>
+
     <s:String x:Key="Lang_Tray_Show">Afficher</s:String>
     <s:String x:Key="Lang_Tray_Hide">Masquer</s:String>
+    <s:String x:Key="Lang_Tray_Refresh">Actualiser</s:String>
     <s:String x:Key="Lang_Tray_Lock">Verrouiller</s:String>
     <s:String x:Key="Lang_Tray_Unlock">Déverrouiller</s:String>
     <s:String x:Key="Lang_Tray_Settings">Paramètres</s:String>
