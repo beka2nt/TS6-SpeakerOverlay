@@ -1,13 +1,13 @@
 {
-  "WindowTop": 169.60000000000002,
-  "WindowLeft": 1657.6000000000001,
-  "UiScale": 0.9,
-  "BackgroundOpacity": 0.7000000000000001,
-  "FontSize": 16.142030028564047,
-  "ItemSpacing": 3.610389214670596,
-  "AvatarSize": 16.679477325134513,
-  "AvatarDisplayMode": 0,
-  "EnableNotifications": false,
+  "WindowTop": 140.8,
+  "WindowLeft": 1626.4,
+  "UiScale": 1,
+  "BackgroundOpacity": 0.6,
+  "FontSize": 14,
+  "ItemSpacing": 4,
+  "AvatarSize": 20,
+  "AvatarDisplayMode": 1,
+  "EnableNotifications": true,
   "ShowOnlyTalking": false,
   "Language": "zh-CN"
 }
