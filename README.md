@@ -27,19 +27,20 @@
 
 ##  English Description
 
-###  What's New in v1.4.0
-- **Instant Response**: Optimized data synchronization logic. Channel switching and status updates are now nearly instantaneous (0.2s latency).
-- **Interactive Drag Handle**: A visual frame now appears when hovering over the overlay in unlocked mode, making it easier to position.
-- **Russian Support**: Added **Русский** language option (Thanks to community contribution).
-- **Smart Disconnect**: The overlay now correctly clears the user list and shows "Waiting for Server" immediately when disconnecting from a TS server.
-- **Bug Fixes**: Fixed issues with manual refresh not working and settings binding errors.
+###  What's New in v1.4.1
+- **Bug Fixes**:
+  - Fixed an issue where the overlay would jump on drag due to DPI scaling.
+  - Fixed an issue where the unlock status bar was missing.
+  - Fixed the indicator-only avatar mode not showing the correct colors.
+  - Fixed a crash related to broken SVG icon data.
+  - Fixed a silent crash when opening the Settings window.
 
 ###  Key Features
-- **True Click-Through**: Passes mouse events directly to the game.
+- **True Click-Through**: Passes mouse events to the game.
+- **Multi-Language**: English, Chinese, French, Russian.
 - **Avatar Display Modes**: Avatar / Indicator Only / Name Only.
 - **Settings GUI**: Real-time customization for Size, Opacity, and Spacing.
 - **Visual Notifications**: Toast popups for join/leave events.
-- **Ultra-Low Resource**: Native .NET 10 AOT, minimal memory footprint.
 
 ###  How to Use
 1. **Download**: Click the **Download EXE** badge above.
@@ -56,19 +57,20 @@ MIT License
 
 ##  中文说明 (Chinese)
 
-###  v1.4.0 更新日志
-- **极速响应模式**：重构了数据同步逻辑，频道切换与状态更新延迟降低至 0.2 秒，体验如丝般顺滑。
-- **交互式拖拽框**：在解锁模式下，鼠标悬停时会显示动态边框与提示图标，调整位置更直观。
-- **俄语支持**：新增 **Русский** 语言支持。
-- **智能断线检测**：修复了退出服务器后列表不消失的问题。现在断开连接会立即清空列表并提示等待加入服务器。
-- **问题修复**：修复了设置界面下拉框绑定失效及手动刷新无效的问题。
+###  v1.4.1 更新日志
+- **问题修复**:
+  - 修复了在高 DPI 屏幕上拖拽悬浮窗时发生瞬移的问题。
+  - 修复了解锁状态提示条意外丢失的问题。
+  - 修复了仅指示灯模式下颜色不正确的问题。
+  - 修复了由于 SVG 图标数据损坏导致的崩溃。
+  - 修复了打开设置窗口时可能发生的静默崩溃。
 
 ###  核心功能
 - **鼠标穿透**：悬浮窗不拦截点击，完美覆盖于游戏之上。
+- **多语言支持**：原生支持中文、英文、法文、俄文。
 - **头像模式**：支持显示真实头像、仅指示灯或极简文字模式。
 - **可视化设置**：右键托盘可打开设置面板，调整大小、透明度、间距等。
 - **进出通知**：成员进出频道时弹出气泡提示。
-- **极低占用**：原生 AOT 编译，无浏览器内核，性能极致。
 
 ###  使用指南
 1. **下载**：点击顶部的 **Download EXE** 下载最新版。
