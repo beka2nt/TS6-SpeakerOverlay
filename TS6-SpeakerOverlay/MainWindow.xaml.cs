@@ -51,6 +51,11 @@ namespace TS6_SpeakerOverlay
             {
                 this.Left = vm.Config.WindowLeft;
                 this.Top = vm.Config.WindowTop;
+
+                if (vm.IsOverlayLocked)
+                {
+                    Lock();
+                }
             }
         }
 
