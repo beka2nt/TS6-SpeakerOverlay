@@ -1,6 +1,6 @@
 {
-  "WindowTop": 140.8,
-  "WindowLeft": 1626.4,
+  "WindowTop": 460.8,
+  "WindowLeft": 968,
   "UiScale": 1,
   "BackgroundOpacity": 0.6,
   "FontSize": 14,
@@ -9,5 +9,6 @@
   "AvatarDisplayMode": 1,
   "EnableNotifications": true,
   "ShowOnlyTalking": false,
+  "IsLocked": false,
   "Language": "zh-CN"
 }

@@ -26,6 +26,8 @@ namespace TS6_SpeakerOverlay.Models
 
         [ObservableProperty] private bool _enableNotifications = true;
         [ObservableProperty] private bool _showOnlyTalking = false;
+        // [新增] 记忆锁定状态
+        [ObservableProperty] private bool _isLocked = false; 
         [ObservableProperty] private string _language = "zh-CN";
 
         public void ResetDefaults()
@@ -38,6 +40,7 @@ namespace TS6_SpeakerOverlay.Models
             AvatarDisplayMode = AvatarMode.Avatar; // 默认显示头像
             EnableNotifications = true;
             ShowOnlyTalking = false;
+            IsLocked = false;
         }
     }
 }

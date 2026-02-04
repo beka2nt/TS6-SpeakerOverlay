@@ -31,6 +31,9 @@ namespace TS6_SpeakerOverlay.ViewModels
             Config = ConfigService.Load();
             LanguageHelper.SetLanguage(Config.Language); 
 
+            // [新增] 启动时恢复锁定状态
+            IsOverlayLocked = Config.IsLocked;
+
             _tsService = new Ts6Service();
             
                 // 1. 连接状态变化
@@ -160,6 +163,9 @@ namespace TS6_SpeakerOverlay.ViewModels
         private void ToggleLockState(Window window)
         {
             IsOverlayLocked = !IsOverlayLocked;
+
+            Config.IsLocked = IsOverlayLocked;
+            
             if (IsOverlayLocked) WindowHelper.EnableClickThrough(window);
             else WindowHelper.DisableClickThrough(window);
         }
