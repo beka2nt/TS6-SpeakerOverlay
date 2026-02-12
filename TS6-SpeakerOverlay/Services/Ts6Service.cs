@@ -15,10 +15,17 @@ namespace TS6_SpeakerOverlay.Services
     public class Ts6Service
     {
         private const string URL = "ws://127.0.0.1:5899"; 
-        private const string KEY_FILE = "apikey.txt"; 
+        
+        // --- [核心修改] 定义 AppData 存储路径 ---
+        private static readonly string AppDataFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), 
+            "TS6-SpeakerOverlay"
+        );
+        private static readonly string KEY_FILE = Path.Combine(AppDataFolder, "apikey.txt");
+        // --------------------------------------
+
         private WebsocketClient _client;
         private string _savedApiKey = "";
-        
         private DateTime _lastRefreshTime = DateTime.MinValue;
 
         public event Action<List<User>, string>? OnChannelListUpdated;
@@ -54,7 +61,13 @@ namespace TS6_SpeakerOverlay.Services
 
         private void LoadApiKey()
         {
-            if (File.Exists(KEY_FILE)) _savedApiKey = File.ReadAllText(KEY_FILE).Trim();
+            // 确保 AppData 文件夹存在
+            if (!Directory.Exists(AppDataFolder)) Directory.CreateDirectory(AppDataFolder);
+
+            if (File.Exists(KEY_FILE))
+            {
+                _savedApiKey = File.ReadAllText(KEY_FILE).Trim();
+            }
         }
 
         public void SendAuth()
@@ -92,16 +105,14 @@ namespace TS6_SpeakerOverlay.Services
             if (!string.IsNullOrEmpty(newKey) && newKey != _savedApiKey)
             {
                 _savedApiKey = newKey;
+                // 确保文件夹存在后再保存
+                if (!Directory.Exists(AppDataFolder)) Directory.CreateDirectory(AppDataFolder);
                 File.WriteAllText(KEY_FILE, newKey);
             }
 
             var connections = payload["connections"]?.AsArray();
-            
-            // [核心修复] 如果没有连接任何服务器，或者连接列表为空
             if (connections == null || connections.Count == 0) 
             {
-                Console.WriteLine("[Info] 未连接到任何 TS 服务器，清空列表。");
-                // 发送空列表，通知 UI 清屏
                 OnChannelListUpdated?.Invoke(new List<User>(), ""); 
                 return;
             }
@@ -112,7 +123,6 @@ namespace TS6_SpeakerOverlay.Services
             int myClientId = conn["clientId"]?.GetValue<int>() ?? 0;
             var clientInfos = conn["clientInfos"]?.AsArray();
             
-            // 如果连上了服务器，但还没加载出用户列表
             if (clientInfos == null) 
             {
                 OnChannelListUpdated?.Invoke(new List<User>(), "");
