@@ -28,6 +28,7 @@ namespace TS6_SpeakerOverlay.Models
         [ObservableProperty] private bool _showOnlyTalking = false;
         // [新增] 记忆锁定状态
         [ObservableProperty] private bool _isLocked = false; 
+        [ObservableProperty] private bool _autoStart = false; // [新增] 开机自启
         [ObservableProperty] private string _language = "zh-CN";
 
         public void ResetDefaults()

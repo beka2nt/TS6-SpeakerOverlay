@@ -77,7 +77,7 @@ namespace TS6_SpeakerOverlay.Services
             _client.Send(JsonSerializer.Serialize(auth));
         }
 
-        private void HandleMessage(string? json)
+            private void HandleMessage(string? json)
         {
             if (string.IsNullOrEmpty(json)) return;
             try 
@@ -93,7 +93,12 @@ namespace TS6_SpeakerOverlay.Services
                     case "clientMoved": HandleClientMoved(node); break;
                 }
             }
-            catch { }
+            catch (Exception ex) 
+            { 
+                // [新增] 记录到底为什么崩溃，以及导致崩溃的 JSON 是什么
+                LogService.LogError(ex, "HandleMessage");
+                LogService.Log($"Raw JSON: {json}");
+            }
         }
 
         private void HandleAuthResponse(JsonNode? node)

@@ -215,6 +215,10 @@
                             <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Config.ShowOnlyTalking}" Margin="0,5">
                                 <TextBlock Text="{DynamicResource Lang_ShowOnlyTalking}" Foreground="White" Margin="0,0,10,0"/>
                             </CheckBox>
+                           <!-- 开机自启 -->
+                            <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Config.AutoStart}" Margin="0,5" Click="AutoStart_Click">
+                                <TextBlock Text="开机自启动 (Auto-start with Windows)" Foreground="White" Margin="0,0,10,0"/>
+                            </CheckBox>
                         </StackPanel>
                     </Border>
                     <Canvas Height="20"/>

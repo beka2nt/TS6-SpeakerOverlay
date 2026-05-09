@@ -3,6 +3,7 @@ using System.Windows.Controls; // 需要引用 ComboBox
 using System.Windows.Input;
 using TS6_SpeakerOverlay.ViewModels;
 using TS6_SpeakerOverlay.Helpers; // 引用 LanguageHelper
+using Microsoft.Win32;
 
 namespace TS6_SpeakerOverlay.Views
 {
@@ -18,6 +19,30 @@ namespace TS6_SpeakerOverlay.Views
             this.DataContext = _viewModel;
             _isInitialized = true;
         }
+        
+        private void AutoStart_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                string runKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Run";
+                using (RegistryKey key = Registry.CurrentUser.OpenSubKey(runKey, true)!)
+                {
+                    if (_viewModel.Config.AutoStart)
+                    {
+                        // 写入当前 exe 的绝对路径
+                        key.SetValue("TS6SpeakerOverlay", System.Diagnostics.Process.GetCurrentProcess().MainModule!.FileName!);
+                    }
+                    else
+                    {
+                        key.DeleteValue("TS6SpeakerOverlay", false);
+                    }
+                }
+            }
+            catch (Exception ex)
+                {
+                    System.Windows.MessageBox.Show($"Failed to set Auto-Start: {ex.Message}");
+                }
+}
 
         private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
         {
