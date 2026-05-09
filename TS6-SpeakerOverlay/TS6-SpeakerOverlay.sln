@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TS6-SpeakerOverlay", "TS6-SpeakerOverlay.csproj", "{EF10A926-5E84-F8B3-3D89-AF324D9B1F7A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EF10A926-5E84-F8B3-3D89-AF324D9B1F7A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF10A926-5E84-F8B3-3D89-AF324D9B1F7A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF10A926-5E84-F8B3-3D89-AF324D9B1F7A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF10A926-5E84-F8B3-3D89-AF324D9B1F7A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {30645C31-3220-44DB-B740-151797AF9ED0}
+	EndGlobalSection
+EndGlobal
