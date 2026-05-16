@@ -1,0 +1,35 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:s="clr-namespace:System;assembly=mscorlib">
+    <s:String x:Key="Lang_Settings_Title">Configurações</s:String>
+    <s:String x:Key="Lang_Appearance">APARÊNCIA</s:String>
+    <s:String x:Key="Lang_FontSize">Tamanho da Fonte</s:String>
+    <s:String x:Key="Lang_AvatarSize">Tamanho do Avatar</s:String>
+    <s:String x:Key="Lang_Spacing">Espaçamento</s:String>
+    <s:String x:Key="Lang_Opacity">Opacidade</s:String>
+    <s:String x:Key="Lang_Scale">Escala da Interface</s:String>
+    <s:String x:Key="Lang_Behavior">COMPORTAMENTO</s:String>
+    <s:String x:Key="Lang_EnableNotify">Habilitar Notificações</s:String>
+    <s:String x:Key="Lang_ShowOnlyTalking">Mostrar Apenas Falantes</s:String>
+    <s:String x:Key="Lang_Reset">Resetar Configurações</s:String>
+    <s:String x:Key="Lang_Save">Salvar e Fechar</s:String>
+    <s:String x:Key="Lang_Unlocked">DESTRAVADO: Arraste para mover</s:String>
+    <s:String x:Key="Lang_Locked">TRAVADO: Ignorar clique</s:String>
+    <s:String x:Key="Lang_AvatarMode">Modo de Exibição do Avatar</s:String>
+    <s:String x:Key="Lang_Mode_Avatar">Mostrar Avatar</s:String>
+    <s:String x:Key="Lang_Mode_Indicator">Apenas indicador</s:String>
+    <s:String x:Key="Lang_Mode_None">Apenas Nome</s:String>
+    
+    <!-- 状态提示 -->
+    <s:String x:Key="Lang_Status_Waiting">Aguardando conexão...</s:String>
+    <s:String x:Key="Lang_Status_Refreshing">Atualizando...</s:String>
+
+    <!-- 托盘菜单 -->
+    <s:String x:Key="Lang_Tray_Show">Exibir</s:String>
+    <s:String x:Key="Lang_Tray_Hide">Esconder</s:String>
+    <s:String x:Key="Lang_Tray_Refresh">Atualizar</s:String>
+    <s:String x:Key="Lang_Tray_Lock">Travar (Ignorar clique)</s:String>
+    <s:String x:Key="Lang_Tray_Unlock">Destravar (Arrastar)</s:String>
+    <s:String x:Key="Lang_Tray_Settings">Configurações</s:String>
+    <s:String x:Key="Lang_Tray_Exit">Sair</s:String>
+</ResourceDictionary>
