@@ -51,6 +51,8 @@ namespace TS6_SpeakerOverlay.Views
             if (result == System.Windows.MessageBoxResult.Yes)
             {
                 _viewModel.Config.ResetDefaults();
+                if (_viewModel.IsOverlayLocked && System.Windows.Application.Current.MainWindow is Window overlay)
+                    _viewModel.ToggleLockStateCommand.Execute(overlay);
                 // 重置后也要重新应用语言（因为默认可能是中文）
                 LanguageHelper.SetLanguage(_viewModel.Config.Language);
                 _viewModel.ApplyConfiguredServerSelection();

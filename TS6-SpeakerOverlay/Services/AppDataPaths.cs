@@ -35,8 +35,9 @@ namespace TS6_SpeakerOverlay.Services
         {
             if (File.Exists(destinationPath)) return;
 
-            var candidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            var candidates = new[]
             {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), AppDirectoryName, fileName),
                 Path.Combine(AppContext.BaseDirectory, fileName),
                 Path.Combine(Environment.CurrentDirectory, fileName)
             };

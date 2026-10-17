@@ -139,8 +139,6 @@ namespace TS6_SpeakerOverlay.Services
             }
 
             var connections = payload["connections"]?.AsArray();
-            
-            // [核心修复] 如果没有连接任何服务器，或者连接列表为空
             if (connections == null || connections.Count == 0) 
             {
                 AppLogger.Info("TS6 is not connected to any server.");

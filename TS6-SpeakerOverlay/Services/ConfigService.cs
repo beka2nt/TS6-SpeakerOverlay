@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using System.Text.Json;
-using System.ComponentModel; // 需要引用
+using System.ComponentModel;
 using TS6_SpeakerOverlay.Models;
 
 namespace TS6_SpeakerOverlay.Services
@@ -47,19 +47,13 @@ namespace TS6_SpeakerOverlay.Services
             }
 
             _currentConfig = config;
-            
-            // [关键] 监听属性变化，实现自动保存
             config.PropertyChanged += Config_PropertyChanged;
-            
             return config;
         }
 
         private static void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (_currentConfig != null)
-            {
-                Save(_currentConfig);
-            }
+            if (_currentConfig != null) Save(_currentConfig);
         }
 
         public static void Save(AppConfig config)

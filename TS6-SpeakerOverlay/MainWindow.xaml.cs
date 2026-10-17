@@ -51,6 +51,8 @@ namespace TS6_SpeakerOverlay
                 this.Left = vm.Config.WindowLeft;
                 this.Top = vm.Config.WindowTop;
                 EnsureWindowIsVisible();
+                if (vm.IsOverlayLocked) WindowHelper.EnableClickThrough(this);
+                _trayIcon?.UpdateTrayIcon();
             }
         }
 

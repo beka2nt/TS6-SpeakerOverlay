@@ -32,6 +32,8 @@ namespace TS6_SpeakerOverlay.Models
         [ObservableProperty] private bool _enableServerNotifications = true;
         [ObservableProperty] private bool _enableChannelNotifications = true;
         [ObservableProperty] private bool _showOnlyTalking = false;
+        [ObservableProperty] private bool _isLocked = false;
+        [ObservableProperty] private bool _autoStart = false;
         [ObservableProperty] private bool _autoOpenWithTeamSpeak = false;
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(TalkingBrush))]
@@ -85,6 +87,8 @@ namespace TS6_SpeakerOverlay.Models
             EnableServerNotifications = true;
             EnableChannelNotifications = true;
             ShowOnlyTalking = false;
+            IsLocked = false;
+            AutoStart = false;
             AutoOpenWithTeamSpeak = false;
             TalkingColor = "#19B889";
             SelectedServerUniqueIdentifier = string.Empty;

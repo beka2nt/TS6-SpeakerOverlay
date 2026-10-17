@@ -587,6 +587,12 @@
                                            Style="{StaticResource SectionDescription}" TextWrapping="Wrap" Margin="0,3,0,0"/>
                             </StackPanel>
                             <StackPanel Margin="0,13,0,0">
+                                <CheckBox Content="{DynamicResource Lang_AutoStart}" Style="{StaticResource ToggleSwitch}"
+                                          IsChecked="{Binding Config.AutoStart, Mode=TwoWay}"/>
+                                <TextBlock Text="{DynamicResource Lang_AutoStart_Description}"
+                                           Style="{StaticResource SectionDescription}" Margin="0,3,0,0"/>
+                            </StackPanel>
+                            <StackPanel Margin="0,13,0,0">
                                 <CheckBox Content="{DynamicResource Lang_AutoOpenWithTeamSpeak}" Style="{StaticResource ToggleSwitch}"
                                           IsChecked="{Binding Config.AutoOpenWithTeamSpeak, Mode=TwoWay}"/>
                                 <TextBlock Text="{DynamicResource Lang_AutoOpenWithTeamSpeak_Description}"

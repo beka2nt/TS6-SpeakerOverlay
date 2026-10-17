@@ -9,6 +9,7 @@ namespace TS6_SpeakerOverlay.Services
     {
         private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
         private const string RunValueName = "TS6 Speaker Overlay (TeamSpeak)";
+        private const string LegacyRunValueName = "TS6SpeakerOverlay";
         internal const string WaitArgument = "--wait-for-teamspeak";
 
         internal static bool IsTeamSpeakRunning()
@@ -29,7 +30,7 @@ namespace TS6_SpeakerOverlay.Services
             }
         }
 
-        internal static void SetEnabled(bool enabled)
+        internal static void SetEnabled(bool enabled, bool waitForTeamSpeak = true)
         {
             using var runKey = Registry.CurrentUser.CreateSubKey(RunKeyPath, writable: true)
                 ?? throw new InvalidOperationException("Unable to open the current user's startup settings.");
@@ -37,6 +38,7 @@ namespace TS6_SpeakerOverlay.Services
             if (!enabled)
             {
                 runKey.DeleteValue(RunValueName, throwOnMissingValue: false);
+                runKey.DeleteValue(LegacyRunValueName, throwOnMissingValue: false);
                 return;
             }
 
@@ -46,9 +48,10 @@ namespace TS6_SpeakerOverlay.Services
                 !executablePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
                 throw new InvalidOperationException("Startup can only be enabled from the packaged application.");
 
-            string command = $"\"{executablePath}\" {WaitArgument}";
+            string command = $"\"{executablePath}\"" + (waitForTeamSpeak ? $" {WaitArgument}" : "");
             if (!string.Equals(runKey.GetValue(RunValueName) as string, command, StringComparison.Ordinal))
                 runKey.SetValue(RunValueName, command, RegistryValueKind.String);
+            runKey.DeleteValue(LegacyRunValueName, throwOnMissingValue: false);
         }
     }
 }

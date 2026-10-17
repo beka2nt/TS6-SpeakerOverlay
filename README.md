@@ -31,8 +31,9 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 - **服务器选择**：同时连接多个服务器时，可选择展示来源，头像优先使用所选服务器上的头像。
 - **进出通知**：所选服务器成员上线、离线，以及当前频道进入、离开，可分别开关。
 - **外观设置**：字体、头像大小、列表间距、背景深度与整体缩放即时生效。
-- **鼠标穿透与定位**：通过托盘锁定、解锁、显示、隐藏悬浮窗；解锁后拖动定位。
+- **鼠标穿透与定位**：通过托盘锁定、解锁、显示、隐藏悬浮窗；解锁后拖动定位，重启后恢复锁定状态。
 - **随 TeamSpeak 启动**：可选的后台等待模式，Windows 登录后驻留托盘，检测到 TeamSpeak 启动时显示悬浮窗。
+- **随 Windows 启动**：也可选择登录后直接显示；同时开启两个启动选项时，优先等待 TeamSpeak。
 - **应用内日志**：查看最近记录、筛选错误、刷新或复制，也可打开日志文件夹。
 - **多语言**：简体中文、English、Français、Русский。
 
@@ -53,11 +54,15 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 
 “显示窗口”和“隐藏窗口”控制悬浮层可见性；“退出程序”会完全退出。设置更改会自动保存。
 
+锁定状态会随设置保存，下次启动时恢复鼠标穿透。
+
 ### 随 TeamSpeak 启动
 
 在“行为设置”开启“随 TeamSpeak 启动显示悬浮窗”，默认关闭。
 
-开启后，软件为当前 Windows 用户登记登录启动项，登录后先在托盘等待，检测到 `TeamSpeak.exe` 后显示悬浮窗。手动打开会直接显示已有窗口。关闭开关会撤销启动登记；从托盘完全退出后，本次后台等待也会停止。
+开启后，软件为当前 Windows 用户登记登录启动项，登录后先在托盘等待，检测到 `TeamSpeak.exe` 后显示悬浮窗。手动打开会直接显示已有窗口；从托盘完全退出后，本次后台等待也会停止。
+
+若希望 Windows 登录后立即显示，开启“随 Windows 登录直接显示”。当两个启动开关同时开启时，优先使用等待 TeamSpeak 的模式。关闭两个开关会移除本软件的登录启动登记。
 
 ## 日志与本地数据
 
@@ -71,7 +76,7 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 | 使用 Windows 当前用户保护机制（DPAPI）保存的授权密钥 | `apikey.txt` |
 | 运行记录与异常详情 | `logs/app-YYYY-MM-DD.log`，轮转文件带编号后缀 |
 
-单个日志文件达到 **3 MB** 后轮转，自动保留最近 **30 个文件**。单条超长记录会截断，`apiKey` 字段会脱敏。旧版程序目录中的配置与密钥会在需要时迁移到本地应用数据目录。
+单个日志文件达到 **3 MB** 后轮转，自动保留最近 **30 个文件**。单条超长记录会截断，`apiKey` 字段会脱敏。旧版 `%APPDATA%/TS6-SpeakerOverlay/` 及程序目录中的配置与密钥会在需要时迁移到本地应用数据目录，已有本地数据优先保留。
 
 ## 常见问题
 
@@ -130,8 +135,9 @@ TS6 Speaker Overlay is a Windows x64 voice overlay for TeamSpeak 6. The current 
 - Select a connected server and prefer its server-specific avatars.
 - Independent server connection/disconnection and current-channel join/leave notifications.
 - Adjustable font size, avatar size, spacing, opacity and scale.
-- Tray controls for positioning, click-through, visibility and exit.
+- Tray controls for positioning, click-through, visibility and exit; lock state persists across launches.
 - Optional Windows sign-in startup that waits until TeamSpeak launches.
+- Optional immediate display at Windows sign-in; the TeamSpeak waiting option takes priority if both are enabled.
 - In-app logs with error filtering, refresh and copy.
 - Chinese, English, French and Russian interfaces.
 
@@ -146,7 +152,7 @@ The default port is `5899`; Settings offers `5899 / 6100 / 6200 / 7000`. Use the
 
 Unlock from the tray to drag the overlay, then lock it for click-through. `Ctrl+L` also works when the overlay has focus. Changes save automatically.
 
-Enable **Show overlay when TeamSpeak starts** to register current-user Windows sign-in startup. The app waits in the tray and shows the overlay when `TeamSpeak.exe` is detected. Disabling the option removes that registration. Exiting the app stops the current background wait.
+Enable **Show overlay when TeamSpeak starts** to register current-user Windows sign-in startup. The app waits in the tray and shows the overlay when `TeamSpeak.exe` is detected. Alternatively, enable **Show at Windows sign-in** to show immediately. The TeamSpeak waiting option takes priority when both are enabled. Turn both options off to remove the registration. Exiting the app stops the current background wait.
 
 ### Logs and builds
 

@@ -79,9 +79,9 @@ namespace TS6_SpeakerOverlay
 
                 _config = config;
                 config.PropertyChanged += Config_PropertyChanged;
-                if (config.AutoOpenWithTeamSpeak)
+                if (config.AutoOpenWithTeamSpeak || config.AutoStart)
                 {
-                    try { AutoOpenService.SetEnabled(true); }
+                    try { AutoOpenService.SetEnabled(true, config.AutoOpenWithTeamSpeak); }
                     catch (Exception ex) { AppLogger.Error("Unable to update the TeamSpeak startup entry.", ex); }
                 }
 
@@ -119,18 +119,22 @@ namespace TS6_SpeakerOverlay
 
         private void Config_PropertyChanged(object? sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName != nameof(AppConfig.AutoOpenWithTeamSpeak) ||
+            if ((e.PropertyName != nameof(AppConfig.AutoOpenWithTeamSpeak) && e.PropertyName != nameof(AppConfig.AutoStart)) ||
                 _config == null || _revertingAutoOpen) return;
 
             try
             {
-                AutoOpenService.SetEnabled(_config.AutoOpenWithTeamSpeak);
+                AutoOpenService.SetEnabled(_config.AutoOpenWithTeamSpeak || _config.AutoStart, _config.AutoOpenWithTeamSpeak);
             }
             catch (Exception ex)
             {
                 AppLogger.Error("Unable to change the TeamSpeak startup entry.", ex);
                 _revertingAutoOpen = true;
-                try { _config.AutoOpenWithTeamSpeak = !_config.AutoOpenWithTeamSpeak; }
+                try
+                {
+                    if (e.PropertyName == nameof(AppConfig.AutoStart)) _config.AutoStart = !_config.AutoStart;
+                    else _config.AutoOpenWithTeamSpeak = !_config.AutoOpenWithTeamSpeak;
+                }
                 finally { _revertingAutoOpen = false; }
                 System.Windows.MessageBox.Show(
                     TryFindResource("Lang_AutoOpen_Error") as string ?? "Unable to change startup settings. See logs for details.",

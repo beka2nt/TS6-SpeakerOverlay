@@ -36,6 +36,7 @@ namespace TS6_SpeakerOverlay.ViewModels
         {
             Config = ConfigService.Load();
             LanguageHelper.SetLanguage(Config.Language); 
+            IsOverlayLocked = Config.IsLocked;
 
             _tsService = new Ts6Service(Config.RemoteAppPort);
             
@@ -298,6 +299,11 @@ namespace TS6_SpeakerOverlay.ViewModels
             IsOverlayLocked = !IsOverlayLocked;
             if (IsOverlayLocked) WindowHelper.EnableClickThrough(window);
             else WindowHelper.DisableClickThrough(window);
+        }
+
+        partial void OnIsOverlayLockedChanged(bool value)
+        {
+            Config.IsLocked = value;
         }
         
         public void SaveConfig() => ConfigService.Save(Config);

@@ -28,6 +28,8 @@
     <s:String x:Key="Lang_Notify_ChannelLeft">{0} a quitté votre salon</s:String>
     <s:String x:Key="Lang_ShowOnlyTalking">Mode vocal style Discord</s:String>
     <s:String x:Key="Lang_ShowOnlyTalking_Description">Masqué en silence ; affiche uniquement les personnes qui parlent.</s:String>
+    <s:String x:Key="Lang_AutoStart">Afficher à la connexion Windows</s:String>
+    <s:String x:Key="Lang_AutoStart_Description">Affichage immédiat à la connexion. L'option TeamSpeak ci-dessous est prioritaire.</s:String>
     <s:String x:Key="Lang_AutoOpenWithTeamSpeak">Afficher avec TeamSpeak</s:String>
     <s:String x:Key="Lang_AutoOpenWithTeamSpeak_Description">Attend dans la zone de notification après la connexion Windows, puis s'affiche au lancement de TeamSpeak.</s:String>
     <s:String x:Key="Lang_AutoOpen_Error">Impossible de modifier le démarrage automatique. Consultez les journaux.</s:String>

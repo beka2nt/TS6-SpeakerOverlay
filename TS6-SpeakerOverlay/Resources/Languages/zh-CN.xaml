@@ -28,6 +28,8 @@
     <s:String x:Key="Lang_Notify_ChannelLeft">{0} 离开当前频道</s:String>
     <s:String x:Key="Lang_ShowOnlyTalking">Discord 式说话模式</s:String>
     <s:String x:Key="Lang_ShowOnlyTalking_Description">无人说话时隐藏；有人开口时只显示正在说话的人。</s:String>
+    <s:String x:Key="Lang_AutoStart">随 Windows 登录直接显示</s:String>
+    <s:String x:Key="Lang_AutoStart_Description">登录后立即显示；同时开启下方选项时，优先等待 TeamSpeak。</s:String>
     <s:String x:Key="Lang_AutoOpenWithTeamSpeak">随 TeamSpeak 启动显示悬浮窗</s:String>
     <s:String x:Key="Lang_AutoOpenWithTeamSpeak_Description">登录 Windows 后在托盘等待；TeamSpeak 启动时自动显示。</s:String>
     <s:String x:Key="Lang_AutoOpen_Error">无法更改自启动设置，请查看日志。</s:String>

@@ -66,6 +66,7 @@ namespace TS6_SpeakerOverlay.Services
             string currentPath = AppDataPaths.GetFilePath(FileName);
             string[] legacyPaths =
             {
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "TS6-SpeakerOverlay", FileName),
                 Path.Combine(AppContext.BaseDirectory, FileName),
                 Path.Combine(Environment.CurrentDirectory, FileName)
             };
