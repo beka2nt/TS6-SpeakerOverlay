@@ -4,7 +4,16 @@ obj/
 
 # 忽略用户配置和密钥 (关键!)
 apikey.txt
+config.json
+*.tmp
 *.user
+
+# Local packages, build artifacts, and runtime data
+/artifacts/
+/outputs/
+publish_output/
+logs/
+avatars/
 
 # 忽略 VS 临时文件
 .vs/

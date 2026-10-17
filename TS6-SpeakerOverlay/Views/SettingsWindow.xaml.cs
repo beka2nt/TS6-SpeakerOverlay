@@ -1,8 +1,11 @@
+using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls; // 需要引用 ComboBox
 using System.Windows.Input;
 using TS6_SpeakerOverlay.ViewModels;
 using TS6_SpeakerOverlay.Helpers; // 引用 LanguageHelper
+using TS6_SpeakerOverlay.Services;
 
 namespace TS6_SpeakerOverlay.Views
 {
@@ -39,8 +42,8 @@ namespace TS6_SpeakerOverlay.Views
         private void BtnReset_Click(object sender, RoutedEventArgs e)
         {
             var result = System.Windows.MessageBox.Show(
-                "Reset all settings to default?", 
-                "Confirm", 
+                GetResourceText("Lang_Reset_Confirm_Message", "Reset all settings to default?"),
+                GetResourceText("Lang_Reset_Confirm_Title", "Confirm"),
                 System.Windows.MessageBoxButton.YesNo, 
                 System.Windows.MessageBoxImage.Question
             );
@@ -50,6 +53,7 @@ namespace TS6_SpeakerOverlay.Views
                 _viewModel.Config.ResetDefaults();
                 // 重置后也要重新应用语言（因为默认可能是中文）
                 LanguageHelper.SetLanguage(_viewModel.Config.Language);
+                _viewModel.ApplyConfiguredServerSelection();
             }
         }
 
@@ -70,6 +74,71 @@ namespace TS6_SpeakerOverlay.Views
                     LanguageHelper.SetLanguage(langCode);
                 }
             }
+        }
+
+        private void BtnOpenLogs_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = AppLogger.LogDirectoryPath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("Failed to open the logs directory from settings.", ex);
+                System.Windows.MessageBox.Show(
+                    GetResourceText("Lang_Log_OpenFailed", "Unable to open the logs directory."),
+                    GetResourceText("Lang_Diagnostics", "Diagnostics"),
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        private void BtnViewLogs_Click(object sender, RoutedEventArgs e)
+        {
+            new LogViewerWindow { Owner = this }.ShowDialog();
+        }
+
+        private void TalkingColorPreset_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is System.Windows.Controls.Button { Tag: string color })
+                _viewModel.Config.TalkingColor = color;
+        }
+
+        private void TalkingColorCustom_Click(object sender, RoutedEventArgs e)
+        {
+            System.Drawing.Color initialColor;
+            try
+            {
+                initialColor = System.Drawing.ColorTranslator.FromHtml(_viewModel.Config.TalkingColor);
+            }
+            catch
+            {
+                initialColor = System.Drawing.ColorTranslator.FromHtml("#19B889");
+            }
+
+            using var dialog = new System.Windows.Forms.ColorDialog
+            {
+                AllowFullOpen = true,
+                FullOpen = true,
+                Color = initialColor
+            };
+            var owner = new ColorDialogOwner(new System.Windows.Interop.WindowInteropHelper(this).Handle);
+            if (dialog.ShowDialog(owner) == System.Windows.Forms.DialogResult.OK)
+                _viewModel.Config.TalkingColor = $"#{dialog.Color.R:X2}{dialog.Color.G:X2}{dialog.Color.B:X2}";
+        }
+
+        private sealed class ColorDialogOwner(IntPtr handle) : System.Windows.Forms.IWin32Window
+        {
+            public IntPtr Handle { get; } = handle;
+        }
+
+        private static string GetResourceText(string key, string fallback)
+        {
+            return System.Windows.Application.Current?.TryFindResource(key) as string ?? fallback;
         }
     }
 }

@@ -24,6 +24,10 @@ namespace TS6_SpeakerOverlay
         public MainWindow()
         {
             InitializeComponent();
+            _trayIcon = new TrayIconHelper(
+                this, GetIsLocked, Lock, Unlock, OpenSettings, RefreshData,
+                (trayIcon) => _trayIcon = trayIcon
+            );
             this.Loaded += MainWindow_Loaded;
             this.Closing += MainWindow_Closing;
             this.KeyDown += MainWindow_KeyDown; 
@@ -41,22 +45,19 @@ namespace TS6_SpeakerOverlay
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            _trayIcon = new TrayIconHelper(
-                this, GetIsLocked, Lock, Unlock, OpenSettings, RefreshData,
-                (trayIcon) => _trayIcon = trayIcon
-            );
-
             // 手动加载位置
             if (DataContext is MainViewModel vm)
             {
                 this.Left = vm.Config.WindowLeft;
                 this.Top = vm.Config.WindowTop;
+                EnsureWindowIsVisible();
             }
         }
 
         private void MainWindow_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
             SaveWindowPosition();
+            if (DataContext is MainViewModel vm) vm.SaveConfig();
             if (_trayIcon == null) return;
             e.Cancel = true;
             this.Hide();
@@ -125,6 +126,21 @@ namespace TS6_SpeakerOverlay
             }
         }
 
+        private void EnsureWindowIsVisible()
+        {
+            const double minimumVisibleArea = 48;
+            double width = ActualWidth > 0 ? ActualWidth : Width;
+            double height = ActualHeight > 0 ? ActualHeight : Height;
+
+            double minimumLeft = SystemParameters.VirtualScreenLeft - width + minimumVisibleArea;
+            double maximumLeft = SystemParameters.VirtualScreenLeft + SystemParameters.VirtualScreenWidth - minimumVisibleArea;
+            double minimumTop = SystemParameters.VirtualScreenTop - height + minimumVisibleArea;
+            double maximumTop = SystemParameters.VirtualScreenTop + SystemParameters.VirtualScreenHeight - minimumVisibleArea;
+
+            Left = double.IsFinite(Left) ? Math.Clamp(Left, minimumLeft, maximumLeft) : SystemParameters.VirtualScreenLeft + 50;
+            Top = double.IsFinite(Top) ? Math.Clamp(Top, minimumTop, maximumTop) : SystemParameters.VirtualScreenTop + 50;
+        }
+
         private void OpenSettings()
         {
             if (DataContext is MainViewModel vm)
@@ -132,6 +148,13 @@ namespace TS6_SpeakerOverlay
                 var settingsWindow = new Views.SettingsWindow(vm);
                 settingsWindow.Show();
             }
+        }
+
+        public void ShowOverlay()
+        {
+            Show();
+            Activate();
+            _trayIcon?.UpdateTrayIcon();
         }
 
         private void MainWindow_KeyDown(object sender, KeyEventArgs e)
@@ -175,7 +198,9 @@ namespace TS6_SpeakerOverlay
 
         protected override void OnClosed(EventArgs e)
         {
+            _topmostTimer.Stop();
             _trayIcon?.Dispose();
+            if (DataContext is MainViewModel vm) vm.Dispose();
             base.OnClosed(e);
         }
     }

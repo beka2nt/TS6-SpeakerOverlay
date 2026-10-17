@@ -1,7 +1,11 @@
 using System;
 using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.Drawing.Imaging;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Forms;
+using TS6_SpeakerOverlay.Services;
 using Application = System.Windows.Application;
 
 namespace TS6_SpeakerOverlay.Helpers
@@ -9,6 +13,7 @@ namespace TS6_SpeakerOverlay.Helpers
     public class TrayIconHelper : IDisposable
     {
         private NotifyIcon? _notifyIcon;
+        private ContextMenuStrip? _contextMenu;
         private readonly Window _mainWindow;
         private readonly Func<bool> _getIsLocked;
         private readonly Action _lockAction;
@@ -18,9 +23,15 @@ namespace TS6_SpeakerOverlay.Helpers
         private readonly Action<TrayIconHelper?> _setTrayIconRef;
         private bool _isExiting;
 
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool DestroyIcon(IntPtr hIcon);
+
         // 菜单项引用
+        private ToolStripMenuItem? _statusLabel;
         private ToolStripMenuItem? _settingsMenuItem;
         private ToolStripMenuItem? _refreshMenuItem; // [新增]
+        private ToolStripMenuItem? _openLogsMenuItem;
         private ToolStripMenuItem? _showMenuItem;
         private ToolStripMenuItem? _hideMenuItem;
         private ToolStripMenuItem? _lockMenuItem;
@@ -60,45 +71,110 @@ namespace TS6_SpeakerOverlay.Helpers
                 }
             };
 
-            var contextMenu = new ContextMenuStrip();
+            _contextMenu = new ContextMenuStrip
+            {
+                BackColor = Color.FromArgb(246, 250, 249),
+                ForeColor = Color.FromArgb(22, 50, 58),
+                Font = new System.Drawing.Font("Microsoft YaHei UI", 9.5F, System.Drawing.FontStyle.Regular, GraphicsUnit.Point),
+                Padding = new Padding(8, 6, 8, 6),
+                ShowImageMargin = true,
+                ImageScalingSize = new System.Drawing.Size(18, 18),
+                Renderer = new ModernTrayMenuRenderer(),
+                DropShadowEnabled = true,
+                MinimumSize = new System.Drawing.Size(250, 0)
+            };
 
-            _settingsMenuItem = new ToolStripMenuItem("Settings");
+            _statusLabel = CreateMenuItem("TS6 Speaker Overlay", MenuGlyph.Status);
+            _statusLabel.ForeColor = Color.FromArgb(22, 50, 58);
+            _statusLabel.Font = new System.Drawing.Font("Microsoft YaHei UI", 9.5F, System.Drawing.FontStyle.Bold, GraphicsUnit.Point);
+            _statusLabel.Image?.Dispose();
+            _statusLabel.Image = CreateMenuGlyph(MenuGlyph.Status, Color.FromArgb(25, 184, 137));
+            _statusLabel.Tag = "header";
+
+            _settingsMenuItem = CreateMenuItem("Settings", MenuGlyph.Settings);
             _settingsMenuItem.Click += (_, _) => _openSettingsAction.Invoke();
 
-            // [新增] 刷新菜单
-            _refreshMenuItem = new ToolStripMenuItem("Refresh");
+            _refreshMenuItem = CreateMenuItem("Refresh", MenuGlyph.Refresh);
             _refreshMenuItem.Click += (_, _) => _refreshAction.Invoke();
 
-            _showMenuItem = new ToolStripMenuItem("Show");
+            _openLogsMenuItem = CreateMenuItem("Open Logs Folder", MenuGlyph.Logs);
+            _openLogsMenuItem.Click += (_, _) => OpenLogsFolder();
+
+            _showMenuItem = CreateMenuItem("Show", MenuGlyph.Window);
             _showMenuItem.Click += (_, _) => { ShowWindow(); UpdateTrayIcon(); };
 
-            _hideMenuItem = new ToolStripMenuItem("Hide");
+            _hideMenuItem = CreateMenuItem("Hide", MenuGlyph.Window);
             _hideMenuItem.Click += (_, _) => { HideWindow(); UpdateTrayIcon(); };
 
-            _lockMenuItem = new ToolStripMenuItem("Lock");
+            _lockMenuItem = CreateMenuItem("Lock", MenuGlyph.Lock);
             _lockMenuItem.Click += (_, _) => { _lockAction.Invoke(); UpdateTrayIcon(); };
 
-            _unlockMenuItem = new ToolStripMenuItem("Unlock");
+            _unlockMenuItem = CreateMenuItem("Unlock", MenuGlyph.Unlock);
             _unlockMenuItem.Click += (_, _) => { _unlockAction.Invoke(); UpdateTrayIcon(); };
 
-            _exitMenuItem = new ToolStripMenuItem("Exit");
+            _exitMenuItem = CreateMenuItem("Exit", MenuGlyph.Exit, isDanger: true);
             _exitMenuItem.Click += (_, _) => ExitApplication();
 
-            contextMenu.Items.Add(_settingsMenuItem);
-            contextMenu.Items.Add(_refreshMenuItem); // 加入菜单
-            contextMenu.Items.Add(new ToolStripSeparator());
-            contextMenu.Items.Add(_showMenuItem);
-            contextMenu.Items.Add(_hideMenuItem);
-            contextMenu.Items.Add(new ToolStripSeparator());
-            contextMenu.Items.Add(_lockMenuItem);
-            contextMenu.Items.Add(_unlockMenuItem);
-            contextMenu.Items.Add(new ToolStripSeparator());
-            contextMenu.Items.Add(_exitMenuItem);
+            _contextMenu.Items.Add(_statusLabel);
+            _contextMenu.Items.Add(CreateSeparator());
+            _contextMenu.Items.Add(_settingsMenuItem);
+            _contextMenu.Items.Add(_refreshMenuItem);
+            _contextMenu.Items.Add(_openLogsMenuItem);
+            _contextMenu.Items.Add(CreateSeparator());
+            _contextMenu.Items.Add(_showMenuItem);
+            _contextMenu.Items.Add(_hideMenuItem);
+            _contextMenu.Items.Add(CreateSeparator());
+            _contextMenu.Items.Add(_lockMenuItem);
+            _contextMenu.Items.Add(_unlockMenuItem);
+            _contextMenu.Items.Add(CreateSeparator());
+            _contextMenu.Items.Add(_exitMenuItem);
 
-            contextMenu.Opening += (_, _) => UpdateMenuText();
+            _contextMenu.Opening += (_, _) =>
+            {
+                UpdateTrayIcon();
+                ApplyRoundedMenuRegion();
+            };
 
-            _notifyIcon.ContextMenuStrip = contextMenu;
+            _notifyIcon.ContextMenuStrip = _contextMenu;
             UpdateMenuText();
+        }
+
+        private static ToolStripMenuItem CreateMenuItem(string text, MenuGlyph glyph, bool isDanger = false)
+        {
+            return new ToolStripMenuItem(text)
+            {
+                AutoSize = true,
+                ForeColor = isDanger ? Color.FromArgb(183, 61, 78) : Color.FromArgb(22, 50, 58),
+                Image = CreateMenuGlyph(
+                    glyph,
+                    isDanger ? Color.FromArgb(183, 61, 78) : Color.FromArgb(92, 120, 127)),
+                ImageScaling = ToolStripItemImageScaling.None,
+                ImageAlign = ContentAlignment.MiddleCenter,
+                TextAlign = ContentAlignment.MiddleLeft,
+                TextImageRelation = TextImageRelation.ImageBeforeText,
+                Padding = new Padding(8, 6, 12, 6),
+                Margin = new Padding(0, 1, 0, 1),
+                Tag = isDanger ? "danger" : null
+            };
+        }
+
+        private static ToolStripSeparator CreateSeparator()
+        {
+            return new ToolStripSeparator
+            {
+                Margin = new Padding(0, 5, 0, 5)
+            };
+        }
+
+        private void ApplyRoundedMenuRegion()
+        {
+            if (_contextMenu == null || _contextMenu.Width <= 0 || _contextMenu.Height <= 0) return;
+
+            using var path = CreateRoundedRectanglePath(
+                new Rectangle(0, 0, _contextMenu.Width, _contextMenu.Height), 10);
+            Region? previousRegion = _contextMenu.Region;
+            _contextMenu.Region = new Region(path);
+            previousRegion?.Dispose();
         }
 
         private void UpdateMenuText()
@@ -108,6 +184,7 @@ namespace TS6_SpeakerOverlay.Helpers
             _settingsMenuItem.Text = LanguageHelper.GetString("Lang_Tray_Settings");
             // 刷新按钮的多语言 key，如果没加翻译就默认显示 Refresh
             _refreshMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Refresh"); 
+            _openLogsMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_OpenLogs");
             _showMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Show");
             _hideMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Hide");
             _lockMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Lock");
@@ -117,17 +194,49 @@ namespace TS6_SpeakerOverlay.Helpers
 
         private Icon CreateIcon(Color color)
         {
-            var bitmap = new Bitmap(16, 16);
+            // 使用 2x 画布绘制浅色图标，再由系统缩放到托盘尺寸，边缘会更清晰。
+            using var bitmap = new Bitmap(32, 32);
             using (var g = Graphics.FromImage(bitmap))
             {
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 g.Clear(Color.Transparent);
-                using (var brush = new SolidBrush(color))
+                g.ScaleTransform(2F, 2F);
+
+                using GraphicsPath tilePath = CreateRoundedRectanglePath(new Rectangle(1, 1, 14, 14), 3);
+                using var tileBrush = new SolidBrush(Color.FromArgb(244, 248, 251));
+                using var tileBorder = new Pen(Color.FromArgb(188, 211, 226), 0.75F);
+                g.FillPath(tileBrush, tilePath);
+                g.DrawPath(tileBorder, tilePath);
+
+                using GraphicsPath bubblePath = CreateRoundedRectanglePath(new Rectangle(3, 3, 10, 9), 3);
+                using var outlinePen = new Pen(Color.FromArgb(25, 50, 71), 1.2F)
                 {
-                    g.FillEllipse(brush, 2, 2, 12, 12);
-                }
+                    StartCap = LineCap.Round,
+                    EndCap = LineCap.Round,
+                    LineJoin = LineJoin.Round
+                };
+                g.DrawPath(outlinePen, bubblePath);
+                g.DrawLines(outlinePen, [new PointF(5.8F, 11.5F), new PointF(4.2F, 13.3F), new PointF(7.2F, 11.8F)]);
+
+                using var statusBrush = new SolidBrush(color);
+                using GraphicsPath shortBar = CreateRoundedRectanglePath(new Rectangle(5, 6, 2, 4), 1);
+                using GraphicsPath tallBar = CreateRoundedRectanglePath(new Rectangle(7, 5, 2, 6), 1);
+                using GraphicsPath mediumBar = CreateRoundedRectanglePath(new Rectangle(10, 6, 2, 4), 1);
+                g.FillPath(statusBrush, shortBar);
+                g.FillPath(statusBrush, tallBar);
+                g.FillPath(statusBrush, mediumBar);
             }
-            return Icon.FromHandle(bitmap.GetHicon());
+            IntPtr iconHandle = bitmap.GetHicon();
+            try
+            {
+                using Icon temporaryIcon = Icon.FromHandle(iconHandle);
+                return (Icon)temporaryIcon.Clone();
+            }
+            finally
+            {
+                DestroyIcon(iconHandle);
+            }
         }
 
         public void UpdateTrayIcon()
@@ -158,20 +267,223 @@ namespace TS6_SpeakerOverlay.Helpers
 
             _notifyIcon.Text = "TS6 Speaker Overlay" + statusKey;
 
+            if (_statusLabel != null)
+            {
+                Image? oldStatusImage = _statusLabel.Image;
+                _statusLabel.Image = CreateMenuGlyph(MenuGlyph.Status, iconColor);
+                oldStatusImage?.Dispose();
+                _statusLabel.ToolTipText = _notifyIcon.Text;
+            }
+
             var oldIcon = _notifyIcon.Icon;
             _notifyIcon.Icon = CreateIcon(iconColor);
             oldIcon?.Dispose();
 
-            if (_showMenuItem != null) _showMenuItem.Enabled = !isVisible;
-            if (_hideMenuItem != null) _hideMenuItem.Enabled = isVisible;
-            if (_lockMenuItem != null) _lockMenuItem.Enabled = !isLocked;
-            if (_unlockMenuItem != null) _unlockMenuItem.Enabled = isLocked;
+            if (_showMenuItem != null) _showMenuItem.Visible = !isVisible;
+            if (_hideMenuItem != null) _hideMenuItem.Visible = isVisible;
+            if (_lockMenuItem != null) _lockMenuItem.Visible = !isLocked;
+            if (_unlockMenuItem != null) _unlockMenuItem.Visible = isLocked;
             
             UpdateMenuText();
         }
 
         private void ShowWindow() { _mainWindow.Show(); _mainWindow.Activate(); }
         private void HideWindow() => _mainWindow.Hide();
+
+        private void OpenLogsFolder()
+        {
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = AppLogger.LogDirectoryPath,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("Failed to open the logs folder.", ex);
+                System.Windows.MessageBox.Show(
+                    LanguageHelper.GetString("Lang_Log_OpenFailed"),
+                    "TS6 Speaker Overlay",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error);
+            }
+        }
+
+        private static Bitmap CreateMenuGlyph(MenuGlyph glyph, Color color)
+        {
+            // Draw at 3x and reduce once, so small tray-menu strokes do not look jagged.
+            using var master = new Bitmap(54, 54, PixelFormat.Format32bppPArgb);
+            using Graphics graphics = Graphics.FromImage(master);
+            graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            graphics.Clear(Color.Transparent);
+            graphics.ScaleTransform(3F, 3F);
+
+            using var pen = new Pen(color, 1.8F)
+            {
+                StartCap = LineCap.Round,
+                EndCap = LineCap.Round,
+                LineJoin = LineJoin.Round
+            };
+            using var brush = new SolidBrush(color);
+
+            switch (glyph)
+            {
+                case MenuGlyph.Status:
+                    graphics.FillEllipse(brush, 5F, 5F, 8F, 8F);
+                    break;
+                case MenuGlyph.Settings:
+                    graphics.DrawLine(pen, 3F, 5F, 15F, 5F);
+                    graphics.DrawLine(pen, 3F, 9F, 15F, 9F);
+                    graphics.DrawLine(pen, 3F, 13F, 15F, 13F);
+                    graphics.FillEllipse(brush, 6F, 3F, 4F, 4F);
+                    graphics.FillEllipse(brush, 11F, 7F, 4F, 4F);
+                    graphics.FillEllipse(brush, 5F, 11F, 4F, 4F);
+                    break;
+                case MenuGlyph.Refresh:
+                    graphics.DrawArc(pen, 3F, 3F, 12F, 12F, 35F, 285F);
+                    graphics.FillPolygon(brush, new[] { new PointF(13.5F, 2F), new PointF(16F, 5.5F), new PointF(11.5F, 5.5F) });
+                    break;
+                case MenuGlyph.Logs:
+                    graphics.DrawRectangle(pen, 4F, 2.5F, 10F, 13F);
+                    graphics.DrawLine(pen, 6.5F, 6F, 11.5F, 6F);
+                    graphics.DrawLine(pen, 6.5F, 9F, 11.5F, 9F);
+                    graphics.DrawLine(pen, 6.5F, 12F, 10F, 12F);
+                    break;
+                case MenuGlyph.Window:
+                    graphics.DrawRectangle(pen, 2.5F, 3.5F, 13F, 11F);
+                    graphics.DrawLine(pen, 3F, 7F, 15F, 7F);
+                    graphics.FillEllipse(brush, 4.5F, 5F, 1.5F, 1.5F);
+                    break;
+                case MenuGlyph.Lock:
+                    graphics.DrawArc(pen, 5F, 2F, 8F, 9F, 180F, -180F);
+                    graphics.DrawRectangle(pen, 4F, 8F, 10F, 7F);
+                    graphics.FillEllipse(brush, 8F, 10.5F, 2F, 2F);
+                    break;
+                case MenuGlyph.Unlock:
+                    graphics.DrawArc(pen, 7F, 2F, 7F, 9F, 185F, -145F);
+                    graphics.DrawRectangle(pen, 4F, 8F, 10F, 7F);
+                    graphics.FillEllipse(brush, 8F, 10.5F, 2F, 2F);
+                    break;
+                case MenuGlyph.Exit:
+                    graphics.DrawLine(pen, 8F, 3F, 4F, 3F);
+                    graphics.DrawLine(pen, 4F, 3F, 4F, 15F);
+                    graphics.DrawLine(pen, 4F, 15F, 8F, 15F);
+                    graphics.DrawLine(pen, 7F, 9F, 15F, 9F);
+                    graphics.DrawLine(pen, 12F, 6F, 15F, 9F);
+                    graphics.DrawLine(pen, 15F, 9F, 12F, 12F);
+                    break;
+            }
+
+            graphics.Flush();
+            graphics.Dispose();
+            var bitmap = new Bitmap(18, 18, PixelFormat.Format32bppPArgb);
+            using (Graphics reduced = Graphics.FromImage(bitmap))
+            {
+                reduced.CompositingMode = CompositingMode.SourceCopy;
+                reduced.CompositingQuality = CompositingQuality.HighQuality;
+                reduced.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                reduced.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                reduced.DrawImage(master, new Rectangle(0, 0, 18, 18), new Rectangle(0, 0, 54, 54), GraphicsUnit.Pixel);
+            }
+            return bitmap;
+        }
+
+        private static GraphicsPath CreateRoundedRectanglePath(Rectangle bounds, int radius)
+        {
+            int diameter = radius * 2;
+            var path = new GraphicsPath();
+            path.AddArc(bounds.Left, bounds.Top, diameter, diameter, 180, 90);
+            path.AddArc(bounds.Right - diameter, bounds.Top, diameter, diameter, 270, 90);
+            path.AddArc(bounds.Right - diameter, bounds.Bottom - diameter, diameter, diameter, 0, 90);
+            path.AddArc(bounds.Left, bounds.Bottom - diameter, diameter, diameter, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
+        private enum MenuGlyph
+        {
+            Status,
+            Settings,
+            Refresh,
+            Logs,
+            Window,
+            Lock,
+            Unlock,
+            Exit
+        }
+
+        private sealed class ModernTrayMenuRenderer : ToolStripProfessionalRenderer
+        {
+            public ModernTrayMenuRenderer() : base(new ModernTrayColorTable())
+            {
+                RoundedEdges = true;
+            }
+
+            protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
+            {
+                if (!e.Item.Selected || Equals(e.Item.Tag, "header"))
+                {
+                    base.OnRenderMenuItemBackground(e);
+                    return;
+                }
+
+                Color background = Equals(e.Item.Tag, "danger")
+                    ? Color.FromArgb(251, 232, 234)
+                    : Color.FromArgb(222, 244, 236);
+                using var brush = new SolidBrush(background);
+                using GraphicsPath path = CreateRoundedRectanglePath(
+                    new Rectangle(3, 1, e.Item.Width - 6, e.Item.Height - 2), 6);
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                e.Graphics.FillPath(brush, path);
+            }
+
+            protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
+            {
+                using var pen = new Pen(Color.FromArgb(214, 228, 230));
+                int y = e.Item.Height / 2;
+                e.Graphics.DrawLine(pen, 39, y, e.Item.Width - 10, y);
+            }
+
+            protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
+            {
+                TextRenderer.DrawText(e.Graphics, e.Text, e.TextFont, e.TextRectangle,
+                    e.Item.ForeColor,
+                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
+                    TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix |
+                    TextFormatFlags.NoPadding | TextFormatFlags.PreserveGraphicsClipping);
+            }
+
+            protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
+            {
+                using var pen = new Pen(Color.FromArgb(200, 218, 220));
+                using GraphicsPath path = CreateRoundedRectanglePath(
+                    new Rectangle(0, 0, e.ToolStrip.Width - 1, e.ToolStrip.Height - 1), 10);
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                e.Graphics.DrawPath(pen, path);
+            }
+        }
+
+        private sealed class ModernTrayColorTable : ProfessionalColorTable
+        {
+            private static readonly Color Background = Color.FromArgb(246, 250, 249);
+            private static readonly Color Selected = Color.FromArgb(222, 244, 236);
+            private static readonly Color Border = Color.FromArgb(200, 218, 220);
+
+            public override Color ToolStripDropDownBackground => Background;
+            public override Color ImageMarginGradientBegin => Background;
+            public override Color ImageMarginGradientMiddle => Background;
+            public override Color ImageMarginGradientEnd => Background;
+            public override Color MenuBorder => Border;
+            public override Color MenuItemBorder => Selected;
+            public override Color MenuItemSelected => Selected;
+            public override Color MenuItemSelectedGradientBegin => Selected;
+            public override Color MenuItemSelectedGradientEnd => Selected;
+            public override Color SeparatorDark => Color.FromArgb(214, 228, 230);
+            public override Color SeparatorLight => Color.FromArgb(214, 228, 230);
+        }
 
         private void ExitApplication()
         {
@@ -187,9 +499,15 @@ namespace TS6_SpeakerOverlay.Helpers
             if (_notifyIcon != null)
             {
                 _notifyIcon.Visible = false;
+                var icon = _notifyIcon.Icon;
+                _notifyIcon.Icon = null;
+                icon?.Dispose();
                 _notifyIcon.Dispose();
                 _notifyIcon = null;
             }
+
+            _contextMenu?.Dispose();
+            _contextMenu = null;
         }
     }
 }

@@ -16,7 +16,6 @@ namespace TS6_SpeakerOverlay.Helpers
         private const uint SWP_NOSIZE = 0x0001;
         private const uint SWP_NOMOVE = 0x0002;
         private const uint SWP_NOACTIVATE = 0x0010;
-        private const uint SWP_SHOWWINDOW = 0x0040;
 
         [DllImport("user32.dll")]
         private static extern int GetWindowLong(IntPtr hwnd, int index);
@@ -47,11 +46,13 @@ namespace TS6_SpeakerOverlay.Helpers
         // 新增：暴力置顶方法
         public static void ForceTopMost(Window window)
         {
+            if (!window.IsVisible) return;
+
             var helper = new WindowInteropHelper(window);
             if (helper.Handle == IntPtr.Zero) return;
 
             // 强制将窗口置于 Z 轴最顶层，且不改变大小和位置，不激活窗口
-            SetWindowPos(helper.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_SHOWWINDOW);
+            SetWindowPos(helper.Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
         }
     }
 }

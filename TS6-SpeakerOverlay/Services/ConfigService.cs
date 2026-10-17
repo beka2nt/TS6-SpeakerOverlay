@@ -8,13 +8,27 @@ namespace TS6_SpeakerOverlay.Services
 {
     public static class ConfigService
     {
-        private const string CONFIG_FILE = "config.json";
+        private const string ConfigFileName = "config.json";
         private static AppConfig? _currentConfig;
 
         public static AppConfig Load()
         {
+            if (_currentConfig != null) return _currentConfig;
+
             AppConfig config;
-            if (!File.Exists(CONFIG_FILE))
+            string configPath;
+            try
+            {
+                configPath = AppDataPaths.GetFilePath(ConfigFileName);
+                AppDataPaths.MigrateLegacyFile(ConfigFileName, configPath);
+            }
+            catch (Exception ex)
+            {
+                AppLogger.Error("Failed to initialize the configuration directory.", ex);
+                configPath = Path.Combine(AppContext.BaseDirectory, ConfigFileName);
+            }
+
+            if (!File.Exists(configPath))
             {
                 config = new AppConfig();
             }
@@ -22,12 +36,13 @@ namespace TS6_SpeakerOverlay.Services
             {
                 try
                 {
-                    string json = File.ReadAllText(CONFIG_FILE);
+                    string json = File.ReadAllText(configPath);
                     config = JsonSerializer.Deserialize<AppConfig>(json) ?? new AppConfig();
                 }
-                catch
+                catch (Exception ex)
                 {
-                    config = new AppConfig(); // 解析失败用默认
+                    AppLogger.Error("Failed to load the configuration. Defaults will be used.", ex);
+                    config = new AppConfig();
                 }
             }
 
@@ -53,11 +68,14 @@ namespace TS6_SpeakerOverlay.Services
             {
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 string json = JsonSerializer.Serialize(config, options);
-                File.WriteAllText(CONFIG_FILE, json);
+                string configPath = AppDataPaths.GetFilePath(ConfigFileName);
+                string temporaryPath = configPath + ".tmp";
+                File.WriteAllText(temporaryPath, json);
+                File.Move(temporaryPath, configPath, overwrite: true);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[Config] Save failed: {ex.Message}");
+                AppLogger.Error("Failed to save the configuration.", ex);
             }
         }
     }

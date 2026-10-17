@@ -1,6 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace TS6_SpeakerOverlay.Models
 {
@@ -11,7 +13,44 @@ namespace TS6_SpeakerOverlay.Models
         private string _name = string.Empty;
 
         [ObservableProperty] private bool _isTalking;
-        [ObservableProperty] private string _avatarUrl = string.Empty; 
+        [ObservableProperty] private bool _isTalkerVisible;
+        private CancellationTokenSource? _talkVisibilityDelay;
+
+        partial void OnIsTalkingChanging(bool value)
+        {
+            if (!value) return;
+
+            _talkVisibilityDelay?.Cancel();
+            _talkVisibilityDelay?.Dispose();
+            _talkVisibilityDelay = null;
+            IsTalkerVisible = true;
+        }
+
+        partial void OnIsTalkingChanged(bool value)
+        {
+            LastTalkTime = value ? DateTime.UtcNow : LastTalkTime;
+            if (value) return;
+
+            _talkVisibilityDelay?.Cancel();
+            _talkVisibilityDelay?.Dispose();
+            _talkVisibilityDelay = new CancellationTokenSource();
+            _ = HideAfterSpeechAsync(_talkVisibilityDelay.Token);
+        }
+
+        private async Task HideAfterSpeechAsync(CancellationToken cancellationToken)
+        {
+            try
+            {
+                await Task.Delay(260, cancellationToken);
+                if (!IsTalking) IsTalkerVisible = false;
+            }
+            catch (OperationCanceledException)
+            {
+                // 说话在淡出期间恢复时，保留当前成员并反向渐亮。
+            }
+        }
+        [ObservableProperty] private string _clientUniqueIdentifier = string.Empty;
+        [ObservableProperty] private string _serverAvatarPath = string.Empty;
 
         // 在 User 类中添加：
 
