@@ -59,7 +59,7 @@
     <s:String x:Key="Lang_LivePreview_Description">Les modifications apparaissent ici immédiatement.</s:String>
     <s:String x:Key="Lang_Diagnostics">Diagnostic</s:String>
     <s:String x:Key="Lang_ConnectionSettings">Connexion et diagnostic</s:String>
-    <s:String x:Key="Lang_ConnectionSettings_Description">Vérifiez la connexion, la langue et l'activité.</s:String>
+    <s:String x:Key="Lang_ConnectionSettings_Description">Vérifiez la connexion, les mises à jour et l'activité.</s:String>
     <s:String x:Key="Lang_Diagnostics_Description">Consultez l'activité récente et les erreurs. Rotation automatique.</s:String>
     <s:String x:Key="Lang_LogViewer_Open">Voir les journaux récents</s:String>
     <s:String x:Key="Lang_LogViewer_Title">Journal d'activité</s:String>
@@ -84,4 +84,15 @@
     <s:String x:Key="Lang_Tray_Unlock">Déverrouiller</s:String>
     <s:String x:Key="Lang_Tray_Settings">Paramètres</s:String>
     <s:String x:Key="Lang_Tray_Exit">Quitter</s:String>
+    <s:String x:Key="Lang_Update_Title">Mises à jour</s:String>
+    <s:String x:Key="Lang_Update_Description">Vérifie la dernière version stable sur GitHub. Le téléchargement s’ouvre dans le navigateur ; quittez l’ancienne version avant de lancer la nouvelle.</s:String>
+    <s:String x:Key="Lang_Update_Check">Vérifier les mises à jour</s:String>
+    <s:String x:Key="Lang_Update_Download">Télécharger la mise à jour</s:String>
+    <s:String x:Key="Lang_Update_AutoCheck">Vérifier au démarrage</s:String>
+    <s:String x:Key="Lang_Update_Checking">Vérification de GitHub…</s:String>
+    <s:String x:Key="Lang_Update_Current">La version {0} est à jour</s:String>
+    <s:String x:Key="Lang_Update_Available">Nouvelle version {0} disponible</s:String>
+    <s:String x:Key="Lang_Update_Failed">Échec de la vérification. Vérifiez la connexion et réessayez.</s:String>
+    <s:String x:Key="Lang_Update_RateLimited">Limite de requêtes GitHub atteinte. Réessayez plus tard.</s:String>
+    <s:String x:Key="Lang_Update_NotChecked">Version actuelle : {0}</s:String>
 </ResourceDictionary>

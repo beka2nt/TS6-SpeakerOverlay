@@ -6,6 +6,7 @@ using TS6_SpeakerOverlay.Helpers;
 using TS6_SpeakerOverlay.Models;
 using TS6_SpeakerOverlay.Services;
 using TS6_SpeakerOverlay.ViewModels;
+using Application = System.Windows.Application;
 
 internal static class Program
 {
@@ -14,16 +15,28 @@ internal static class Program
     private static int _checks;
 
     [STAThread]
-    private static int Main()
+    private static int Main(string[] args)
     {
         _ = new Application();
         SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext());
         LanguageHelper.SetLanguage("en-US");
         try
         {
+            if (args.Length == 2 && args[0] == "--preview")
+            {
+                FeatureChecks.RenderPreviews(args[1]);
+                return 0;
+            }
+            if (args.Length == 1 && args[0] == "--check-github")
+            {
+                ReleaseInfo release = new UpdateService().GetLatestAsync(CancellationToken.None).GetAwaiter().GetResult();
+                Console.WriteLine($"GitHub latest: {release.Tag}; asset: {release.DownloadUri}");
+                return 0;
+            }
             MovementTests();
             TalkingTests();
             RefreshTests();
+            _checks += FeatureChecks.Run();
             Console.WriteLine($"PASS: {_checks} regression checks. No TeamSpeak connection was opened.");
             return 0;
         }

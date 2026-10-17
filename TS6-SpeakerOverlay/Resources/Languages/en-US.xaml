@@ -60,7 +60,7 @@
     <s:String x:Key="Lang_LivePreview_Description">Changes appear here immediately.</s:String>
     <s:String x:Key="Lang_Diagnostics">Diagnostics</s:String>
     <s:String x:Key="Lang_ConnectionSettings">Connection and diagnostics</s:String>
-    <s:String x:Key="Lang_ConnectionSettings_Description">Review connection, language and activity history.</s:String>
+    <s:String x:Key="Lang_ConnectionSettings_Description">Review connection, updates and activity history.</s:String>
     <s:String x:Key="Lang_Diagnostics_Description">Review recent activity and errors. Logs rotate automatically.</s:String>
     <s:String x:Key="Lang_LogViewer_Open">View recent logs</s:String>
     <s:String x:Key="Lang_LogViewer_Title">Activity log</s:String>
@@ -86,4 +86,15 @@
     <s:String x:Key="Lang_Tray_Unlock">Unlock (Drag)</s:String>
     <s:String x:Key="Lang_Tray_Settings">Settings</s:String>
     <s:String x:Key="Lang_Tray_Exit">Exit</s:String>
+    <s:String x:Key="Lang_Update_Title">Updates</s:String>
+    <s:String x:Key="Lang_Update_Description">Checks the latest stable GitHub Release. Downloads open in your browser; exit the old version before running the new one.</s:String>
+    <s:String x:Key="Lang_Update_Check">Check for updates</s:String>
+    <s:String x:Key="Lang_Update_Download">Download update</s:String>
+    <s:String x:Key="Lang_Update_AutoCheck">Check at startup</s:String>
+    <s:String x:Key="Lang_Update_Checking">Checking GitHub…</s:String>
+    <s:String x:Key="Lang_Update_Current">Version {0} is up to date</s:String>
+    <s:String x:Key="Lang_Update_Available">New version {0} is available</s:String>
+    <s:String x:Key="Lang_Update_Failed">Update check failed. Check your connection and retry.</s:String>
+    <s:String x:Key="Lang_Update_RateLimited">GitHub request limit reached. Try again later.</s:String>
+    <s:String x:Key="Lang_Update_NotChecked">Current version {0}</s:String>
 </ResourceDictionary>

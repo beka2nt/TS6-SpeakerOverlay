@@ -35,6 +35,7 @@ namespace TS6_SpeakerOverlay.Models
         [ObservableProperty] private bool _isLocked = false;
         [ObservableProperty] private bool _autoStart = false;
         [ObservableProperty] private bool _autoOpenWithTeamSpeak = false;
+        [ObservableProperty] private bool _checkUpdatesOnStartup = true;
         [ObservableProperty]
         [NotifyPropertyChangedFor(nameof(TalkingBrush))]
         [NotifyPropertyChangedFor(nameof(TalkingSurfaceBrush))]
@@ -90,6 +91,7 @@ namespace TS6_SpeakerOverlay.Models
             IsLocked = false;
             AutoStart = false;
             AutoOpenWithTeamSpeak = false;
+            CheckUpdatesOnStartup = true;
             TalkingColor = "#19B889";
             SelectedServerUniqueIdentifier = string.Empty;
             RemoteAppPort = 5899;

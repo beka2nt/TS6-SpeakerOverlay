@@ -59,7 +59,7 @@
     <s:String x:Key="Lang_LivePreview_Description">修改会立即反映在此处。</s:String>
     <s:String x:Key="Lang_Diagnostics">诊断</s:String>
     <s:String x:Key="Lang_ConnectionSettings">连接与诊断</s:String>
-    <s:String x:Key="Lang_ConnectionSettings_Description">检查连接、语言和运行记录。</s:String>
+    <s:String x:Key="Lang_ConnectionSettings_Description">检查连接、软件更新和运行记录。</s:String>
     <s:String x:Key="Lang_Diagnostics_Description">查看最近运行记录和错误；日志会自动轮转。</s:String>
     <s:String x:Key="Lang_LogViewer_Open">查看最近日志</s:String>
     <s:String x:Key="Lang_LogViewer_Title">运行日志</s:String>
@@ -84,4 +84,15 @@
     <s:String x:Key="Lang_Tray_Unlock">解锁 (拖拽)</s:String>
     <s:String x:Key="Lang_Tray_Settings">设置</s:String>
     <s:String x:Key="Lang_Tray_Exit">退出程序</s:String>
+    <s:String x:Key="Lang_Update_Title">软件更新</s:String>
+    <s:String x:Key="Lang_Update_Description">检查 GitHub 最新稳定版。下载会在浏览器中打开，请退出旧版后再运行新版。</s:String>
+    <s:String x:Key="Lang_Update_Check">检查更新</s:String>
+    <s:String x:Key="Lang_Update_Download">下载新版</s:String>
+    <s:String x:Key="Lang_Update_AutoCheck">启动时检查更新</s:String>
+    <s:String x:Key="Lang_Update_Checking">正在检查 GitHub…</s:String>
+    <s:String x:Key="Lang_Update_Current">当前 {0} 已是最新版本</s:String>
+    <s:String x:Key="Lang_Update_Available">发现新版本 {0}</s:String>
+    <s:String x:Key="Lang_Update_Failed">检查失败，请检查网络后重试。</s:String>
+    <s:String x:Key="Lang_Update_RateLimited">GitHub 请求过于频繁，请稍后重试。</s:String>
+    <s:String x:Key="Lang_Update_NotChecked">当前版本 {0}</s:String>
 </ResourceDictionary>

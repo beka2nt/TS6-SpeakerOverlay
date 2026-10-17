@@ -6,9 +6,9 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 
 ![Windows x64](https://img.shields.io/badge/Windows-x64-168F76)
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
-![Source version](https://img.shields.io/badge/source-v1.5.1-168F76)
+![Source version](https://img.shields.io/badge/source-v1.6.0-168F76)
 
-当前源码版本为 **1.5.1**。下载链接指向 GitHub Releases 中最新的已发布版本；也可以按下方说明构建当前源码。
+当前源码版本为 **1.6.0**。下载链接指向 GitHub Releases 中最新的已发布版本；也可以按下方说明构建当前源码。
 
 ## 界面预览
 
@@ -35,7 +35,8 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 - **随 TeamSpeak 启动**：可选的后台等待模式，Windows 登录后驻留托盘，检测到 TeamSpeak 启动时显示悬浮窗。
 - **随 Windows 启动**：也可选择登录后直接显示；同时开启两个启动选项时，优先等待 TeamSpeak。
 - **应用内日志**：查看最近记录、筛选错误、刷新或复制，也可打开日志文件夹。
-- **多语言**：简体中文、English、Français、Русский。
+- **检查更新**：设置页与托盘均可检查 GitHub 最新稳定版；默认启动时后台检查，可关闭。发现新版后在浏览器中下载，不静默替换程序。
+- **七种语言**：简体中文、English、한국어、Deutsch、Español、Français、Русский；顶部常驻地球图标与“Language / 语言”入口，选项使用各语言原生名称。
 
 ## 开始使用
 
@@ -63,6 +64,14 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 开启后，软件为当前 Windows 用户登记登录启动项，登录后先在托盘等待，检测到 `TeamSpeak.exe` 后显示悬浮窗。手动打开会直接显示已有窗口；从托盘完全退出后，本次后台等待也会停止。
 
 若希望 Windows 登录后立即显示，开启“随 Windows 登录直接显示”。当两个启动开关同时开启时，优先使用等待 TeamSpeak 的模式。关闭两个开关会移除本软件的登录启动登记。
+
+### 切换语言与检查更新
+
+设置页顶部固定显示地球图标和 **Language / 语言**，无需滚动即可选择语言。即使看不懂当前界面，也可在选项中找到 `한국어`、`Deutsch`、`Español` 等原生语言名称；托盘中也有相同的语言入口。切换立即生效，并自动保存。
+
+点击设置顶部或托盘菜单中的“检查更新”。软件通过 GitHub 官方 API 读取本仓库最新稳定 Release，按数字比较版本，忽略草稿和预发布版。默认每次启动后台检查一次，不弹出打断使用的对话框；可在“连接与诊断 → 软件更新”关闭“启动时检查更新”。
+
+发现新版后，顶部按钮变为“下载新版”，在浏览器中打开官方 EXE 下载；若附件仍在上传，则打开 Release 页面。**下载完成后先退出旧版，再运行新版。** 此功能不会自动覆盖、安装或执行下载文件。网络错误或请求限流会给出提示，可稍后重试。检查更新无需 GitHub 登录，不会发送 TS 授权密钥、配置或日志。
 
 ## 日志与本地数据
 
@@ -118,10 +127,13 @@ dotnet run --project tests/TS6-SpeakerOverlay.RegressionTests/TS6-SpeakerOverlay
 
 离线模拟进出频道、退出后重新加入、旧数据延迟返回、说话状态校正与刷新超时；不会连接真实 TeamSpeak，也不会读取或保存个人 API 密钥。刷新无响应时会自动重试一次，约 6 秒后结束等待并显示失败提示，相关过程写入日志。发布流程会先运行这些测试。
 
+还会验证更新请求、数字版本比较、网络失败和取消处理、下载链接来源、七种语言资源与占位符、语言入口位置，以及 100% / 125% / 150% / 200% DPI 下的托盘布局。
+
 ## 更新记录
 
 | 版本 | 更新 |
 | --- | --- |
+| 1.6.0 | 新增 GitHub 更新检查；顶部常驻原生语言选择；新增韩语、德语、西班牙语；统一托盘图标与文字布局及高 DPI 绘制。 |
 | 1.5.1 | 修复延迟列表覆盖进出频道事件、刷新无法校正说话状态和刷新一直等待的问题；补充离线回归测试。 |
 | 1.5.0 | 统一设置页、托盘和悬浮窗视觉；重排连接与诊断；新增应用内日志查看与大小轮转。 |
 | 1.4.6 | 优化托盘图标与文字对齐、字体和图标绘制。 |
@@ -134,9 +146,9 @@ dotnet run --project tests/TS6-SpeakerOverlay.RegressionTests/TS6-SpeakerOverlay
 
 ## English
 
-TS6 Speaker Overlay is a Windows x64 voice overlay for TeamSpeak 6. The current source version is **1.5.1**.
+TS6 Speaker Overlay is a Windows x64 voice overlay for TeamSpeak 6. The current source version is **1.6.0**.
 
-Version 1.5.1 protects recent channel/membership events against delayed snapshots, lets snapshots repair missed speaking events, and retries manual refresh once before reporting a timeout after approximately six seconds. Offline regression checks run before release; these checks do not connect to TeamSpeak or read/save personal API keys.
+Version 1.6.0 adds GitHub update checks, a persistent globe-marked language selector, Korean/German/Spanish localization, and consistent DPI-aware tray columns. Offline regression checks run before release; these checks do not connect to TeamSpeak or read/save personal API keys.
 
 ### Features
 
@@ -150,7 +162,10 @@ Version 1.5.1 protects recent channel/membership events against delayed snapshot
 - Optional Windows sign-in startup that waits until TeamSpeak launches.
 - Optional immediate display at Windows sign-in; the TeamSpeak waiting option takes priority if both are enabled.
 - In-app logs with error filtering, refresh and copy.
-- Chinese, English, French and Russian interfaces.
+- Check GitHub's latest stable release from settings or the tray. Optional startup checking is enabled by default.
+- Chinese, English, Korean, German, Spanish, French and Russian interfaces; native language names remain visible in the fixed-top Language / 语言 selector.
+
+Update checks require no GitHub login and send no TeamSpeak keys, settings or logs. Available updates open the official EXE download in your browser (or the release page while an asset is still uploading). Exit the old version before running the download; the app does not silently install or replace itself. Startup checking can be disabled under connection and diagnostics.
 
 ### Setup and controls
 

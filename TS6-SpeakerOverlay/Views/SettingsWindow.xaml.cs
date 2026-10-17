@@ -67,9 +67,9 @@ namespace TS6_SpeakerOverlay.Views
             if (DataContext is MainViewModel vm)
             {
                 // 获取选中的 Tag (en-US, zh-CN...)
-                if (e.AddedItems.Count > 0 && e.AddedItems[0] is ComboBoxItem item)
+                if (e.AddedItems.Count > 0 && e.AddedItems[0] is LanguageHelper.LanguageOption item)
                 {
-                    string langCode = item.Tag.ToString() ?? "en-US";
+                    string langCode = item.Code;
                     // 1. 更新 Config 对象
                     vm.Config.Language = langCode;
                     // 2. 立即应用资源字典

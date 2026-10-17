@@ -59,7 +59,7 @@
     <s:String x:Key="Lang_LivePreview_Description">Изменения отображаются здесь сразу.</s:String>
     <s:String x:Key="Lang_Diagnostics">Диагностика</s:String>
     <s:String x:Key="Lang_ConnectionSettings">Подключение и диагностика</s:String>
-    <s:String x:Key="Lang_ConnectionSettings_Description">Проверка подключения, языка и событий.</s:String>
+    <s:String x:Key="Lang_ConnectionSettings_Description">Проверка подключения, обновлений и событий.</s:String>
     <s:String x:Key="Lang_Diagnostics_Description">Просмотр последних событий и ошибок. Журнал ротируется автоматически.</s:String>
     <s:String x:Key="Lang_LogViewer_Open">Последние записи</s:String>
     <s:String x:Key="Lang_LogViewer_Title">Журнал работы</s:String>
@@ -84,4 +84,15 @@
     <s:String x:Key="Lang_Tray_Unlock">Разблокировать</s:String>
     <s:String x:Key="Lang_Tray_Settings">Настройки</s:String>
     <s:String x:Key="Lang_Tray_Exit">Выход</s:String>
+    <s:String x:Key="Lang_Update_Title">Обновления</s:String>
+    <s:String x:Key="Lang_Update_Description">Проверка последней стабильной версии на GitHub. Загрузка откроется в браузере; закройте старую версию перед запуском новой.</s:String>
+    <s:String x:Key="Lang_Update_Check">Проверить обновления</s:String>
+    <s:String x:Key="Lang_Update_Download">Скачать обновление</s:String>
+    <s:String x:Key="Lang_Update_AutoCheck">Проверять при запуске</s:String>
+    <s:String x:Key="Lang_Update_Checking">Проверка GitHub…</s:String>
+    <s:String x:Key="Lang_Update_Current">Версия {0} актуальна</s:String>
+    <s:String x:Key="Lang_Update_Available">Доступна новая версия {0}</s:String>
+    <s:String x:Key="Lang_Update_Failed">Не удалось проверить обновления. Проверьте сеть и повторите.</s:String>
+    <s:String x:Key="Lang_Update_RateLimited">Достигнут лимит запросов GitHub. Повторите позже.</s:String>
+    <s:String x:Key="Lang_Update_NotChecked">Текущая версия: {0}</s:String>
 </ResourceDictionary>

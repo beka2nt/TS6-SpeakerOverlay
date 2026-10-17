@@ -27,6 +27,26 @@ namespace TS6_SpeakerOverlay.ViewModels
         private bool _isUpdatingServerSelection;
         private CancellationTokenSource? _manualRefreshCancellation;
         private bool _isDisposed;
+        private readonly UpdateService _updateService;
+        private readonly CancellationTokenSource _updateLifetime = new();
+        private ReleaseInfo? _latestRelease;
+        public string CurrentVersion => UpdateService.CurrentVersion;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(UpdateStatusText))]
+        private UpdateCheckState _updateCheckState;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(UpdateStatusText))]
+        private string _latestVersion = "";
+        [ObservableProperty] private bool _isUpdateAvailable;
+        public string UpdateStatusText => UpdateCheckState switch
+        {
+            UpdateCheckState.Checking => LanguageHelper.GetString("Lang_Update_Checking"),
+            UpdateCheckState.Current => string.Format(LanguageHelper.GetString("Lang_Update_Current"), CurrentVersion),
+            UpdateCheckState.Available => string.Format(LanguageHelper.GetString("Lang_Update_Available"), LatestVersion),
+            UpdateCheckState.Failed => LanguageHelper.GetString("Lang_Update_Failed"),
+            UpdateCheckState.RateLimited => LanguageHelper.GetString("Lang_Update_RateLimited"),
+            _ => string.Format(LanguageHelper.GetString("Lang_Update_NotChecked"), CurrentVersion)
+        };
 
         [ObservableProperty] private bool _isOverlayLocked = false;
         
@@ -39,11 +59,14 @@ namespace TS6_SpeakerOverlay.ViewModels
         {
         }
 
-        internal MainViewModel(AppConfig config, Ts6Service? service, bool startService = true)
+        internal MainViewModel(AppConfig config, Ts6Service? service, bool startService = true, UpdateService? updateService = null)
         {
             Config = config;
             LanguageHelper.SetLanguage(Config.Language); 
+            if (Config.Language != LanguageHelper.CurrentLanguage) Config.Language = LanguageHelper.CurrentLanguage;
             IsOverlayLocked = Config.IsLocked;
+            _updateService = updateService ?? new UpdateService();
+            LanguageHelper.LanguageChanged += OnLanguageChanged;
 
             _tsService = service ?? new Ts6Service(Config.RemoteAppPort);
             
@@ -187,7 +210,62 @@ namespace TS6_SpeakerOverlay.ViewModels
                 });
             };
 
-            if (startService) _ = _tsService.StartAsync();
+            if (startService)
+            {
+                _ = _tsService.StartAsync();
+                if (Config.CheckUpdatesOnStartup) _ = CheckForUpdatesCommand.ExecuteAsync(null);
+            }
+        }
+
+        private void OnLanguageChanged() => OnPropertyChanged(nameof(UpdateStatusText));
+
+        [RelayCommand]
+        private async Task CheckForUpdatesAsync()
+        {
+            if (_isDisposed || UpdateCheckState == UpdateCheckState.Checking) return;
+            UpdateCheckState = UpdateCheckState.Checking;
+            IsUpdateAvailable = false;
+            _latestRelease = null;
+            try
+            {
+                using var timeout = CancellationTokenSource.CreateLinkedTokenSource(_updateLifetime.Token);
+                timeout.CancelAfter(TimeSpan.FromSeconds(12));
+                ReleaseInfo release = await _updateService.GetLatestAsync(timeout.Token);
+                if (_isDisposed) return;
+                _latestRelease = release;
+                LatestVersion = release.Tag;
+                IsUpdateAvailable = UpdateService.IsNewer(release.Version, Version.Parse(CurrentVersion));
+                UpdateCheckState = IsUpdateAvailable ? UpdateCheckState.Available : UpdateCheckState.Current;
+                AppLogger.Info($"GitHub update check completed. Current: {CurrentVersion}; latest: {release.Tag}.");
+            }
+            catch (OperationCanceledException) when (_isDisposed) { }
+            catch (Exception ex)
+            {
+                if (_isDisposed) return;
+                UpdateCheckState = ex is System.Net.Http.HttpRequestException
+                    { StatusCode: System.Net.HttpStatusCode.Forbidden or System.Net.HttpStatusCode.TooManyRequests }
+                    ? UpdateCheckState.RateLimited : UpdateCheckState.Failed;
+                AppLogger.Error("GitHub update check failed.", ex);
+            }
+        }
+
+        [RelayCommand]
+        private void OpenUpdate()
+        {
+            if (!IsUpdateAvailable || _latestRelease == null) return;
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName = (_latestRelease.DownloadUri ?? _latestRelease.PageUri).AbsoluteUri,
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                UpdateCheckState = UpdateCheckState.Failed;
+                AppLogger.Error("Failed to open the GitHub update download.", ex);
+            }
         }
 
         partial void OnSelectedServerChanged(Ts6Server? value)
@@ -363,7 +441,11 @@ namespace TS6_SpeakerOverlay.ViewModels
 
         public void Dispose()
         {
+            if (_isDisposed) return;
             _isDisposed = true;
+            LanguageHelper.LanguageChanged -= OnLanguageChanged;
+            _updateLifetime.Cancel();
+            _updateLifetime.Dispose();
             CancelManualRefresh();
             _tsService.Dispose();
         }

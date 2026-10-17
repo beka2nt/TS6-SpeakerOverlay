@@ -25,7 +25,7 @@ namespace TS6_SpeakerOverlay
         {
             InitializeComponent();
             _trayIcon = new TrayIconHelper(
-                this, GetIsLocked, Lock, Unlock, OpenSettings, RefreshData,
+                this, GetIsLocked, Lock, Unlock, OpenSettings, RefreshData, CheckForUpdates,
                 (trayIcon) => _trayIcon = trayIcon
             );
             this.Loaded += MainWindow_Loaded;
@@ -150,6 +150,12 @@ namespace TS6_SpeakerOverlay
                 var settingsWindow = new Views.SettingsWindow(vm);
                 settingsWindow.Show();
             }
+        }
+
+        private void CheckForUpdates()
+        {
+            OpenSettings();
+            if (DataContext is MainViewModel vm) vm.CheckForUpdatesCommand.Execute(null);
         }
 
         public void ShowOverlay()

@@ -20,6 +20,7 @@ namespace TS6_SpeakerOverlay.Helpers
         private readonly Action _unlockAction;
         private readonly Action _openSettingsAction;
         private readonly Action _refreshAction; // [新增] 刷新回调
+        private readonly Action _checkUpdatesAction;
         private readonly Action<TrayIconHelper?> _setTrayIconRef;
         private bool _isExiting;
 
@@ -31,6 +32,8 @@ namespace TS6_SpeakerOverlay.Helpers
         private ToolStripMenuItem? _statusLabel;
         private ToolStripMenuItem? _settingsMenuItem;
         private ToolStripMenuItem? _refreshMenuItem; // [新增]
+        private ToolStripMenuItem? _updatesMenuItem;
+        private ToolStripMenuItem? _languageMenuItem;
         private ToolStripMenuItem? _openLogsMenuItem;
         private ToolStripMenuItem? _showMenuItem;
         private ToolStripMenuItem? _hideMenuItem;
@@ -39,7 +42,7 @@ namespace TS6_SpeakerOverlay.Helpers
         private ToolStripMenuItem? _exitMenuItem;
 
         // [修改] 构造函数增加 refreshAction
-        public TrayIconHelper(Window mainWindow, Func<bool> getIsLocked, Action lockAction, Action unlockAction, Action openSettingsAction, Action refreshAction, Action<TrayIconHelper?> setTrayIconRef)
+        public TrayIconHelper(Window mainWindow, Func<bool> getIsLocked, Action lockAction, Action unlockAction, Action openSettingsAction, Action refreshAction, Action checkUpdatesAction, Action<TrayIconHelper?> setTrayIconRef)
         {
             _mainWindow = mainWindow;
             _getIsLocked = getIsLocked;
@@ -47,9 +50,11 @@ namespace TS6_SpeakerOverlay.Helpers
             _unlockAction = unlockAction;
             _openSettingsAction = openSettingsAction;
             _refreshAction = refreshAction;
+            _checkUpdatesAction = checkUpdatesAction;
             _setTrayIconRef = setTrayIconRef;
             InitializeTrayIcon();
             UpdateTrayIcon();
+            LanguageHelper.LanguageChanged += UpdateMenuText;
         }
 
         private void InitializeTrayIcon()
@@ -71,24 +76,13 @@ namespace TS6_SpeakerOverlay.Helpers
                 }
             };
 
-            _contextMenu = new ContextMenuStrip
-            {
-                BackColor = Color.FromArgb(246, 250, 249),
-                ForeColor = Color.FromArgb(22, 50, 58),
-                Font = new System.Drawing.Font("Microsoft YaHei UI", 9.5F, System.Drawing.FontStyle.Regular, GraphicsUnit.Point),
-                Padding = new Padding(8, 6, 8, 6),
-                ShowImageMargin = true,
-                ImageScalingSize = new System.Drawing.Size(18, 18),
-                Renderer = new ModernTrayMenuRenderer(),
-                DropShadowEnabled = true,
-                MinimumSize = new System.Drawing.Size(250, 0)
-            };
+            _contextMenu = CreateMenuShell();
 
             _statusLabel = CreateMenuItem("TS6 Speaker Overlay", MenuGlyph.Status);
             _statusLabel.ForeColor = Color.FromArgb(22, 50, 58);
-            _statusLabel.Font = new System.Drawing.Font("Microsoft YaHei UI", 9.5F, System.Drawing.FontStyle.Bold, GraphicsUnit.Point);
-            _statusLabel.Image?.Dispose();
-            _statusLabel.Image = CreateMenuGlyph(MenuGlyph.Status, Color.FromArgb(25, 184, 137));
+            _statusLabel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, GraphicsUnit.Point);
+            ((ModernTrayMenuItem)_statusLabel).MenuIcon?.Dispose();
+            ((ModernTrayMenuItem)_statusLabel).MenuIcon = CreateMenuGlyph(MenuGlyph.Status, Color.FromArgb(25, 184, 137));
             _statusLabel.Tag = "header";
 
             _settingsMenuItem = CreateMenuItem("Settings", MenuGlyph.Settings);
@@ -96,6 +90,11 @@ namespace TS6_SpeakerOverlay.Helpers
 
             _refreshMenuItem = CreateMenuItem("Refresh", MenuGlyph.Refresh);
             _refreshMenuItem.Click += (_, _) => _refreshAction.Invoke();
+
+            _updatesMenuItem = CreateMenuItem("Check for updates", MenuGlyph.Update);
+            _updatesMenuItem.Click += (_, _) => _checkUpdatesAction.Invoke();
+            _languageMenuItem = CreateMenuItem("Language / 语言", MenuGlyph.Language);
+            _languageMenuItem.Click += (_, _) => _openSettingsAction.Invoke();
 
             _openLogsMenuItem = CreateMenuItem("Open Logs Folder", MenuGlyph.Logs);
             _openLogsMenuItem.Click += (_, _) => OpenLogsFolder();
@@ -118,6 +117,8 @@ namespace TS6_SpeakerOverlay.Helpers
             _contextMenu.Items.Add(_statusLabel);
             _contextMenu.Items.Add(CreateSeparator());
             _contextMenu.Items.Add(_settingsMenuItem);
+            _contextMenu.Items.Add(_languageMenuItem);
+            _contextMenu.Items.Add(_updatesMenuItem);
             _contextMenu.Items.Add(_refreshMenuItem);
             _contextMenu.Items.Add(_openLogsMenuItem);
             _contextMenu.Items.Add(CreateSeparator());
@@ -132,6 +133,7 @@ namespace TS6_SpeakerOverlay.Helpers
             _contextMenu.Opening += (_, _) =>
             {
                 UpdateTrayIcon();
+                LayoutMenu(_contextMenu);
                 ApplyRoundedMenuRegion();
             };
 
@@ -139,21 +141,51 @@ namespace TS6_SpeakerOverlay.Helpers
             UpdateMenuText();
         }
 
-        private static ToolStripMenuItem CreateMenuItem(string text, MenuGlyph glyph, bool isDanger = false)
+        internal static ContextMenuStrip CreateMenuShell() => new()
         {
-            return new ToolStripMenuItem(text)
+            BackColor = Color.FromArgb(246, 250, 249),
+            ForeColor = Color.FromArgb(22, 50, 58),
+            Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, GraphicsUnit.Point),
+            AutoSize = false, Padding = new Padding(6), ShowImageMargin = false, ShowCheckMargin = false,
+            Renderer = new ModernTrayMenuRenderer(), DropShadowEnabled = true
+        };
+
+        internal static void LayoutMenu(ContextMenuStrip menu)
+        {
+            float scale = menu.DeviceDpi / 96F;
+            int width = (int)Math.Ceiling(250 * scale);
+            foreach (ToolStripItem item in menu.Items)
+                if (item.Available && item is ToolStripMenuItem)
+                    width = Math.Max(width, TextRenderer.MeasureText(item.Text, item.Font,
+                        System.Drawing.Size.Empty, TextFormatFlags.SingleLine | TextFormatFlags.NoPadding).Width + (int)Math.Ceiling(64 * scale));
+            menu.Padding = new Padding((int)Math.Ceiling(6 * scale));
+            int height = menu.Padding.Vertical;
+            foreach (ToolStripItem item in menu.Items)
             {
-                AutoSize = true,
+                item.AutoSize = false;
+                item.Size = new System.Drawing.Size(width, (int)Math.Ceiling(
+                    (item is ToolStripSeparator ? 10 : Equals(item.Tag, "header") ? 42 : 38) * scale));
+                if (item.Available) height += item.Height + item.Margin.Vertical;
+            }
+            menu.Size = new System.Drawing.Size(width + menu.Padding.Horizontal, height);
+            menu.PerformLayout();
+        }
+
+        internal static ToolStripMenuItem CreateMenuItem(string text, MenuGlyph glyph, bool isDanger = false)
+        {
+            return new ModernTrayMenuItem(text)
+            {
+                AutoSize = false,
                 ForeColor = isDanger ? Color.FromArgb(183, 61, 78) : Color.FromArgb(22, 50, 58),
-                Image = CreateMenuGlyph(
+                MenuIcon = CreateMenuGlyph(
                     glyph,
                     isDanger ? Color.FromArgb(183, 61, 78) : Color.FromArgb(92, 120, 127)),
                 ImageScaling = ToolStripItemImageScaling.None,
                 ImageAlign = ContentAlignment.MiddleCenter,
                 TextAlign = ContentAlignment.MiddleLeft,
                 TextImageRelation = TextImageRelation.ImageBeforeText,
-                Padding = new Padding(8, 6, 12, 6),
-                Margin = new Padding(0, 1, 0, 1),
+                Padding = Padding.Empty,
+                Margin = Padding.Empty,
                 Tag = isDanger ? "danger" : null
             };
         }
@@ -184,6 +216,7 @@ namespace TS6_SpeakerOverlay.Helpers
             _settingsMenuItem.Text = LanguageHelper.GetString("Lang_Tray_Settings");
             // 刷新按钮的多语言 key，如果没加翻译就默认显示 Refresh
             _refreshMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Refresh"); 
+            _updatesMenuItem!.Text = LanguageHelper.GetString("Lang_Update_Check");
             _openLogsMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_OpenLogs");
             _showMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Show");
             _hideMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Hide");
@@ -269,8 +302,8 @@ namespace TS6_SpeakerOverlay.Helpers
 
             if (_statusLabel != null)
             {
-                Image? oldStatusImage = _statusLabel.Image;
-                _statusLabel.Image = CreateMenuGlyph(MenuGlyph.Status, iconColor);
+                Image? oldStatusImage = ((ModernTrayMenuItem)_statusLabel).MenuIcon;
+                ((ModernTrayMenuItem)_statusLabel).MenuIcon = CreateMenuGlyph(MenuGlyph.Status, iconColor);
                 oldStatusImage?.Dispose();
                 _statusLabel.ToolTipText = _notifyIcon.Text;
             }
@@ -375,20 +408,21 @@ namespace TS6_SpeakerOverlay.Helpers
                     graphics.DrawLine(pen, 12F, 6F, 15F, 9F);
                     graphics.DrawLine(pen, 15F, 9F, 12F, 12F);
                     break;
+                case MenuGlyph.Update:
+                    graphics.DrawLine(pen, 9F, 2F, 9F, 12F);
+                    graphics.DrawLines(pen, [new PointF(5F, 8F), new PointF(9F, 12F), new PointF(13F, 8F)]);
+                    graphics.DrawLines(pen, [new PointF(3F, 12F), new PointF(3F, 15F), new PointF(15F, 15F), new PointF(15F, 12F)]);
+                    break;
+                case MenuGlyph.Language:
+                    graphics.DrawEllipse(pen, 2F, 2F, 14F, 14F);
+                    graphics.DrawEllipse(pen, 6F, 2F, 6F, 14F);
+                    graphics.DrawLine(pen, 2F, 9F, 16F, 9F);
+                    break;
             }
 
-            graphics.Flush();
+            graphics.Flush(FlushIntention.Sync);
             graphics.Dispose();
-            var bitmap = new Bitmap(18, 18, PixelFormat.Format32bppPArgb);
-            using (Graphics reduced = Graphics.FromImage(bitmap))
-            {
-                reduced.CompositingMode = CompositingMode.SourceCopy;
-                reduced.CompositingQuality = CompositingQuality.HighQuality;
-                reduced.InterpolationMode = InterpolationMode.HighQualityBicubic;
-                reduced.PixelOffsetMode = PixelOffsetMode.HighQuality;
-                reduced.DrawImage(master, new Rectangle(0, 0, 18, 18), new Rectangle(0, 0, 54, 54), GraphicsUnit.Pixel);
-            }
-            return bitmap;
+            return (Bitmap)master.Clone();
         }
 
         private static GraphicsPath CreateRoundedRectanglePath(Rectangle bounds, int radius)
@@ -403,7 +437,7 @@ namespace TS6_SpeakerOverlay.Helpers
             return path;
         }
 
-        private enum MenuGlyph
+        internal enum MenuGlyph
         {
             Status,
             Settings,
@@ -412,7 +446,22 @@ namespace TS6_SpeakerOverlay.Helpers
             Window,
             Lock,
             Unlock,
-            Exit
+            Exit,
+            Update,
+            Language
+        }
+
+        private sealed class ModernTrayMenuItem(string text) : ToolStripMenuItem(text)
+        {
+            // Keep custom glyphs out of the native Image property: WinForms can
+            // otherwise reserve/clip its own image column even with margins off.
+            [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+            internal Image? MenuIcon { get; set; }
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing) { MenuIcon?.Dispose(); MenuIcon = null; }
+                base.Dispose(disposing);
+            }
         }
 
         private sealed class ModernTrayMenuRenderer : ToolStripProfessionalRenderer
@@ -426,7 +475,8 @@ namespace TS6_SpeakerOverlay.Helpers
             {
                 if (!e.Item.Selected || Equals(e.Item.Tag, "header"))
                 {
-                    base.OnRenderMenuItemBackground(e);
+                    using var backgroundBrush = new SolidBrush(e.ToolStrip?.BackColor ?? Color.FromArgb(246, 250, 249));
+                    e.Graphics.FillRectangle(backgroundBrush, new Rectangle(0, 0, e.Item.Width, e.Item.Height));
                     return;
                 }
 
@@ -444,16 +494,40 @@ namespace TS6_SpeakerOverlay.Helpers
             {
                 using var pen = new Pen(Color.FromArgb(214, 228, 230));
                 int y = e.Item.Height / 2;
-                e.Graphics.DrawLine(pen, 39, y, e.Item.Width - 10, y);
+                var layout = TrayMenuLayout.Calculate(e.Item.Width, e.Item.Height, e.Graphics.DpiX);
+                e.Graphics.DrawLine(pen, layout.Text.Left, y, layout.Text.Right, y);
             }
 
             protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
             {
-                TextRenderer.DrawText(e.Graphics, e.Text, e.TextFont, e.TextRectangle,
-                    e.Item.ForeColor,
-                    TextFormatFlags.Left | TextFormatFlags.VerticalCenter |
-                    TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix |
-                    TextFormatFlags.NoPadding | TextFormatFlags.PreserveGraphicsClipping);
+                var layout = TrayMenuLayout.Calculate(e.Item.Width, e.Item.Height, e.Graphics.DpiX);
+                var state = e.Graphics.Save();
+                e.Graphics.SetClip(new Rectangle(0, 0, e.Item.Width, e.Item.Height), CombineMode.Replace);
+                e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                using var brush = new SolidBrush(e.Item.ForeColor);
+                using var format = new StringFormat(StringFormat.GenericTypographic)
+                {
+                    Alignment = StringAlignment.Near, LineAlignment = StringAlignment.Center,
+                    FormatFlags = StringFormatFlags.NoWrap, Trimming = StringTrimming.None
+                };
+                e.Graphics.DrawString(e.Text, e.TextFont ?? e.Item.Font, brush, layout.Text, format);
+                e.Graphics.Restore(state);
+                DrawItemIcon(e.Graphics, e.Item);
+            }
+
+            protected override void OnRenderImageMargin(ToolStripRenderEventArgs e) { }
+            protected override void OnRenderItemImage(ToolStripItemImageRenderEventArgs e) { }
+
+            private static void DrawItemIcon(Graphics graphics, ToolStripItem item)
+            {
+                if (item is not ModernTrayMenuItem { MenuIcon: not null } menuItem) return;
+                var layout = TrayMenuLayout.Calculate(item.Width, item.Height, graphics.DpiX);
+                var state = graphics.Save();
+                graphics.SetClip(new Rectangle(0, 0, item.Width, item.Height), CombineMode.Replace);
+                graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                graphics.DrawImage(menuItem.MenuIcon, layout.Icon);
+                graphics.Restore(state);
             }
 
             protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
@@ -496,6 +570,7 @@ namespace TS6_SpeakerOverlay.Helpers
         {
             if (_isExiting) return;
             _isExiting = true;
+            LanguageHelper.LanguageChanged -= UpdateMenuText;
             if (_notifyIcon != null)
             {
                 _notifyIcon.Visible = false;
@@ -506,8 +581,22 @@ namespace TS6_SpeakerOverlay.Helpers
                 _notifyIcon = null;
             }
 
+            if (_contextMenu != null)
+                foreach (ToolStripItem item in _contextMenu.Items) item.Image?.Dispose();
             _contextMenu?.Dispose();
             _contextMenu = null;
+        }
+    }
+
+    internal static class TrayMenuLayout
+    {
+        internal static (Rectangle Icon, Rectangle Text) Calculate(int width, int height, float dpi)
+        {
+            float scale = dpi / 96F;
+            int iconSize = (int)Math.Round(18 * scale);
+            int textLeft = (int)Math.Round(44 * scale);
+            return (new Rectangle((int)Math.Round(14 * scale), (height - iconSize) / 2, iconSize, iconSize),
+                new Rectangle(textLeft, 0, Math.Max(1, width - textLeft - (int)Math.Round(16 * scale)), height));
         }
     }
 }
