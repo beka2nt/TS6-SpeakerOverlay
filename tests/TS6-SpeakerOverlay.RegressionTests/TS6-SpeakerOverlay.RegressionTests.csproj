@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>TS6_SpeakerOverlay.RegressionTests</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../TS6-SpeakerOverlay/TS6-SpeakerOverlay.csproj" />
+    <Page Include="../../TS6-SpeakerOverlay/Resources/Languages/*.xaml" Link="Resources/Languages/%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

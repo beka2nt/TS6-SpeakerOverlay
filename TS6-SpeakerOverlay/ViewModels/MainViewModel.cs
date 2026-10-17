@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using TS6_SpeakerOverlay.Models;
@@ -24,6 +25,8 @@ namespace TS6_SpeakerOverlay.ViewModels
         private int _currentConnectionId;
         private string _currentChannelId = "";
         private bool _isUpdatingServerSelection;
+        private CancellationTokenSource? _manualRefreshCancellation;
+        private bool _isDisposed;
 
         [ObservableProperty] private bool _isOverlayLocked = false;
         
@@ -32,13 +35,17 @@ namespace TS6_SpeakerOverlay.ViewModels
         [ObservableProperty] private bool _isConnected = false;
         [ObservableProperty] private Ts6Server? _selectedServer;
 
-        public MainViewModel()
+        public MainViewModel() : this(ConfigService.Load(), null)
         {
-            Config = ConfigService.Load();
+        }
+
+        internal MainViewModel(AppConfig config, Ts6Service? service, bool startService = true)
+        {
+            Config = config;
             LanguageHelper.SetLanguage(Config.Language); 
             IsOverlayLocked = Config.IsLocked;
 
-            _tsService = new Ts6Service(Config.RemoteAppPort);
+            _tsService = service ?? new Ts6Service(Config.RemoteAppPort);
             
             _tsService.OnConnectionStateChanged += async (isConnected) =>
             {
@@ -52,12 +59,16 @@ namespace TS6_SpeakerOverlay.ViewModels
                     return;
                 }
 
-                System.Windows.Application.Current.Dispatcher.Invoke(() => IsConnected = false);
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    CancelManualRefresh();
+                    IsConnected = false;
+                });
                 await Task.Delay(500);
 
                 System.Windows.Application.Current.Dispatcher.Invoke(() =>
                 {
-                    if (IsConnected) return;
+                    if (_isDisposed || IsConnected) return;
 
                     ConnectionStatus = LanguageHelper.GetString("Lang_Status_RemoteUnavailable");
                     Users.Clear();
@@ -74,6 +85,16 @@ namespace TS6_SpeakerOverlay.ViewModels
             {
                 System.Windows.Application.Current.Dispatcher.Invoke(() => UpdateServers(servers));
             };
+
+            // Local movement/avatar updates are not evidence that a refresh replied.
+            _tsService.OnSnapshotReceived += () =>
+                System.Windows.Application.Current.Dispatcher.Invoke(() =>
+                {
+                    if (_isDisposed) return;
+                    CancelManualRefresh();
+                    ConnectionStatus = SelectedServer == null
+                        ? LanguageHelper.GetString("Lang_Status_Waiting") : "";
+                });
 
             _tsService.OnTalkStatusChanged += (connectionId, clientId, isTalking) =>
             {
@@ -166,7 +187,7 @@ namespace TS6_SpeakerOverlay.ViewModels
                 });
             };
 
-            _ = _tsService.StartAsync();
+            if (startService) _ = _tsService.StartAsync();
         }
 
         partial void OnSelectedServerChanged(Ts6Server? value)
@@ -183,9 +204,6 @@ namespace TS6_SpeakerOverlay.ViewModels
 
         private void UpdateServers(IReadOnlyList<Ts6Server> servers)
         {
-            int previousConnectionId = _currentConnectionId;
-            Dictionary<int, bool> talkingStates = Users.ToDictionary(user => user.ClientId, user => user.IsTalking);
-
             Servers.Clear();
             foreach (Ts6Server server in servers.OrderBy(server => server.Name))
             {
@@ -205,10 +223,10 @@ namespace TS6_SpeakerOverlay.ViewModels
                 Config.SelectedServerUniqueIdentifier = selected.UniqueIdentifier;
             }
 
-            ShowSelectedServer(previousConnectionId == selected?.ConnectionId ? talkingStates : null);
+            ShowSelectedServer();
         }
 
-        private void ShowSelectedServer(IReadOnlyDictionary<int, bool>? talkingStates = null)
+        private void ShowSelectedServer()
         {
             Users.Clear();
             _currentConnectionId = SelectedServer?.ConnectionId ?? 0;
@@ -216,19 +234,16 @@ namespace TS6_SpeakerOverlay.ViewModels
 
             if (SelectedServer == null)
             {
-                ConnectionStatus = LanguageHelper.GetString("Lang_Status_Waiting");
+                if (_manualRefreshCancellation == null)
+                    ConnectionStatus = LanguageHelper.GetString("Lang_Status_Waiting");
                 return;
             }
 
-            ConnectionStatus = "";
+            if (_manualRefreshCancellation == null) ConnectionStatus = "";
             foreach (User user in SelectedServer.Users
                 .Where(user => user.ChannelId == _currentChannelId)
                 .OrderBy(user => user.Name))
             {
-                if (talkingStates?.TryGetValue(user.ClientId, out bool isTalking) == true)
-                {
-                    user.IsTalking = isTalking;
-                }
                 Users.Add(user);
             }
         }
@@ -251,9 +266,11 @@ namespace TS6_SpeakerOverlay.ViewModels
             ShowSelectedServer();
         }
 
-        // [新增] 手动刷新方法
+        // Refresh has its own lifetime; cache publications are not acknowledgements.
         public void RefreshData()
         {
+            if (_isDisposed) return;
+            CancelManualRefresh();
             if (!IsConnected)
             {
                 ConnectionStatus = LanguageHelper.GetString("Lang_Status_RemoteUnavailable");
@@ -261,8 +278,44 @@ namespace TS6_SpeakerOverlay.ViewModels
             }
 
             ConnectionStatus = LanguageHelper.GetString("Lang_Status_Refreshing");
+            var cancellation = new CancellationTokenSource();
+            _manualRefreshCancellation = cancellation;
+            _ = RefreshWithTimeoutAsync(cancellation);
+        }
 
-            _tsService.SendAuth();
+        private async Task RefreshWithTimeoutAsync(CancellationTokenSource cancellation)
+        {
+            try
+            {
+                AppLogger.Info("Manual TS6 refresh requested.");
+                if (_tsService.SendAuth())
+                {
+                    await Task.Delay(3000, cancellation.Token);
+                    AppLogger.Info("TS6 refresh has not replied; retrying once.");
+                    if (_tsService.SendAuth())
+                        await Task.Delay(3000, cancellation.Token);
+                }
+
+                if (!ReferenceEquals(_manualRefreshCancellation, cancellation) || _isDisposed) return;
+                _manualRefreshCancellation = null;
+                ConnectionStatus = LanguageHelper.GetString("Lang_Status_RefreshTimeout");
+                AppLogger.Warning("TS6 refresh failed or timed out. Check Remote App authorization and the configured port.");
+            }
+            catch (OperationCanceledException)
+            {
+                // A snapshot, disconnect, newer refresh, or shutdown ended this request.
+            }
+            finally
+            {
+                cancellation.Dispose();
+            }
+        }
+
+        private void CancelManualRefresh()
+        {
+            CancellationTokenSource? previous = _manualRefreshCancellation;
+            _manualRefreshCancellation = null;
+            previous?.Cancel();
         }
 
         private async void ShowNotification(string msg, string color, string icon)
@@ -308,6 +361,11 @@ namespace TS6_SpeakerOverlay.ViewModels
         
         public void SaveConfig() => ConfigService.Save(Config);
 
-        public void Dispose() => _tsService.Dispose();
+        public void Dispose()
+        {
+            _isDisposed = true;
+            CancelManualRefresh();
+            _tsService.Dispose();
+        }
     }
 }

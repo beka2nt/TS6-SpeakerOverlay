@@ -55,6 +55,7 @@
     <s:String x:Key="Lang_Status_RemoteUnavailable">Cannot reach TS6 Remote Apps. Check the port.</s:String>
     <s:String x:Key="Lang_Status_Connected">Connected</s:String>
     <s:String x:Key="Lang_Status_Refreshing">Refreshing...</s:String>
+    <s:String x:Key="Lang_Status_RefreshTimeout">Refresh failed: check TS Remote App authorization and port, then retry</s:String>
     <s:String x:Key="Lang_LivePreview">Live preview</s:String>
     <s:String x:Key="Lang_LivePreview_Description">Changes appear here immediately.</s:String>
     <s:String x:Key="Lang_Diagnostics">Diagnostics</s:String>

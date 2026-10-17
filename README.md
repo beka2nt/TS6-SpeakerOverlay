@@ -6,9 +6,9 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 
 ![Windows x64](https://img.shields.io/badge/Windows-x64-168F76)
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
-![Source version](https://img.shields.io/badge/source-v1.5.0-168F76)
+![Source version](https://img.shields.io/badge/source-v1.5.1-168F76)
 
-当前源码版本为 **1.5.0**。下载链接指向 GitHub Releases 中最新的已发布版本；也可以按下方说明构建当前源码。
+当前源码版本为 **1.5.1**。下载链接指向 GitHub Releases 中最新的已发布版本；也可以按下方说明构建当前源码。
 
 ## 界面预览
 
@@ -110,10 +110,19 @@ dotnet publish TS6-SpeakerOverlay/TS6-SpeakerOverlay.csproj -c Release -r win-x6
 
 生成文件位于 `outputs/publish/TS6-SpeakerOverlay.exe`。构建输出、日志、个人配置和密钥不会作为源码提交。
 
+### 回归测试（Windows）
+
+```powershell
+dotnet run --project tests/TS6-SpeakerOverlay.RegressionTests/TS6-SpeakerOverlay.RegressionTests.csproj -c Release
+```
+
+离线模拟进出频道、退出后重新加入、旧数据延迟返回、说话状态校正与刷新超时；不会连接真实 TeamSpeak，也不会读取或保存个人 API 密钥。刷新无响应时会自动重试一次，约 6 秒后结束等待并显示失败提示，相关过程写入日志。发布流程会先运行这些测试。
+
 ## 更新记录
 
 | 版本 | 更新 |
 | --- | --- |
+| 1.5.1 | 修复延迟列表覆盖进出频道事件、刷新无法校正说话状态和刷新一直等待的问题；补充离线回归测试。 |
 | 1.5.0 | 统一设置页、托盘和悬浮窗视觉；重排连接与诊断；新增应用内日志查看与大小轮转。 |
 | 1.4.6 | 优化托盘图标与文字对齐、字体和图标绘制。 |
 | 1.4.5 | 新增随 TeamSpeak 启动显示、后台等待与重复启动唤出。 |
@@ -125,7 +134,9 @@ dotnet publish TS6-SpeakerOverlay/TS6-SpeakerOverlay.csproj -c Release -r win-x6
 
 ## English
 
-TS6 Speaker Overlay is a Windows x64 voice overlay for TeamSpeak 6. The current source version is **1.5.0**.
+TS6 Speaker Overlay is a Windows x64 voice overlay for TeamSpeak 6. The current source version is **1.5.1**.
+
+Version 1.5.1 protects recent channel/membership events against delayed snapshots, lets snapshots repair missed speaking events, and retries manual refresh once before reporting a timeout after approximately six seconds. Offline regression checks run before release; these checks do not connect to TeamSpeak or read/save personal API keys.
 
 ### Features
 

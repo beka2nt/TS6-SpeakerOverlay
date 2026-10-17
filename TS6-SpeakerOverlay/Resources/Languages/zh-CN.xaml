@@ -54,6 +54,7 @@
     <s:String x:Key="Lang_Status_RemoteUnavailable">无法连接 TS6 远程应用，请检查端口</s:String>
     <s:String x:Key="Lang_Status_Connected">已连接</s:String>
     <s:String x:Key="Lang_Status_Refreshing">正在刷新...</s:String>
+    <s:String x:Key="Lang_Status_RefreshTimeout">刷新失败：请检查 TS Remote App 授权和端口后重试</s:String>
     <s:String x:Key="Lang_LivePreview">实时预览</s:String>
     <s:String x:Key="Lang_LivePreview_Description">修改会立即反映在此处。</s:String>
     <s:String x:Key="Lang_Diagnostics">诊断</s:String>

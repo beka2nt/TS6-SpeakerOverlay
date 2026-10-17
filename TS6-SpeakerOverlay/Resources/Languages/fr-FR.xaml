@@ -54,6 +54,7 @@
     <s:String x:Key="Lang_Status_RemoteUnavailable">Connexion aux apps distantes TS6 impossible. Vérifiez le port.</s:String>
     <s:String x:Key="Lang_Status_Connected">Connecté</s:String>
     <s:String x:Key="Lang_Status_Refreshing">Actualisation...</s:String>
+    <s:String x:Key="Lang_Status_RefreshTimeout">Échec : vérifiez l’autorisation Remote App de TS et le port, puis réessayez</s:String>
     <s:String x:Key="Lang_LivePreview">Aperçu en direct</s:String>
     <s:String x:Key="Lang_LivePreview_Description">Les modifications apparaissent ici immédiatement.</s:String>
     <s:String x:Key="Lang_Diagnostics">Diagnostic</s:String>

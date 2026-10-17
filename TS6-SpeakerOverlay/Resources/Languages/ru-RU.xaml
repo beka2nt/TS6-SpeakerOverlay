@@ -54,6 +54,7 @@
     <s:String x:Key="Lang_Status_RemoteUnavailable">Нет связи с удалёнными приложениями TS6. Проверьте порт.</s:String>
     <s:String x:Key="Lang_Status_Connected">Подключено</s:String>
     <s:String x:Key="Lang_Status_Refreshing">Обновление...</s:String>
+    <s:String x:Key="Lang_Status_RefreshTimeout">Сбой обновления: проверьте разрешение TS Remote App и порт, затем повторите</s:String>
     <s:String x:Key="Lang_LivePreview">Предпросмотр</s:String>
     <s:String x:Key="Lang_LivePreview_Description">Изменения отображаются здесь сразу.</s:String>
     <s:String x:Key="Lang_Diagnostics">Диагностика</s:String>

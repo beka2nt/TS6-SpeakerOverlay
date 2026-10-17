@@ -21,23 +21,30 @@ namespace TS6_SpeakerOverlay.Services
         private readonly object _refreshSync = new();
         private readonly object _stateSync = new();
         private List<Ts6Server> _cachedServers = new();
-        private readonly Dictionary<(int ConnectionId, int ClientId), DateTime> _pendingNewClients = new();
-        private readonly Dictionary<(int ConnectionId, int ClientId), DateTime> _pendingDepartedClients = new();
+        // Events can arrive before an older auth snapshot. Retain their state for a
+        // bounded interval, including after a confirming snapshot (responses may overlap).
+        private readonly Dictionary<(int ConnectionId, int ClientId), (string ChannelId, DateTime Expires)> _recentMoves = new();
+        private readonly Dictionary<(int ConnectionId, int ClientId), (bool IsTalking, DateTime Expires)> _recentTalkStates = new();
         private bool _hasAuthoritativeSnapshot;
         private string _savedApiKey = "";
         private CancellationTokenSource? _refreshCancellation;
         private int _isDisposed;
 
         public event Action<List<Ts6Server>>? OnServersUpdated;
+        public event Action? OnSnapshotReceived;
         public event Action<int, int, bool>? OnTalkStatusChanged;
         public event Action<int, int, bool?, bool?, bool?>? OnUserPropertiesChanged;
         public event Action<int, int, string, string, string?>? OnClientMoved;
         public event Action<int, int, string, bool>? OnServerMembershipChanged;
         public event Action<bool>? OnConnectionStateChanged;
 
-        public Ts6Service(int port = DefaultPort)
+        public Ts6Service(int port = DefaultPort) : this(port, true)
         {
-            LoadApiKey(); 
+        }
+
+        internal Ts6Service(int port, bool loadApiKey)
+        {
+            if (loadApiKey) LoadApiKey();
             var factory = new Func<ClientWebSocket>(() => new ClientWebSocket());
             int selectedPort = port is >= 1 and <= 65535 ? port : DefaultPort;
             AppLogger.Info($"Connecting to the local TS6 Remote App on port {selectedPort}.");
@@ -59,8 +66,8 @@ namespace TS6_SpeakerOverlay.Services
                 lock (_stateSync)
                 {
                     _cachedServers.Clear();
-                    _pendingNewClients.Clear();
-                    _pendingDepartedClients.Clear();
+                    _recentMoves.Clear();
+                    _recentTalkStates.Clear();
                     _hasAuthoritativeSnapshot = false;
                 }
                 OnConnectionStateChanged?.Invoke(false);
@@ -87,20 +94,21 @@ namespace TS6_SpeakerOverlay.Services
             _savedApiKey = ApiKeyStore.Load();
         }
 
-        public void SendAuth()
+        public bool SendAuth()
         {
-            if (Volatile.Read(ref _isDisposed) != 0) return;
+            if (Volatile.Read(ref _isDisposed) != 0) return false;
 
             try
             {
                 var auth = new AuthRequest();
                 auth.Payload.Version = typeof(Ts6Service).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
                 if (!string.IsNullOrEmpty(_savedApiKey)) auth.Payload.Content.ApiKey = _savedApiKey;
-                _client.Send(JsonSerializer.Serialize(auth));
+                return _client.Send(JsonSerializer.Serialize(auth));
             }
             catch (Exception ex)
             {
                 AppLogger.Error("Failed to send TS6 authentication.", ex);
+                return false;
             }
         }
 
@@ -138,11 +146,16 @@ namespace TS6_SpeakerOverlay.Services
                 ApiKeyStore.Save(newKey);
             }
 
-            var connections = payload["connections"]?.AsArray();
-            if (connections == null || connections.Count == 0) 
+            if (payload["connections"] is not JsonArray connections)
+            {
+                AppLogger.Warning("TS6 authentication response did not contain a server snapshot.");
+                return;
+            }
+            if (connections.Count == 0)
             {
                 AppLogger.Info("TS6 is not connected to any server.");
                 ReplaceCachedServers(new List<Ts6Server>());
+                OnSnapshotReceived?.Invoke();
                 return;
             }
 
@@ -203,6 +216,7 @@ namespace TS6_SpeakerOverlay.Services
             }
 
             ReplaceCachedServers(servers);
+            OnSnapshotReceived?.Invoke();
         }
 
         private void HandleClientMoved(JsonNode? node)
@@ -218,7 +232,6 @@ namespace TS6_SpeakerOverlay.Services
 
             string? clientName;
             bool cacheChanged = false;
-            bool newClient = false;
             bool? membershipJoined = null;
             lock (_stateSync)
             {
@@ -234,7 +247,6 @@ namespace TS6_SpeakerOverlay.Services
                     if (string.IsNullOrEmpty(newCh) || newCh == "0")
                     {
                         server!.Users.Remove(movedUser);
-                        _pendingDepartedClients[(connectionId, clientId)] = DateTime.UtcNow.AddSeconds(5);
                         membershipJoined = false;
                     }
                     else
@@ -259,19 +271,15 @@ namespace TS6_SpeakerOverlay.Services
                             clientProperties?["flagAvatar"]?.ToString() ?? string.Empty)
                     };
                     server.Users.Add(movedUser);
-                    _pendingNewClients[(connectionId, clientId)] = DateTime.UtcNow.AddSeconds(3);
                     cacheChanged = true;
-                    newClient = true;
                     if (string.IsNullOrEmpty(oldCh) || oldCh == "0") membershipJoined = true;
                 }
 
-                if (string.IsNullOrEmpty(newCh) || newCh == "0")
+                if (server != null && clientId != 0)
                 {
-                    _pendingNewClients.Remove((connectionId, clientId));
-                }
-                else
-                {
-                    _pendingDepartedClients.Remove((connectionId, clientId));
+                    _recentMoves[(connectionId, clientId)] = (newCh, DateTime.UtcNow.AddSeconds(5));
+                    if (string.IsNullOrEmpty(newCh) || newCh == "0")
+                        _recentTalkStates.Remove((connectionId, clientId));
                 }
 
                 if (server != null && clientId == server.MyClientId)
@@ -292,7 +300,7 @@ namespace TS6_SpeakerOverlay.Services
                 OnClientMoved?.Invoke(connectionId, clientId, newCh, oldCh, clientName);
             }
 
-            ScheduleRefresh(newClient);
+            ScheduleRefresh();
         }
 
         private void HandleTalkStatus(JsonNode? node)
@@ -309,6 +317,8 @@ namespace TS6_SpeakerOverlay.Services
                     .FirstOrDefault(server => server.ConnectionId == connectionId)?
                     .Users.FirstOrDefault(item => item.ClientId == clientId);
                 if (user != null) user.IsTalking = isTalking;
+                if (connectionId != 0 && clientId != 0)
+                    _recentTalkStates[(connectionId, clientId)] = (isTalking, DateTime.UtcNow.AddSeconds(1));
             }
 
             if (connectionId != 0) OnTalkStatusChanged?.Invoke(connectionId, clientId, isTalking);
@@ -423,11 +433,12 @@ namespace TS6_SpeakerOverlay.Services
             var membershipChanges = new List<(int ConnectionId, int ClientId, string Name, bool Joined)>();
             lock (_stateSync)
             {
-                foreach (var pending in _pendingNewClients.ToArray())
+                DateTime now = DateTime.UtcNow;
+                foreach (var pending in _recentMoves.ToArray())
                 {
-                    if (pending.Value <= DateTime.UtcNow)
+                    if (pending.Value.Expires <= now)
                     {
-                        _pendingNewClients.Remove(pending.Key);
+                        _recentMoves.Remove(pending.Key);
                         continue;
                     }
 
@@ -435,37 +446,44 @@ namespace TS6_SpeakerOverlay.Services
                         server.ConnectionId == pending.Key.ConnectionId);
                     if (refreshedServer == null) continue;
 
-                    if (refreshedServer.Users.Any(user => user.ClientId == pending.Key.ClientId))
+                    User? refreshedUser = refreshedServer.Users.FirstOrDefault(user =>
+                        user.ClientId == pending.Key.ClientId);
+                    string channelId = pending.Value.ChannelId;
+                    if (string.IsNullOrEmpty(channelId) || channelId == "0")
                     {
-                        _pendingNewClients.Remove(pending.Key);
-                        continue;
+                        if (refreshedUser != null) refreshedServer.Users.Remove(refreshedUser);
                     }
-
-                    User? provisional = _cachedServers
-                        .FirstOrDefault(server => server.ConnectionId == pending.Key.ConnectionId)?
-                        .Users.FirstOrDefault(user => user.ClientId == pending.Key.ClientId);
-                    if (provisional != null) refreshedServer.Users.Add(CloneUser(provisional));
+                    else
+                    {
+                        if (refreshedUser == null)
+                        {
+                            User? provisional = _cachedServers
+                                .FirstOrDefault(server => server.ConnectionId == pending.Key.ConnectionId)?
+                                .Users.FirstOrDefault(user => user.ClientId == pending.Key.ClientId);
+                            if (provisional != null)
+                            {
+                                refreshedUser = CloneUser(provisional);
+                                refreshedServer.Users.Add(refreshedUser);
+                            }
+                        }
+                        if (refreshedUser != null) refreshedUser.ChannelId = channelId;
+                    }
+                    if (pending.Key.ClientId == refreshedServer.MyClientId)
+                        refreshedServer.MyChannelId = channelId;
                 }
 
-                foreach (var pending in _pendingDepartedClients.ToArray())
+                foreach (var pending in _recentTalkStates.ToArray())
                 {
-                    if (pending.Value <= DateTime.UtcNow)
+                    if (pending.Value.Expires <= now)
                     {
-                        _pendingDepartedClients.Remove(pending.Key);
+                        _recentTalkStates.Remove(pending.Key);
                         continue;
                     }
 
-                    Ts6Server? refreshedServer = servers.FirstOrDefault(server =>
-                        server.ConnectionId == pending.Key.ConnectionId);
-                    User? staleUser = refreshedServer?.Users.FirstOrDefault(user =>
-                        user.ClientId == pending.Key.ClientId);
-                    if (staleUser == null)
-                    {
-                        _pendingDepartedClients.Remove(pending.Key);
-                        continue;
-                    }
-
-                    refreshedServer!.Users.Remove(staleUser);
+                    User? refreshedUser = servers.FirstOrDefault(server =>
+                        server.ConnectionId == pending.Key.ConnectionId)?.Users.FirstOrDefault(user =>
+                            user.ClientId == pending.Key.ClientId);
+                    if (refreshedUser != null) refreshedUser.IsTalking = pending.Value.IsTalking;
                 }
 
                 if (_hasAuthoritativeSnapshot)
@@ -492,8 +510,8 @@ namespace TS6_SpeakerOverlay.Services
 
                 if (servers.Count == 0)
                 {
-                    _pendingNewClients.Clear();
-                    _pendingDepartedClients.Clear();
+                    _recentMoves.Clear();
+                    _recentTalkStates.Clear();
                 }
                 _cachedServers = servers.Select(CloneServer).ToList();
                 _hasAuthoritativeSnapshot = true;
@@ -550,7 +568,7 @@ namespace TS6_SpeakerOverlay.Services
             return bool.TryParse(value?.ToString(), out bool result) && result;
         }
 
-        private void ScheduleRefresh(bool retryForNewClient = false)
+        private void ScheduleRefresh()
         {
             if (Volatile.Read(ref _isDisposed) != 0) return;
 
@@ -563,14 +581,16 @@ namespace TS6_SpeakerOverlay.Services
                 previous?.Cancel();
             }
 
-            _ = RefreshAfterDelayAsync(current, retryForNewClient);
+            _ = RefreshAfterDelayAsync(current);
         }
 
-        private async Task RefreshAfterDelayAsync(CancellationTokenSource cancellation, bool retryForNewClient)
+        private async Task RefreshAfterDelayAsync(CancellationTokenSource cancellation)
         {
             try
             {
-                int[] delays = retryForNewClient ? [50, 350, 900, 2000] : [50];
+                // Retry all moves, not only joins; finish after the event guard expires
+                // so an authoritative snapshot can also repair a missed subsequent event.
+                int[] delays = [50, 350, 900, 2000, 2200];
                 foreach (int delay in delays)
                 {
                     await Task.Delay(delay, cancellation.Token);

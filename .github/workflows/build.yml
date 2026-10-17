@@ -24,6 +24,12 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore ./TS6-SpeakerOverlay/TS6-SpeakerOverlay.csproj
 
+    - name: Run offline regression tests
+      # Run the offline protocol/UI regression checks before producing a release.
+      # These fixtures never open a TeamSpeak socket or load a user's API key.
+      # A failed check stops the release.
+      run: dotnet run --project tests/TS6-SpeakerOverlay.RegressionTests/TS6-SpeakerOverlay.RegressionTests.csproj -c Release
+
     - name: Publish EXE
       # 使用你熟悉的单文件打包命令
       run: |
@@ -35,5 +41,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       with:
         files: TS6-SpeakerOverlay/publish_output/TS6-SpeakerOverlay.exe
+        body_path: docs/release-notes.md
+        fail_on_unmatched_files: true
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

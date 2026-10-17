@@ -7,15 +7,16 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <Version>1.5.0</Version>
-    <AssemblyVersion>1.5.0.0</AssemblyVersion>
-    <FileVersion>1.5.0.0</FileVersion>
+    <Version>1.5.1</Version>
+    <AssemblyVersion>1.5.1.0</AssemblyVersion>
+    <FileVersion>1.5.1.0</FileVersion>
     <ApplicationIcon>icon.ico</ApplicationIcon>
     <!-- 关键修改：强制指定根命名空间为下划线格式 -->
     <RootNamespace>TS6_SpeakerOverlay</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="TS6-SpeakerOverlay.RegressionTests" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Websocket.Client" Version="5.3.0" />
   </ItemGroup>
