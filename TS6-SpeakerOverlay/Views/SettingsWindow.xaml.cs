@@ -33,6 +33,8 @@ namespace TS6_SpeakerOverlay.Views
             this.Close();
         }
 
+        private void BtnRefresh_Click(object sender, RoutedEventArgs e) => _viewModel.RefreshData();
+
         private void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             //_viewModel.SaveConfig(); 

@@ -16,10 +16,6 @@
         Left="{Binding Config.WindowLeft, Mode=TwoWay}"
         Top="{Binding Config.WindowTop, Mode=TwoWay}">
 
-    <Window.DataContext>
-        <vm:MainViewModel/>
-    </Window.DataContext>
-
     <Window.Resources>
         <helpers:SpacingConverter x:Key="SpacingConverter"/>
         <SolidColorBrush x:Key="VoiceBrush" Color="#19B889"/>
@@ -40,13 +36,22 @@
         <Grid.LayoutTransform>
             <ScaleTransform ScaleX="{Binding Config.UiScale}" ScaleY="{Binding Config.UiScale}"/>
         </Grid.LayoutTransform>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
-        </Grid.RowDefinitions>
-
-        <ItemsControl Grid.Row="0" ItemsSource="{Binding Notifications}" Margin="10,4,10,8">
+        <ItemsControl ItemsSource="{Binding Notifications}" Panel.ZIndex="2">
+            <ItemsControl.Style>
+                <Style TargetType="ItemsControl">
+                    <Setter Property="VerticalAlignment" Value="Top"/>
+                    <Setter Property="Margin" Value="10,4,10,8"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding Config.UserListAlignment}" Value="Top">
+                            <Setter Property="VerticalAlignment" Value="Bottom"/>
+                            <Setter Property="Margin" Value="10,4,10,46"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding Config.UserListAlignment}" Value="Bottom">
+                            <Setter Property="Margin" Value="10,46,10,8"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ItemsControl.Style>
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate><StackPanel/></ItemsPanelTemplate>
             </ItemsControl.ItemsPanel>
@@ -81,13 +86,14 @@
             </ItemsControl.ItemTemplate>
         </ItemsControl>
 
-        <Grid Grid.Row="1">
-            <ItemsControl ItemsSource="{Binding Users}" Margin="8,0">
+        <Grid>
+            <ItemsControl x:Name="UserList" ItemsSource="{Binding Users}" Margin="8,0"
+                          VerticalAlignment="{Binding Config.UserListAlignment}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Grid x:Name="UserRow"
                               Margin="{Binding DataContext.Config.ItemSpacing, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource SpacingConverter}}"
-                              HorizontalAlignment="Left">
+                              HorizontalAlignment="{Binding DataContext.Config.UserListHorizontalAlignment, RelativeSource={RelativeSource AncestorType=Window}}">
                             <Border x:Name="RowSurface" Background="#EB14272E" Opacity="{Binding DataContext.Config.BackgroundOpacity, RelativeSource={RelativeSource AncestorType=Window}}"
                                     BorderBrush="#365059" BorderThickness="1" CornerRadius="10"/>
                             <Border x:Name="TalkingSurface"
@@ -387,13 +393,17 @@
             </Border>
         </Grid>
 
-        <Border Grid.Row="2" HorizontalAlignment="Center" Background="#F20E1621"
+        <Border x:Name="PositionGuide" HorizontalAlignment="Center" Background="#F20E1621"
                 BorderBrush="#3C4D63" BorderThickness="1" CornerRadius="6"
                 Padding="10,5" Margin="10,8">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Visibility" Value="Collapsed"/>
+                    <Setter Property="VerticalAlignment" Value="Bottom"/>
                     <Style.Triggers>
+                        <DataTrigger Binding="{Binding Config.UserListAlignment}" Value="Bottom">
+                            <Setter Property="VerticalAlignment" Value="Top"/>
+                        </DataTrigger>
                         <MultiDataTrigger>
                             <MultiDataTrigger.Conditions>
                                 <Condition Binding="{Binding IsOverlayLocked}" Value="False"/>

@@ -14,10 +14,43 @@ namespace TS6_SpeakerOverlay.Models
         AvatarOnly = 3  // 仅显示头像，状态以头像角标呈现
     }
 
+    public enum OverlayPosition
+    {
+        TopLeft, TopCenter, TopRight, CenterLeft, CenterRight, BottomLeft, BottomCenter, BottomRight
+    }
+
     public partial class AppConfig : ObservableObject
     {
         [ObservableProperty] private double _windowTop = 50;
         [ObservableProperty] private double _windowLeft = 50;
+        [ObservableProperty] private System.Windows.VerticalAlignment _userListAlignment = System.Windows.VerticalAlignment.Top;
+        [ObservableProperty] private System.Windows.HorizontalAlignment _userListHorizontalAlignment = System.Windows.HorizontalAlignment.Left;
+        [ObservableProperty] private OverlayPosition? _positionPreset;
+        [ObservableProperty] private bool _snapToScreenEdges = true;
+        [ObservableProperty] private double _screenEdgeGap = 16;
+
+        partial void OnUserListAlignmentChanged(System.Windows.VerticalAlignment value)
+        {
+            if (value is not (System.Windows.VerticalAlignment.Top or System.Windows.VerticalAlignment.Center or System.Windows.VerticalAlignment.Bottom))
+                UserListAlignment = System.Windows.VerticalAlignment.Top;
+        }
+
+        partial void OnUserListHorizontalAlignmentChanged(System.Windows.HorizontalAlignment value)
+        {
+            if (value is not (System.Windows.HorizontalAlignment.Left or System.Windows.HorizontalAlignment.Center or System.Windows.HorizontalAlignment.Right))
+                UserListHorizontalAlignment = System.Windows.HorizontalAlignment.Left;
+        }
+
+        partial void OnPositionPresetChanged(OverlayPosition? value)
+        {
+            if (value.HasValue && !Enum.IsDefined(value.Value)) PositionPreset = null;
+        }
+
+        partial void OnScreenEdgeGapChanged(double value)
+        {
+            double normalized = double.IsFinite(value) ? Math.Clamp(value, 0, 80) : 16;
+            if (normalized != value) ScreenEdgeGap = normalized;
+        }
 
         [ObservableProperty] private double _uiScale = 1.0; 
         [ObservableProperty] private double _backgroundOpacity = 0.6;
@@ -79,6 +112,11 @@ namespace TS6_SpeakerOverlay.Models
         public void ResetDefaults()
         {
             UiScale = 1.0;
+            UserListAlignment = System.Windows.VerticalAlignment.Top;
+            UserListHorizontalAlignment = System.Windows.HorizontalAlignment.Left;
+            PositionPreset = null;
+            SnapToScreenEdges = true;
+            ScreenEdgeGap = 16;
             BackgroundOpacity = 0.6;
             FontSize = 14.0;
             ItemSpacing = 4.0;

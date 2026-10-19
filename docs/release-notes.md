@@ -1,29 +1,56 @@
-## v1.6.0 — 更新检查与多语言 / Updates and languages
+## v1.7.2 — 设置分类优化 / Organized settings
+
+- 设置重组为显示外观、排列定位、进出通知、连接服务器、应用与日志五个分类，默认打开常用外观设置。
+- 将只显示说话者与显示模式放在一起；列表间距和整体缩放归入定位；通知总开关与服务器/频道选项集中显示。
+- 服务器选择、远程应用端口、连接状态和刷新统一放在连接分类；启动方式、更新、日志集中在应用分类。
+- 顶部保留固定语言入口，右侧仅保留实时预览与自动保存说明。每个分类保留独立滚动位置，切换分类和语言不重置设置。
+- 为七种语言补齐分类标题与说明，支持长文本换行和键盘焦点提示；将自动保存后的关闭按钮改为“完成”。
+- Organize settings into Display & appearance, Layout & position, Notifications, Connection, and App & logs. Each category retains its scroll position and live preferences.
+- Keep language selection fixed at the top and reserve the right rail for preview only. Localize category labels and help text in all seven languages.
+
+**验证 / Validation:** 467 项本地回归检查通过，涵盖七种语言的分类导航、控件归属、通知依赖、颜色预设、刷新动作及独立滚动；不连接 TeamSpeak。467 local regression checks passed without connecting to TeamSpeak.
+
+## v1.7.1 — Shift 锁轴修复 / Shift axis-lock fix
+
+- 拖动期间直接读取左右 Shift 的实时按下状态，不再依赖悬浮窗的键盘焦点；鼠标静止时仍检测松键。
+- 按下或松开 Shift 时，以窗口当前位置重新建立拖动起点，忽略锁轴期间积累的垂直方向偏移。
+- 修复靠近边缘松键时的额外吸附：刚释放的轴只有实际移动后才参与吸附。
+- 补充不可见真实窗口的横向、纵向、斜向输入、松键续拖与边缘吸附回归测试。
+- Sample physical left/right Shift state throughout dragging, including while the pointer is stationary and the overlay lacks keyboard focus.
+- Rebase from the actual window position on modifier changes; never apply accumulated perpendicular cursor offsets or snap a newly released axis before it moves.
+
+**验证 / Validation:** 180 项本地回归检查通过，包括无键盘焦点的真实窗口拖动流程；不连接 TeamSpeak。180 local checks passed, including real-window drag-controller checks without keyboard focus. No TeamSpeak connection was opened.
+
+## v1.7.0 — 对齐与精确定位 / Alignment and precise positioning
 
 ### 中文
 
-- 新增 GitHub 最新稳定版检查：设置页和托盘菜单均可手动检查，默认启动时后台检查一次，可在设置中关闭。
-- 显示当前版本、检查中、已是最新、发现新版、网络失败和 GitHub 请求限流状态；重复点击不会发起并行检查，退出时取消正在进行的请求。
-- 发现新版后提供官方 EXE 下载入口，在浏览器中下载；附件尚未就绪时打开 Release 页面。不静默覆盖、安装或执行下载文件。
-- 设置顶部常驻地球图标与 **Language / 语言** 入口，语言名称始终使用各自原生名称；托盘也增加语言入口。
-- 完整新增 **한국어（韩语）、Deutsch（德语）、Español（西班牙语）**，现在支持七种语言。切换立即生效，菜单和更新状态同步变化。
-- 托盘菜单使用统一图标栏、文字起点和行中心，按 DPI 计算尺寸；高分辨率自绘图标减少锯齿，长翻译不再挤压裁剪。
-- 扩展离线回归检查，涵盖版本比较、下载链接校验、请求失败/取消、语言资源与占位符、顶部语言入口、托盘实际绘制及多 DPI 布局。
+- 用户列表支持顶部 Top、居中 Center、底部 Bottom。人数变化、静默成员隐藏或锁定提示切换时，居中名单保持稳定。
+- 新增八方向快速定位：四角与四条边的中心。预设自动设置列表纵向与横向对齐，右侧预设将实际成员卡片靠右。
+- 在悬浮窗当前屏幕的可用区域定位，避开任务栏；支持多屏负坐标和 Windows 显示缩放。
+- 边缘间距可在 0–80 个逻辑像素内调整，默认 16；选中预设后修改间距立即生效。
+- 新增可关闭的边缘吸附，拖动到边缘附近会保留设定间距；使用绝对鼠标位移，避免吸附引起累计漂移。
+- 按住 Shift，根据首段移动方向锁定横轴或纵轴；中途按下、松开不会跳位，另一方向的精确间距保持不变。
+- 手动拖动后取消预设绑定，保留对齐方式。位置、对齐、吸附与间距自动保存。
+- 通知与拖动提示不再占用名单布局空间，底部对齐时提示移到顶部，避免遮挡最后一位成员。
+- 新设置沿用浅色风格，提供八方向选择器与实时对齐预览，七种语言均补齐相应文本。
 
-**验证：** 本地回归检查和 Release 构建通过；更新检查已连接真实 GitHub API 验证。测试不连接真实 TeamSpeak，也不读取个人 API 密钥。保留 v1.5.1 的人员状态修复，Issue #10 继续等待实际环境反馈。
+**验证：** 168 项本地回归检查通过，包括不可见真实窗口的定位、任务栏边界、间距调整、实际 WPF 名单对齐和原有功能；测试不连接 TeamSpeak。
 
-**使用：** 下载下方 `TS6-SpeakerOverlay.exe`，先退出旧版再运行。Windows x64 自包含单文件，无需额外安装 .NET；个人配置与授权密钥不会随发布上传。
+**试用：** 先从托盘退出旧版，再运行新版 EXE。在“设置 → 排列与定位”选择位置与间距。Windows x64 自包含程序，无需单独安装 .NET。
 
 ### English
 
-- Check this repository's latest stable GitHub Release from settings or the tray. A quiet startup check is enabled by default and can be disabled.
-- Show current/checking/up-to-date/available/error/rate-limit states. Prevent parallel checks and cancel pending requests at shutdown.
-- Open the official EXE download in your browser, falling back to the release page while an asset is uploading. No silent replacement, installation or execution.
-- Keep the globe-marked **Language / 语言** selector fixed at the top, using native language names. Add the same language entry to the tray.
-- Add complete **Korean, German and Spanish** localization, bringing the total to seven languages. Menus and update status change immediately with the selected language.
-- Align tray icons and text using shared DPI-aware columns and row centers; use high-resolution glyphs and reserve enough room for long translations.
-- Extend offline regression checks for versions, trusted links, failures/cancellation, localization completeness/placeholders, selector placement and tray rendering/DPI layouts.
+- Add Top, Center and Bottom member alignment. Centered lists remain stable as members leave, silent rows hide or lock hints change.
+- Add eight corner/edge-center presets with automatic vertical and horizontal alignment, including right-aligned member cards.
+- Target the overlay's current monitor work area, excluding the taskbar; support negative monitor coordinates and Windows display scaling.
+- Add a configurable 0–80 logical-pixel edge gap (default 16), applied immediately while a preset is selected.
+- Add optional edge snapping. Absolute cursor displacement avoids accumulated drift during snapping.
+- Hold Shift to lock the first horizontal or vertical direction. Pressing/releasing Shift mid-drag does not jump or alter the frozen coordinate.
+- Manual dragging detaches the preset while retaining alignment. Position, alignment, snapping and gap are saved.
+- Keep notifications and drag guides outside list layout calculations. Move the unlocked guide above bottom-aligned members to avoid obscuring them.
+- Add a light-theme eight-direction selector, live alignment preview and localized controls in all seven languages.
 
-**Validation:** Local regression checks and the Release build passed. The update checker was also verified against the live GitHub API. Fixtures never connect to TeamSpeak or load personal API keys. The v1.5.1 member-state fixes are retained; issue #10 still awaits feedback from the reporter's environment.
+**Validation:** 168 local regression checks passed, including real but invisible native window positioning, work-area boundaries, gap changes, actual WPF list alignment and existing features. Fixtures do not connect to TeamSpeak.
 
-**Installation:** Download `TS6-SpeakerOverlay.exe` below, exit the previous version and run the new executable. This is a self-contained Windows x64 build; no separate .NET installation is required. Personal settings and API keys are not uploaded.
+**Try it:** Exit the previous version from the tray before running the new EXE. Open settings → Layout and position. Self-contained Windows x64 build; no separate .NET installation required.

@@ -15,6 +15,7 @@
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType">
     <Window.Resources>
+        <helpers:PresetSelectionConverter x:Key="PresetSelectionConverter"/>
         <SolidColorBrush x:Key="SurfaceBrush" Color="#F2F7F7"/>
         <SolidColorBrush x:Key="SurfaceRaisedBrush" Color="#FFFFFF"/>
         <SolidColorBrush x:Key="RailBrush" Color="#EDF5F4"/>
@@ -65,6 +66,7 @@
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
             <Setter Property="FontFamily" Value="Segoe UI Variable Display, Microsoft YaHei UI, Segoe UI"/>
             <Setter Property="FontSize" Value="20"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
@@ -257,6 +259,23 @@
             </Setter>
         </Style>
 
+        <Style x:Key="PositionPresetButton" TargetType="Button" BasedOn="{StaticResource QuietButton}">
+            <Setter Property="Width" Value="48"/><Setter Property="Height" Value="36"/>
+            <Setter Property="Margin" Value="3"/><Setter Property="Padding" Value="0"/>
+            <Setter Property="FontFamily" Value="Segoe UI Symbol"/><Setter Property="FontSize" Value="19"/>
+            <Setter Property="FontWeight" Value="Normal"/><Setter Property="Background" Value="#FFFFFF"/>
+            <Style.Triggers>
+                <DataTrigger Value="True">
+                    <DataTrigger.Binding>
+                        <MultiBinding Converter="{StaticResource PresetSelectionConverter}">
+                            <Binding Path="Config.PositionPreset"/><Binding Path="Tag" RelativeSource="{RelativeSource Self}"/>
+                        </MultiBinding>
+                    </DataTrigger.Binding>
+                    <Setter Property="Background" Value="#DDF5ED"/><Setter Property="BorderBrush" Value="#19B889"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource QuietButton}">
             <Setter Property="MinWidth" Value="128"/>
             <Setter Property="Foreground" Value="#FFFFFF"/>
@@ -286,6 +305,32 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <BooleanToVisibilityConverter x:Key="BooleanVisibility"/>
+        <Style x:Key="CategoryButton" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="3,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="CategoryShell" Background="Transparent" BorderBrush="Transparent" BorderThickness="1" CornerRadius="8" Padding="8,0">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="CategoryShell" Property="Background" Value="#F0F6F5"/></Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CategoryShell" Property="Background" Value="#DDF5ED"/>
+                                <Setter Property="Foreground" Value="#176D5B"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="CategoryShell" Property="BorderBrush" Value="#176D5B"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Border Background="#F2F7F7" BorderBrush="#C8DADC" BorderThickness="1" CornerRadius="18">
@@ -293,8 +338,9 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="78"/>
                 <RowDefinition Height="68"/>
+                <RowDefinition Height="56"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="72"/>
+                <RowDefinition Height="64"/>
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Background="{StaticResource SurfaceRaisedBrush}" CornerRadius="18,18,0,0"
@@ -303,7 +349,6 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="42"/>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="220"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="44"/>
                     </Grid.ColumnDefinitions>
@@ -318,30 +363,7 @@
                         <TextBlock Text="{DynamicResource Lang_Settings_Title}" FontFamily="Segoe UI Variable Display, Microsoft YaHei UI, Segoe UI" FontSize="22" FontWeight="SemiBold"/>
                         <TextBlock Text="{DynamicResource Lang_Settings_Subtitle}" Foreground="{StaticResource MutedBrush}" FontSize="11.5" Margin="0,3,0,0"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="2" Width="204" VerticalAlignment="Center" Margin="0,0,14,0"
-                                ToolTip="{DynamicResource Lang_ServerSource_Description}">
-                        <TextBlock Text="{DynamicResource Lang_ServerSource}" Foreground="{StaticResource MutedBrush}" FontSize="10.5" Margin="2,0,0,3"/>
-                        <Grid>
-                        <ComboBox Style="{StaticResource ModernComboBox}" Height="32"
-                                  ItemsSource="{Binding Servers}"
-                                  SelectedItem="{Binding SelectedServer, Mode=TwoWay}"
-                                  DisplayMemberPath="Name"/>
-                        <TextBlock Text="{DynamicResource Lang_ServerSource_Empty}" Foreground="{StaticResource MutedBrush}"
-                                   FontSize="12" Margin="12,0,26,0" VerticalAlignment="Center" IsHitTestVisible="False">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding Servers.Count}" Value="0">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                        </Grid>
-                    </StackPanel>
-                    <Border Grid.Column="3" Background="#E5F0F0" CornerRadius="12" Padding="10,5" VerticalAlignment="Center" Margin="0,0,10,0">
+                    <Border Grid.Column="2" Background="#E5F0F0" CornerRadius="12" Padding="10,5" VerticalAlignment="Center" Margin="0,0,10,0">
                         <StackPanel Orientation="Horizontal">
                             <Ellipse x:Name="ConnectionDot" Width="7" Height="7" VerticalAlignment="Center" Margin="0,0,7,0">
                                 <Ellipse.Style>
@@ -361,7 +383,7 @@
                             </TextBlock>
                         </StackPanel>
                     </Border>
-                    <Button Grid.Column="4" Width="34" Height="34" Background="Transparent" BorderThickness="0" Foreground="{StaticResource MutedBrush}"
+                    <Button Grid.Column="3" Width="34" Height="34" Background="Transparent" BorderThickness="0" Foreground="{StaticResource MutedBrush}"
                             FontSize="21" FontWeight="Light" Content="×" Cursor="Hand" Click="BtnClose_Click" ToolTip="Close">
                         <Button.Template>
                             <ControlTemplate TargetType="Button">
@@ -425,35 +447,53 @@
                 </Grid>
             </Border>
 
-            <Grid Grid.Row="2">
+            <Border Grid.Row="2" Background="#FFFFFF" BorderBrush="#D6E4E6" BorderThickness="0,0,0,1">
+                <UniformGrid Rows="1" Margin="20,7">
+                    <RadioButton x:Name="NavDisplay" GroupName="SettingsCategories" Style="{StaticResource CategoryButton}" IsChecked="True" Content="{DynamicResource Lang_Settings_Display}" AutomationProperties.Name="{DynamicResource Lang_Settings_Display}"/>
+                    <RadioButton x:Name="NavPosition" GroupName="SettingsCategories" Style="{StaticResource CategoryButton}" Content="{DynamicResource Lang_Settings_Position}" AutomationProperties.Name="{DynamicResource Lang_Settings_Position}"/>
+                    <RadioButton x:Name="NavNotifications" GroupName="SettingsCategories" Style="{StaticResource CategoryButton}" Content="{DynamicResource Lang_Settings_Notifications}" AutomationProperties.Name="{DynamicResource Lang_Settings_Notifications}"/>
+                    <RadioButton x:Name="NavConnection" GroupName="SettingsCategories" Style="{StaticResource CategoryButton}" Content="{DynamicResource Lang_Settings_Connection}" AutomationProperties.Name="{DynamicResource Lang_Settings_Connection}"/>
+                    <RadioButton x:Name="NavApplication" GroupName="SettingsCategories" Style="{StaticResource CategoryButton}" Content="{DynamicResource Lang_Settings_Application}" AutomationProperties.Name="{DynamicResource Lang_Settings_Application}"/>
+                </UniformGrid>
+            </Border>
+            <Grid Grid.Row="3">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="1"/>
-                    <ColumnDefinition Width="310"/>
+                    <ColumnDefinition Width="300"/>
                 </Grid.ColumnDefinitions>
-
-                <ScrollViewer x:Name="SettingsScroller" Grid.Column="0" Background="#FFFFFF" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Margin="34,28,34,30">
+                <ScrollViewer x:Name="SettingsScroller" Grid.Column="0" Background="#FFFFFF"
+                    VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                    Visibility="{Binding IsChecked, ElementName=NavDisplay, Converter={StaticResource BooleanVisibility}}">
+                    <StackPanel x:Name="DisplaySettings" Margin="34,26,34,30">
                         <TextBlock Text="{DynamicResource Lang_Appearance}" Style="{StaticResource SectionTitle}"/>
                         <TextBlock Text="{DynamicResource Lang_Appearance_Description}" Style="{StaticResource SectionDescription}" Margin="0,5,0,21"/>
-
                         <Grid Margin="0,0,0,21">
-                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="225"/></Grid.ColumnDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="225"/>
+                            </Grid.ColumnDefinitions>
                             <StackPanel VerticalAlignment="Center" Margin="0,0,22,0">
                                 <TextBlock Text="{DynamicResource Lang_AvatarMode}" Style="{StaticResource SettingLabel}"/>
                                 <TextBlock Text="{DynamicResource Lang_AvatarMode_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,0"/>
                             </StackPanel>
                             <ComboBox Grid.Column="1" Style="{StaticResource ModernComboBox}"
-                                      SelectedValuePath="Tag" SelectedValue="{Binding Config.AvatarDisplayMode, Mode=TwoWay}">
+                                SelectedValuePath="Tag" SelectedValue="{Binding Config.AvatarDisplayMode, Mode=TwoWay}">
                                 <ComboBoxItem Content="{DynamicResource Lang_Mode_Avatar}" Tag="{x:Static models:AvatarMode.Avatar}"/>
                                 <ComboBoxItem Content="{DynamicResource Lang_Mode_AvatarOnly}" Tag="{x:Static models:AvatarMode.AvatarOnly}"/>
                                 <ComboBoxItem Content="{DynamicResource Lang_Mode_Indicator}" Tag="{x:Static models:AvatarMode.Indicator}"/>
                                 <ComboBoxItem Content="{DynamicResource Lang_Mode_None}" Tag="{x:Static models:AvatarMode.None}"/>
                             </ComboBox>
                         </Grid>
-
+                        <StackPanel Margin="0,0,0,20">
+                            <CheckBox Style="{StaticResource ToggleSwitch}"
+                                IsChecked="{Binding Config.ShowOnlyTalking, Mode=TwoWay}">
+                                <TextBlock Text="{DynamicResource Lang_ShowOnlyTalking}" TextWrapping="Wrap" Margin="0,0,10,0"/>
+                            </CheckBox>
+                            <TextBlock Text="{DynamicResource Lang_ShowOnlyTalking_Description}"
+                                Style="{StaticResource SectionDescription}" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                        </StackPanel>
                         <Border Height="1" Background="#DCE8E9" Margin="0,0,0,20"/>
-
                         <StackPanel Margin="0,0,0,20">
                             <Grid>
                                 <TextBlock Text="{DynamicResource Lang_TalkingColor}" Style="{StaticResource SettingLabel}"/>
@@ -473,61 +513,234 @@
                                 <Button Content="{DynamicResource Lang_TalkingColor_Custom}" Style="{StaticResource QuietButton}" Height="32" Padding="12,0" Click="TalkingColorCustom_Click"/>
                             </StackPanel>
                         </StackPanel>
-
                         <Border Height="1" Background="#DCE8E9" Margin="0,0,0,20"/>
-
                         <Grid>
-                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <Grid><TextBlock Text="{DynamicResource Lang_FontSize}" Style="{StaticResource SettingLabel}"/><TextBlock Text="{Binding Config.FontSize, StringFormat={}{0:0} px}" Style="{StaticResource ValueLabel}"/></Grid>
+                                <Grid>
+                                    <TextBlock Text="{DynamicResource Lang_FontSize}" Style="{StaticResource SettingLabel}"/>
+                                    <TextBlock Text="{Binding Config.FontSize, StringFormat={}{0:0} px}" Style="{StaticResource ValueLabel}"/>
+                                </Grid>
                                 <Slider Style="{StaticResource ThinSlider}" Minimum="10" Maximum="24" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.FontSize, Mode=TwoWay}" Margin="0,7,0,0"/>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <Grid><TextBlock Text="{DynamicResource Lang_AvatarSize}" Style="{StaticResource SettingLabel}"/><TextBlock Text="{Binding Config.AvatarSize, StringFormat={}{0:0} px}" Style="{StaticResource ValueLabel}"/></Grid>
+                                <Grid>
+                                    <TextBlock Text="{DynamicResource Lang_AvatarSize}" Style="{StaticResource SettingLabel}"/>
+                                    <TextBlock Text="{Binding Config.AvatarSize, StringFormat={}{0:0} px}" Style="{StaticResource ValueLabel}"/>
+                                </Grid>
                                 <Slider Style="{StaticResource ThinSlider}" Minimum="14" Maximum="38" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.AvatarSize, Mode=TwoWay}" Margin="0,7,0,0"/>
                             </StackPanel>
                         </Grid>
-
-                        <Grid Margin="0,24,0,0">
-                            <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="24"/><ColumnDefinition/></Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <Grid><TextBlock Text="{DynamicResource Lang_Spacing}" Style="{StaticResource SettingLabel}"/><TextBlock Text="{Binding Config.ItemSpacing, StringFormat={}{0:0} px}" Style="{StaticResource ValueLabel}"/></Grid>
-                                <Slider Style="{StaticResource ThinSlider}" Minimum="0" Maximum="16" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.ItemSpacing, Mode=TwoWay}" Margin="0,7,0,0"/>
+                        <StackPanel Margin="0,24,0,0">
+                            <Grid>
+                                <TextBlock Text="{DynamicResource Lang_Opacity}" Style="{StaticResource SettingLabel}"/>
+                                <TextBlock Text="{Binding Config.BackgroundOpacity, StringFormat={}{0:P0}}" Style="{StaticResource ValueLabel}"/>
+                            </Grid>
+                            <Slider Style="{StaticResource ThinSlider}" Minimum="0.15" Maximum="1" TickFrequency="0.05" IsSnapToTickEnabled="True" Value="{Binding Config.BackgroundOpacity, Mode=TwoWay}" Margin="0,7,0,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+                <ScrollViewer x:Name="PositionScroller" Grid.Column="0" Background="#FFFFFF"
+                    VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                    Visibility="{Binding IsChecked, ElementName=NavPosition, Converter={StaticResource BooleanVisibility}}">
+                    <StackPanel x:Name="PositionSettings" Margin="34,26,34,30">
+                        <TextBlock Text="{DynamicResource Lang_Position_Title}" Style="{StaticResource SectionTitle}"/>
+                        <TextBlock Text="{DynamicResource Lang_Position_Description}" Style="{StaticResource SectionDescription}" Margin="0,5,0,18"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition Width="24"/>
+                                <ColumnDefinition Width="182"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="{DynamicResource Lang_Position_Alignment}" Style="{StaticResource SettingLabel}" Margin="0,0,0,8"/>
+                                <ComboBox Style="{StaticResource ModernComboBox}" SelectedValuePath="Tag" SelectedValue="{Binding Config.UserListAlignment, Mode=TwoWay}">
+                                    <ComboBoxItem Content="{DynamicResource Lang_Position_Top}" Tag="{x:Static VerticalAlignment.Top}"/>
+                                    <ComboBoxItem Content="{DynamicResource Lang_Position_Center}" Tag="{x:Static VerticalAlignment.Center}"/>
+                                    <ComboBoxItem Content="{DynamicResource Lang_Position_Bottom}" Tag="{x:Static VerticalAlignment.Bottom}"/>
+                                </ComboBox>
+                                <Grid Margin="0,17,0,0">
+                                    <TextBlock Text="{DynamicResource Lang_Position_Gap}" Style="{StaticResource SettingLabel}"/>
+                                    <TextBlock Text="{Binding Config.ScreenEdgeGap, StringFormat={}{0:0} px}" Style="{StaticResource ValueLabel}"/>
+                                </Grid>
+                                <Slider Style="{StaticResource ThinSlider}" Minimum="0" Maximum="80" TickFrequency="1" IsSnapToTickEnabled="True"
+                                    Value="{Binding Config.ScreenEdgeGap, Mode=TwoWay}" Margin="0,7,0,12"/>
+                                <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Config.SnapToScreenEdges, Mode=TwoWay}">
+                                    <TextBlock Text="{DynamicResource Lang_Position_Snap}" TextWrapping="Wrap"/>
+                                </CheckBox>
                             </StackPanel>
                             <StackPanel Grid.Column="2">
-                                <Grid><TextBlock Text="{DynamicResource Lang_Opacity}" Style="{StaticResource SettingLabel}"/><TextBlock Text="{Binding Config.BackgroundOpacity, StringFormat={}{0:P0}}" Style="{StaticResource ValueLabel}"/></Grid>
-                                <Slider Style="{StaticResource ThinSlider}" Minimum="0.15" Maximum="1" TickFrequency="0.05" IsSnapToTickEnabled="True" Value="{Binding Config.BackgroundOpacity, Mode=TwoWay}" Margin="0,7,0,0"/>
+                                <TextBlock Text="{DynamicResource Lang_Position_Quick}" Style="{StaticResource SettingLabel}" Margin="0,0,0,8"/>
+                                <Border BorderBrush="#C6DCDD" BorderThickness="1" CornerRadius="10" Padding="6" Background="#F2F7F7">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                            <RowDefinition/>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <Button Grid.Row="0" Grid.Column="0" Content="↖" Style="{StaticResource PositionPresetButton}"
+                                            Tag="{x:Static models:OverlayPosition.TopLeft}" Command="{Binding MoveOverlayCommand}"
+                                            CommandParameter="{x:Static models:OverlayPosition.TopLeft}" ToolTip="{DynamicResource Lang_Position_TopLeft}"
+                                            AutomationProperties.Name="{DynamicResource Lang_Position_TopLeft}"/>
+                                        <Button Grid.Row="0" Grid.Column="1" Content="↑" Style="{StaticResource PositionPresetButton}"
+                                            Tag="{x:Static models:OverlayPosition.TopCenter}" Command="{Binding MoveOverlayCommand}"
+                                            CommandParameter="{x:Static models:OverlayPosition.TopCenter}" ToolTip="{DynamicResource Lang_Position_TopCenter}"
+                                            AutomationProperties.Name="{DynamicResource Lang_Position_TopCenter}"/>
+                                        <Button Grid.Row="0" Grid.Column="2" Content="↗" Style="{StaticResource PositionPresetButton}"
+                                            Tag="{x:Static models:OverlayPosition.TopRight}" Command="{Binding MoveOverlayCommand}"
+                                            CommandParameter="{x:Static models:OverlayPosition.TopRight}" ToolTip="{DynamicResource Lang_Position_TopRight}"
+                                            AutomationProperties.Name="{DynamicResource Lang_Position_TopRight}"/>
+                                        <Button Grid.Row="1" Grid.Column="0" Content="←" Style="{StaticResource PositionPresetButton}"
+                                            Tag="{x:Static models:OverlayPosition.CenterLeft}" Command="{Binding MoveOverlayCommand}"
+                                            CommandParameter="{x:Static models:OverlayPosition.CenterLeft}" ToolTip="{DynamicResource Lang_Position_CenterLeft}"
+                                            AutomationProperties.Name="{DynamicResource Lang_Position_CenterLeft}"/>
+                                        <Button Grid.Row="1" Grid.Column="2" Content="→" Style="{StaticResource PositionPresetButton}"
+                                            Tag="{x:Static models:OverlayPosition.CenterRight}" Command="{Binding MoveOverlayCommand}"
+                                            CommandParameter="{x:Static models:OverlayPosition.CenterRight}" ToolTip="{DynamicResource Lang_Position_CenterRight}"
+                                            AutomationProperties.Name="{DynamicResource Lang_Position_CenterRight}"/>
+                                        <Button Grid.Row="2" Grid.Column="0" Content="↙" Style="{StaticResource PositionPresetButton}"
+                                            Tag="{x:Static models:OverlayPosition.BottomLeft}" Command="{Binding MoveOverlayCommand}"
+                                            CommandParameter="{x:Static models:OverlayPosition.BottomLeft}" ToolTip="{DynamicResource Lang_Position_BottomLeft}"
+                                            AutomationProperties.Name="{DynamicResource Lang_Position_BottomLeft}"/>
+                                        <Button Grid.Row="2" Grid.Column="1" Content="↓" Style="{StaticResource PositionPresetButton}"
+                                            Tag="{x:Static models:OverlayPosition.BottomCenter}" Command="{Binding MoveOverlayCommand}"
+                                            CommandParameter="{x:Static models:OverlayPosition.BottomCenter}" ToolTip="{DynamicResource Lang_Position_BottomCenter}"
+                                            AutomationProperties.Name="{DynamicResource Lang_Position_BottomCenter}"/>
+                                        <Button Grid.Row="2" Grid.Column="2" Content="↘" Style="{StaticResource PositionPresetButton}"
+                                            Tag="{x:Static models:OverlayPosition.BottomRight}" Command="{Binding MoveOverlayCommand}"
+                                            CommandParameter="{x:Static models:OverlayPosition.BottomRight}" ToolTip="{DynamicResource Lang_Position_BottomRight}"
+                                            AutomationProperties.Name="{DynamicResource Lang_Position_BottomRight}"/>
+                                        <Ellipse Grid.Row="1" Grid.Column="1" Width="6" Height="6" Fill="#A3C2BC" VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False"/>
+                                    </Grid>
+                                </Border>
+                                <TextBlock Text="{DynamicResource Lang_Position_Screen}" Style="{StaticResource SectionDescription}" FontSize="11.5" Margin="0,7,0,0"/>
                             </StackPanel>
                         </Grid>
-
+                        <TextBlock Text="{DynamicResource Lang_Position_DragHint}" Style="{StaticResource SectionDescription}" Margin="0,14,0,0"/>
+                        <Border Height="1" Background="#DCE8E9" Margin="0,24,0,20"/>
+                        <StackPanel>
+                            <Grid>
+                                <TextBlock Text="{DynamicResource Lang_Spacing}" Style="{StaticResource SettingLabel}"/>
+                                <TextBlock Text="{Binding Config.ItemSpacing, StringFormat={}{0:0} px}" Style="{StaticResource ValueLabel}"/>
+                            </Grid>
+                            <Slider Style="{StaticResource ThinSlider}" Minimum="0" Maximum="16" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.ItemSpacing, Mode=TwoWay}" Margin="0,7,0,0"/>
+                        </StackPanel>
                         <StackPanel Margin="0,24,0,0">
-                            <Grid><TextBlock Text="{DynamicResource Lang_Scale}" Style="{StaticResource SettingLabel}"/><TextBlock Text="{Binding Config.UiScale, StringFormat={}{0:P0}}" Style="{StaticResource ValueLabel}"/></Grid>
+                            <Grid>
+                                <TextBlock Text="{DynamicResource Lang_Scale}" Style="{StaticResource SettingLabel}"/>
+                                <TextBlock Text="{Binding Config.UiScale, StringFormat={}{0:P0}}" Style="{StaticResource ValueLabel}"/>
+                            </Grid>
                             <Slider Style="{StaticResource ThinSlider}" Minimum="0.65" Maximum="1.5" TickFrequency="0.05" IsSnapToTickEnabled="True" Value="{Binding Config.UiScale, Mode=TwoWay}" Margin="0,7,0,0"/>
                         </StackPanel>
-
-                        <Border Height="1" Background="#DCE8E9" Margin="0,30,0,24"/>
+                    </StackPanel>
+                </ScrollViewer>
+                <ScrollViewer x:Name="NotificationsScroller" Grid.Column="0" Background="#FFFFFF"
+                    VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                    Visibility="{Binding IsChecked, ElementName=NavNotifications, Converter={StaticResource BooleanVisibility}}">
+                    <StackPanel x:Name="NotificationsSettings" Margin="34,26,34,30">
+                        <TextBlock Text="{DynamicResource Lang_Settings_Notifications}" Style="{StaticResource SectionTitle}"/>
+                        <TextBlock Text="{DynamicResource Lang_Settings_NotificationsDescription}" Style="{StaticResource SectionDescription}" Margin="0,5,0,22"/>
+                        <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Config.EnableNotifications, Mode=TwoWay}">
+                            <TextBlock Text="{DynamicResource Lang_EnableNotify}" TextWrapping="Wrap" Margin="0,0,10,0"/>
+                        </CheckBox>
+                        <Border BorderBrush="#BDD8D3" BorderThickness="2,0,0,0" Padding="10,0,0,0" Margin="3,3,0,8">
+                            <StackPanel>
+                                <CheckBox Style="{StaticResource ToggleSwitch}" Foreground="#48656D" IsChecked="{Binding Config.EnableServerNotifications, Mode=TwoWay}"
+                                    IsEnabled="{Binding Config.EnableNotifications}">
+                                    <TextBlock Text="{DynamicResource Lang_ServerNotifications}" TextWrapping="Wrap"/>
+                                </CheckBox>
+                                <CheckBox Style="{StaticResource ToggleSwitch}" Foreground="#48656D" IsChecked="{Binding Config.EnableChannelNotifications, Mode=TwoWay}"
+                                    IsEnabled="{Binding Config.EnableNotifications}">
+                                    <TextBlock Text="{DynamicResource Lang_ChannelNotifications}" TextWrapping="Wrap"/>
+                                </CheckBox>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+                <ScrollViewer x:Name="ConnectionScroller" Grid.Column="0" Background="#FFFFFF"
+                    VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                    Visibility="{Binding IsChecked, ElementName=NavConnection, Converter={StaticResource BooleanVisibility}}">
+                    <StackPanel x:Name="ConnectionSettings" Margin="34,26,34,30">
                         <TextBlock Text="{DynamicResource Lang_ConnectionSettings}" Style="{StaticResource SectionTitle}"/>
                         <TextBlock Text="{DynamicResource Lang_ConnectionSettings_Description}" Style="{StaticResource SectionDescription}" Margin="0,5,0,22"/>
-
+                        <StackPanel Margin="0,0,0,24"
+                            ToolTip="{DynamicResource Lang_ServerSource_Description}">
+                            <TextBlock Text="{DynamicResource Lang_ServerSource}" Foreground="{StaticResource MutedBrush}" Style="{StaticResource SettingLabel}" Margin="0,0,0,8"/>
+                            <Grid>
+                                <ComboBox Style="{StaticResource ModernComboBox}" AutomationProperties.Name="{DynamicResource Lang_ServerSource}"
+                                    ItemsSource="{Binding Servers}"
+                                    SelectedItem="{Binding SelectedServer, Mode=TwoWay}"
+                                    DisplayMemberPath="Name"/>
+                                <TextBlock Text="{DynamicResource Lang_ServerSource_Empty}" Foreground="{StaticResource MutedBrush}"
+                                    FontSize="13" Margin="12,0,26,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Servers.Count}" Value="0">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                </TextBlock>
+                            </Grid>
+                        </StackPanel>
                         <TextBlock Text="{DynamicResource Lang_RemoteAppPort}" Style="{StaticResource SettingLabel}" Margin="0,0,0,8"/>
                         <ComboBox Style="{StaticResource ModernComboBox}" ItemsSource="{Binding RemoteAppPorts}"
-                                  SelectedItem="{Binding Config.RemoteAppPort, Mode=TwoWay}"/>
+                            SelectedItem="{Binding Config.RemoteAppPort, Mode=TwoWay}"/>
                         <TextBlock Text="{DynamicResource Lang_RemoteAppPort_Description}" Style="{StaticResource SectionDescription}" Margin="0,7,0,22"/>
-
+                        <Border Height="1" Background="#DCE8E9" Margin="0,0,0,20"/>
+                        <TextBlock Text="{Binding ConnectionStatus}" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,12" Foreground="{StaticResource MutedBrush}"/>
+                        <Button x:Name="ConnectionRefreshButton" Content="{DynamicResource Lang_Tray_Refresh}" Click="BtnRefresh_Click" HorizontalAlignment="Left" Style="{StaticResource QuietButton}"/>
+                    </StackPanel>
+                </ScrollViewer>
+                <ScrollViewer x:Name="ApplicationScroller" Grid.Column="0" Background="#FFFFFF"
+                    VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
+                    Visibility="{Binding IsChecked, ElementName=NavApplication, Converter={StaticResource BooleanVisibility}}">
+                    <StackPanel x:Name="ApplicationSettings" Margin="34,26,34,30">
+                        <TextBlock Text="{DynamicResource Lang_Settings_Application}" Style="{StaticResource SectionTitle}"/>
+                        <TextBlock Text="{DynamicResource Lang_Settings_ApplicationDescription}" Style="{StaticResource SectionDescription}" Margin="0,5,0,22"/>
+                        <TextBlock Text="{DynamicResource Lang_Settings_Startup}" Style="{StaticResource SettingLabel}"/>
+                        <StackPanel Margin="0,13,0,0">
+                            <CheckBox Style="{StaticResource ToggleSwitch}"
+                                IsChecked="{Binding Config.AutoStart, Mode=TwoWay}">
+                                <TextBlock Text="{DynamicResource Lang_AutoStart}" TextWrapping="Wrap" Margin="0,0,10,0"/>
+                            </CheckBox>
+                            <TextBlock Text="{DynamicResource Lang_AutoStart_Description}"
+                                Style="{StaticResource SectionDescription}" Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,13,0,0">
+                            <CheckBox Style="{StaticResource ToggleSwitch}"
+                                IsChecked="{Binding Config.AutoOpenWithTeamSpeak, Mode=TwoWay}">
+                                <TextBlock Text="{DynamicResource Lang_AutoOpenWithTeamSpeak}" TextWrapping="Wrap" Margin="0,0,10,0"/>
+                            </CheckBox>
+                            <TextBlock Text="{DynamicResource Lang_AutoOpenWithTeamSpeak_Description}"
+                                Style="{StaticResource SectionDescription}" Margin="0,3,0,0"/>
+                        </StackPanel>
+                        <Border Height="1" Background="#DCE8E9" Margin="0,24,0,20"/>
                         <TextBlock Text="{DynamicResource Lang_Update_Title}" Style="{StaticResource SettingLabel}"/>
                         <TextBlock Text="{DynamicResource Lang_Update_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,9"/>
                         <TextBlock Text="{Binding UpdateStatusText}" FontSize="13" FontWeight="SemiBold"
-                                   Foreground="#176D5B" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            Foreground="#176D5B" TextWrapping="Wrap" Margin="0,0,0,10"/>
                         <WrapPanel>
                             <Button Content="{DynamicResource Lang_Update_Check}" Style="{StaticResource QuietButton}"
-                                    Command="{Binding CheckForUpdatesCommand}" Margin="0,0,9,8"/>
+                                Command="{Binding CheckForUpdatesCommand}" Margin="0,0,9,8"/>
                             <Button Content="{DynamicResource Lang_Update_Download}" Style="{StaticResource PrimaryButton}"
-                                    Command="{Binding OpenUpdateCommand}" IsEnabled="{Binding IsUpdateAvailable}" Margin="0,0,0,8"/>
+                                Command="{Binding OpenUpdateCommand}" IsEnabled="{Binding IsUpdateAvailable}" Margin="0,0,0,8"/>
                         </WrapPanel>
                         <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Config.CheckUpdatesOnStartup, Mode=TwoWay}">
                             <TextBlock Text="{DynamicResource Lang_Update_AutoCheck}" TextWrapping="Wrap"/>
                         </CheckBox>
-
                         <Border Height="1" Background="#DCE8E9" Margin="0,24,0,20"/>
                         <TextBlock Text="{DynamicResource Lang_Diagnostics}" Style="{StaticResource SettingLabel}"/>
                         <TextBlock Text="{DynamicResource Lang_Diagnostics_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,11"/>
@@ -537,129 +750,114 @@
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
-
                 <Border Grid.Column="1" Background="#D6E4E6"/>
-
-                <Border Grid.Column="2" Background="{StaticResource RailBrush}" CornerRadius="0,0,0,0">
+                <Border Grid.Column="2" Background="{StaticResource RailBrush}">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Margin="26,27,26,24">
+                        <StackPanel Margin="24,26,24,24">
                             <TextBlock Text="{DynamicResource Lang_LivePreview}" FontSize="14" FontWeight="SemiBold"/>
                             <TextBlock Text="{DynamicResource Lang_LivePreview_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,12"/>
-
-                            <Border Background="#0D2026" CornerRadius="14" Padding="10">
-                            <Border BorderBrush="#34515A" BorderThickness="1" CornerRadius="10" Padding="12">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Setter Property="HorizontalAlignment" Value="Stretch"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="AvatarOnly">
-                                                <Setter Property="HorizontalAlignment" Value="Center"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <Border.Background>
-                                    <SolidColorBrush Color="#193239" Opacity="{Binding Config.BackgroundOpacity}"/>
-                                </Border.Background>
-                                <Grid>
-                                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                                    <Grid VerticalAlignment="Center">
-                                        <Grid.Style>
-                                            <Style TargetType="Grid">
-                                                <Setter Property="Width" Value="{Binding Config.AvatarSize}"/>
-                                                <Setter Property="Height" Value="{Binding Config.AvatarSize}"/>
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="Indicator"><Setter Property="Width" Value="10"/><Setter Property="Height" Value="10"/></DataTrigger>
-                                                    <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="None"><Setter Property="Width" Value="0"/><Setter Property="Height" Value="0"/></DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </Grid.Style>
-                                        <Border x:Name="PreviewAvatar" CornerRadius="20">
-                                            <TextBlock Text="N" FontSize="10" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                                                        <Style.Triggers><DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="Indicator"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger></Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                            <Border.Style>
-                                                <Style TargetType="Border">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                    <Setter Property="Background" Value="#305268"/>
+                            <Border Background="#0D2026" CornerRadius="14" Padding="10" Height="160">
+                                <Border BorderBrush="#34515A" BorderThickness="1" CornerRadius="10" Padding="12" VerticalAlignment="{Binding Config.UserListAlignment}">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="AvatarOnly">
+                                                    <Setter Property="HorizontalAlignment" Value="Center"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <Border.Background>
+                                        <SolidColorBrush Color="#193239" Opacity="{Binding Config.BackgroundOpacity}"/>
+                                    </Border.Background>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid VerticalAlignment="Center">
+                                            <Grid.Style>
+                                                <Style TargetType="Grid">
+                                                    <Setter Property="Width" Value="{Binding Config.AvatarSize}"/>
+                                                    <Setter Property="Height" Value="{Binding Config.AvatarSize}"/>
                                                     <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="Indicator"><Setter Property="Background" Value="{Binding Config.TalkingBrush}"/></DataTrigger>
-                                                        <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="None"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                                        <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="Indicator">
+                                                            <Setter Property="Width" Value="10"/>
+                                                            <Setter Property="Height" Value="10"/>
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="None">
+                                                            <Setter Property="Width" Value="0"/>
+                                                            <Setter Property="Height" Value="0"/>
+                                                        </DataTrigger>
                                                     </Style.Triggers>
                                                 </Style>
-                                            </Border.Style>
-                                        </Border>
+                                            </Grid.Style>
+                                            <Border x:Name="PreviewAvatar" CornerRadius="20">
+                                                <TextBlock Text="N" FontSize="10" FontWeight="Bold" Foreground="#FFFFFF" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="Indicator">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <Border.Style>
+                                                    <Style TargetType="Border">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                        <Setter Property="Background" Value="#305268"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="Indicator">
+                                                                <Setter Property="Background" Value="{Binding Config.TalkingBrush}"/>
+                                                            </DataTrigger>
+                                                            <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="None">
+                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                            </Border>
+                                        </Grid>
+                                        <TextBlock Grid.Column="1" Text="Nova" FontSize="{Binding Config.FontSize}" FontWeight="SemiBold" Foreground="#F5FBFA" VerticalAlignment="Center" Margin="10,0" TextTrimming="CharacterEllipsis">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="AvatarOnly">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Height="16" VerticalAlignment="Center">
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="AvatarOnly">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+                                            <Border Width="3" Height="7" CornerRadius="1.5" Background="{Binding Config.TalkingBrush}" VerticalAlignment="Center"/>
+                                            <Border Width="3" Height="14" CornerRadius="1.5" Background="{Binding Config.TalkingBrush}" VerticalAlignment="Center" Margin="3,0"/>
+                                            <Border Width="3" Height="10" CornerRadius="1.5" Background="{Binding Config.TalkingBrush}" VerticalAlignment="Center"/>
+                                        </StackPanel>
                                     </Grid>
-                                    <TextBlock Grid.Column="1" Text="Nova" FontSize="{Binding Config.FontSize}" FontWeight="SemiBold" Foreground="#F5FBFA" VerticalAlignment="Center" Margin="10,0" TextTrimming="CharacterEllipsis">
-                                        <TextBlock.Style>
-                                            <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="AvatarOnly"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </TextBlock.Style>
-                                    </TextBlock>
-                                    <StackPanel Grid.Column="2" Orientation="Horizontal" Height="16" VerticalAlignment="Center">
-                                        <StackPanel.Style>
-                                            <Style TargetType="StackPanel">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Config.AvatarDisplayMode}" Value="AvatarOnly"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
-                                                </Style.Triggers>
-                                            </Style>
-                                        </StackPanel.Style>
-                                        <Border Width="3" Height="7" CornerRadius="1.5" Background="{Binding Config.TalkingBrush}" VerticalAlignment="Center"/>
-                                        <Border Width="3" Height="14" CornerRadius="1.5" Background="{Binding Config.TalkingBrush}" VerticalAlignment="Center" Margin="3,0"/>
-                                        <Border Width="3" Height="10" CornerRadius="1.5" Background="{Binding Config.TalkingBrush}" VerticalAlignment="Center"/>
-                                    </StackPanel>
-                                </Grid>
+                                </Border>
                             </Border>
-                            </Border>
-
-                            <Border Height="1" Background="#DCE8E9" Margin="0,22"/>
-
-                            <TextBlock Text="{DynamicResource Lang_Behavior}" FontSize="14" FontWeight="SemiBold" Margin="0,0,0,6"/>
-                            <CheckBox Content="{DynamicResource Lang_EnableNotify}" Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Config.EnableNotifications, Mode=TwoWay}"/>
-                            <Border BorderBrush="#BDD8D3" BorderThickness="2,0,0,0" Padding="10,0,0,0" Margin="3,3,0,8">
-                                <StackPanel>
-                                    <CheckBox Style="{StaticResource ToggleSwitch}" Foreground="#48656D" IsChecked="{Binding Config.EnableServerNotifications, Mode=TwoWay}"
-                                              IsEnabled="{Binding Config.EnableNotifications}">
-                                        <TextBlock Text="{DynamicResource Lang_ServerNotifications}" TextWrapping="Wrap"/>
-                                    </CheckBox>
-                                    <CheckBox Style="{StaticResource ToggleSwitch}" Foreground="#48656D" IsChecked="{Binding Config.EnableChannelNotifications, Mode=TwoWay}"
-                                              IsEnabled="{Binding Config.EnableNotifications}">
-                                        <TextBlock Text="{DynamicResource Lang_ChannelNotifications}" TextWrapping="Wrap"/>
-                                    </CheckBox>
-                                </StackPanel>
-                            </Border>
-                            <StackPanel>
-                                <CheckBox Content="{DynamicResource Lang_ShowOnlyTalking}" Style="{StaticResource ToggleSwitch}"
-                                          IsChecked="{Binding Config.ShowOnlyTalking, Mode=TwoWay}"/>
-                                <TextBlock Text="{DynamicResource Lang_ShowOnlyTalking_Description}"
-                                           Style="{StaticResource SectionDescription}" TextWrapping="Wrap" Margin="0,3,0,0"/>
-                            </StackPanel>
-                            <StackPanel Margin="0,13,0,0">
-                                <CheckBox Content="{DynamicResource Lang_AutoStart}" Style="{StaticResource ToggleSwitch}"
-                                          IsChecked="{Binding Config.AutoStart, Mode=TwoWay}"/>
-                                <TextBlock Text="{DynamicResource Lang_AutoStart_Description}"
-                                           Style="{StaticResource SectionDescription}" Margin="0,3,0,0"/>
-                            </StackPanel>
-                            <StackPanel Margin="0,13,0,0">
-                                <CheckBox Content="{DynamicResource Lang_AutoOpenWithTeamSpeak}" Style="{StaticResource ToggleSwitch}"
-                                          IsChecked="{Binding Config.AutoOpenWithTeamSpeak, Mode=TwoWay}"/>
-                                <TextBlock Text="{DynamicResource Lang_AutoOpenWithTeamSpeak_Description}"
-                                           Style="{StaticResource SectionDescription}" Margin="0,3,0,0"/>
-                            </StackPanel>
-
+                            <Border Height="1" Background="#D6E4E6" Margin="0,24"/>
+                            <TextBlock Text="{DynamicResource Lang_Settings_AutoSaved}" Style="{StaticResource SectionDescription}"/>
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
             </Grid>
 
-            <Border Grid.Row="3" Background="{StaticResource SurfaceRaisedBrush}" BorderBrush="#D6E4E6" BorderThickness="0,1,0,0" CornerRadius="0,0,18,18">
+            <Border Grid.Row="4" Background="{StaticResource SurfaceRaisedBrush}" BorderBrush="#D6E4E6" BorderThickness="0,1,0,0" CornerRadius="0,0,18,18">
                 <Grid Margin="30,0">
                     <Button Content="{DynamicResource Lang_Reset}" Style="{StaticResource QuietButton}" HorizontalAlignment="Left" Click="BtnReset_Click"/>
                     <Button Content="{DynamicResource Lang_Save}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right" Click="BtnSave_Click"/>

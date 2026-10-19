@@ -17,11 +17,21 @@ internal static class Program
     [STAThread]
     private static int Main(string[] args)
     {
-        _ = new Application();
+        _ = new Application { ShutdownMode = ShutdownMode.OnExplicitShutdown };
         SynchronizationContext.SetSynchronizationContext(new DispatcherSynchronizationContext());
         LanguageHelper.SetLanguage("en-US");
         try
         {
+            if (args.Length == 2 && args[0] == "--preview-settings")
+            {
+                SettingsOrganizationChecks.RenderPreviews(args[1]);
+                return 0;
+            }
+            if (args.Length == 2 && args[0] == "--preview-placement")
+            {
+                PlacementChecks.RenderPreviews(args[1]);
+                return 0;
+            }
             if (args.Length == 2 && args[0] == "--preview")
             {
                 FeatureChecks.RenderPreviews(args[1]);
@@ -33,10 +43,12 @@ internal static class Program
                 Console.WriteLine($"GitHub latest: {release.Tag}; asset: {release.DownloadUri}");
                 return 0;
             }
+            _checks += PlacementChecks.Run();
             MovementTests();
             TalkingTests();
             RefreshTests();
             _checks += FeatureChecks.Run();
+            _checks += SettingsOrganizationChecks.Run();
             Console.WriteLine($"PASS: {_checks} regression checks. No TeamSpeak connection was opened.");
             return 0;
         }

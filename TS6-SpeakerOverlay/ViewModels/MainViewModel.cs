@@ -20,7 +20,18 @@ namespace TS6_SpeakerOverlay.ViewModels
         
         public AppConfig Config { get; }
         public IReadOnlyList<int> RemoteAppPorts { get; } = [5899, 6100, 6200, 7000];
+        public event Action<OverlayPosition>? PositionPresetRequested;
 
+        [RelayCommand]
+        private void MoveOverlay(OverlayPosition preset)
+        {
+            if (_isDisposed || !Enum.IsDefined(preset)) return;
+            var alignment = OverlayGeometry.AlignmentFor(preset);
+            Config.UserListAlignment = alignment.Vertical;
+            Config.UserListHorizontalAlignment = alignment.Horizontal;
+            Config.PositionPreset = preset;
+            PositionPresetRequested?.Invoke(preset);
+        }
         private readonly Ts6Service _tsService;
         private int _currentConnectionId;
         private string _currentChannelId = "";

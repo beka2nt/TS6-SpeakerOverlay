@@ -222,7 +222,8 @@ internal static class FeatureChecks
             var encoder = new PngBitmapEncoder();
             encoder.Frames.Add(BitmapFrame.Create(bitmap));
             using (var stream = File.Create(Path.Combine(directory, "settings-" + language.Code + ".png"))) encoder.Save(stream);
-            ((System.Windows.Controls.ScrollViewer)window.FindName("SettingsScroller")).ScrollToBottom();
+            SettingsOrganizationChecks.Select(window, "Application");
+            ((System.Windows.Controls.ScrollViewer)window.FindName("ApplicationScroller")).ScrollToBottom();
             root.UpdateLayout();
             var diagnostics = new RenderTargetBitmap(960, 720, 96, 96, PixelFormats.Pbgra32);
             diagnostics.Render(root);
