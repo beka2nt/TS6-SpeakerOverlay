@@ -22,6 +22,11 @@ internal static class Program
         LanguageHelper.SetLanguage("en-US");
         try
         {
+            if (args.Length == 1 && args[0] == "--check-auto-port")
+            {
+                Console.WriteLine($"PASS: {PortDiscoveryChecks.Run()} port discovery checks.");
+                return 0;
+            }
             if (args.Length == 1 && args[0] == "--check-typography")
             {
                 Console.WriteLine($"PASS: {NameTypographyChecks.Run()} typography checks.");
@@ -62,6 +67,7 @@ internal static class Program
             _checks += UtilityPolishChecks.Run();
             _checks += NameTypographyChecks.Run();
             _checks += ConnectionLifecycleChecks.Run();
+            _checks += PortDiscoveryChecks.Run();
             Console.WriteLine($"PASS: {_checks} regression checks. No TeamSpeak connection was opened.");
             return 0;
         }
