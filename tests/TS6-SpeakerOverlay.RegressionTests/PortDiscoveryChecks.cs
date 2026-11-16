@@ -31,6 +31,20 @@ internal static class PortDiscoveryChecks
         Check(!discovery.IsOwnedByTeamSpeak(new("127.0.0.1", 6100, 999)), "remembered port owned by another process is never trusted");
         listeners = [new(IPAddress.Loopback, 6200, 999)];
         Check(!discovery.IsOwnedByTeamSpeak(new("127.0.0.1", 6200, 100)), "ownership is re-read after a port changes hands");
+        foreach (var (wildcard, loopback) in new[] { (IPAddress.Any, IPAddress.Loopback), (IPAddress.IPv6Any, IPAddress.IPv6Loopback) })
+        {
+            listeners = [new(wildcard, 6200, 100), new(loopback, 6200, 999)];
+            Check(discovery.DiscoverAsync(CancellationToken.None).GetAwaiter().GetResult().Candidates.Count == 0,
+                loopback + " foreign explicit listener prevents trusting a TS wildcard route");
+            Check(!discovery.IsOwnedByTeamSpeak(new(loopback.ToString(), 6200, 100)),
+                loopback + " ownership recheck rejects an overlapping foreign route");
+            listeners = [new(loopback, 6200, 100), new(wildcard, 6200, 999)];
+            Check(discovery.DiscoverAsync(CancellationToken.None).GetAwaiter().GetResult().Candidates.Count == 0,
+                loopback + " foreign wildcard prevents trusting a shared explicit route");
+        }
+        listeners = [new(IPAddress.Any, 6200, 100), new(IPAddress.Parse("192.0.2.1"), 6200, 999)];
+        Check(discovery.IsOwnedByTeamSpeak(new("127.0.0.1", 6200, 100)),
+            "foreign listener on a different explicit interface does not conflict with loopback");
         var stopped = new WindowsTs6PortDiscovery(() => [], () => throw new InvalidOperationException("Must not read listeners without TS"))
             .DiscoverAsync(CancellationToken.None).GetAwaiter().GetResult();
         Check(!stopped.IsTeamSpeakRunning && stopped.InspectionSucceeded && stopped.Candidates.Count == 0,

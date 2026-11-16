@@ -13,7 +13,7 @@ using System.Collections.Generic;
 
 namespace TS6_SpeakerOverlay.Services
 {
-    public sealed class Ts6Service : ITs6Connection
+    public sealed class Ts6Service : ITs6Connection, ISessionGuardedTs6Connection
     {
         private const int DefaultPort = 5899;
         private readonly WebsocketClient _client;
@@ -28,6 +28,9 @@ namespace TS6_SpeakerOverlay.Services
         private readonly Dictionary<(int ConnectionId, int ClientId), (bool IsTalking, DateTime Expires)> _recentTalkStates = new();
         private bool _hasAuthoritativeSnapshot;
         private string _savedApiKey = "";
+        private readonly Action<string> _saveApiKey;
+        private readonly bool _managedSession;
+        private Action<Action>? _sessionGuard;
         private CancellationTokenSource? _refreshCancellation;
         private int _isDisposed;
 
@@ -46,8 +49,10 @@ namespace TS6_SpeakerOverlay.Services
 
         internal Ts6Service(int port, bool loadApiKey) : this(new Ts6Endpoint("127.0.0.1", port is >= 1 and <= 65535 ? port : DefaultPort, 0), loadApiKey, true) { }
 
-        internal Ts6Service(Ts6Endpoint endpoint, bool loadApiKey, bool autoReconnect)
+        internal Ts6Service(Ts6Endpoint endpoint, bool loadApiKey, bool autoReconnect, Action<string>? saveApiKey = null)
         {
+            _saveApiKey = saveApiKey ?? ApiKeyStore.Save;
+            _managedSession = !autoReconnect;
             if (loadApiKey) LoadApiKey();
             var factory = new Func<ClientWebSocket>(() =>
             {
@@ -112,7 +117,24 @@ namespace TS6_SpeakerOverlay.Services
             _savedApiKey = ApiKeyStore.Load();
         }
 
+        void ISessionGuardedTs6Connection.SetSessionGuard(Action<Action> dispatchIfCurrent) => _sessionGuard = dispatchIfCurrent;
+
+        private void ExecuteCurrentSession(Action action)
+        {
+            if (Volatile.Read(ref _isDisposed) != 0) return;
+            if (_managedSession)
+                _sessionGuard?.Invoke(() => { if (Volatile.Read(ref _isDisposed) == 0) action(); });
+            else action();
+        }
+
         public bool SendAuth()
+        {
+            bool sent = false;
+            ExecuteCurrentSession(() => sent = SendAuthCore());
+            return sent;
+        }
+
+        private bool SendAuthCore()
         {
             if (Volatile.Read(ref _isDisposed) != 0) return false;
 
@@ -131,6 +153,9 @@ namespace TS6_SpeakerOverlay.Services
         }
 
         private void HandleMessage(string? json)
+            => ExecuteCurrentSession(() => HandleCurrentMessage(json));
+
+        private void HandleCurrentMessage(string? json)
         {
             if (string.IsNullOrEmpty(json)) return;
             try 
@@ -166,12 +191,6 @@ namespace TS6_SpeakerOverlay.Services
             if (payload == null) return;
 
             var newKey = payload["apiKey"]?.ToString();
-            if (!string.IsNullOrEmpty(newKey) && newKey != _savedApiKey)
-            {
-                _savedApiKey = newKey;
-                ApiKeyStore.Save(newKey);
-            }
-
             if (payload["connections"] is not JsonArray connections)
             {
                 AppLogger.Warning("TS6 authentication response did not contain a server snapshot.");
@@ -179,6 +198,7 @@ namespace TS6_SpeakerOverlay.Services
             }
             if (connections.Count == 0)
             {
+                SaveReturnedKey(newKey);
                 AppLogger.Info("TS6 is not connected to any server.");
                 ReplaceCachedServers(new List<Ts6Server>());
                 OnSnapshotReceived?.Invoke();
@@ -241,9 +261,17 @@ namespace TS6_SpeakerOverlay.Services
                 });
             }
 
+            SaveReturnedKey(newKey);
             ReplaceCachedServers(servers);
             OnSnapshotReceived?.Invoke();
         }
+
+        private void SaveReturnedKey(string? key) => ExecuteCurrentSession(() =>
+        {
+            if (string.IsNullOrEmpty(key) || key == _savedApiKey) return;
+            _savedApiKey = key;
+            _saveApiKey(key);
+        });
 
         private void HandleClientMoved(JsonNode? node)
         {

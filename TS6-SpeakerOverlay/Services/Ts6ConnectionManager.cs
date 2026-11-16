@@ -24,6 +24,7 @@ internal sealed class Ts6ConnectionManager : ITs6Connection
     private readonly Action<Action> _dispatch;
     private readonly TimeSpan _interval;
     private Session? _current;
+    private Ts6Endpoint? _lastVerifiedEndpoint;
     private Task? _loop;
     private long _revision;
     private bool _automatic, _started, _authorizationBlocked, _connected;
@@ -163,7 +164,26 @@ internal sealed class Ts6ConnectionManager : ITs6Connection
                 if (endpoint.ProcessId <= 0 || !_discovery.IsOwnedByTeamSpeak(endpoint))
                 { DiscoveryFailed(Ts6PortState.NoRemoteAppListener, revision); return; }
             }
-            else endpoint = new("127.0.0.1", port, 0);
+            else
+            {
+                // Resolve the selected port's address family when TS is inspectable.
+                // An explicit manual port still works if inspection is unavailable.
+                var result = await _discovery.DiscoverAsync(_token).ConfigureAwait(false);
+                if (!IsRevision(revision)) return;
+                var choices = result.InspectionSucceeded
+                    ? result.Candidates.Where(item => item.Port == port).GroupBy(item => item.ProcessId)
+                        .Select(group => group.OrderBy(item => item.Host == "127.0.0.1" ? 0 : 1).First()).ToArray()
+                    : [];
+                Ts6Endpoint? known;
+                lock (_sync) known = _lastVerifiedEndpoint;
+                endpoint = known != null && result.InspectionSucceeded && result.Candidates.Contains(known) && known.Port == port
+                    ? known : choices.Length == 1 ? choices[0] : null;
+                if (endpoint == null && choices.Length > 1)
+                { DiscoveryFailed(Ts6PortState.AmbiguousCandidates, revision); return; }
+                endpoint ??= new("127.0.0.1", port, 0);
+                if (endpoint.ProcessId > 0 && !_discovery.IsOwnedByTeamSpeak(endpoint))
+                { DiscoveryFailed(Ts6PortState.NoRemoteAppListener, revision); return; }
+            }
             _ = endpoint.ToUri();
 
             Session? previous;
@@ -201,10 +221,12 @@ internal sealed class Ts6ConnectionManager : ITs6Connection
     private void Attach(Session session)
     {
         var connection = session.Connection;
+        if (connection is ISessionGuardedTs6Connection guarded)
+            guarded.SetSessionGuard(action => Publish(session, action, true));
         connection.OnConnectionStateChanged += connected => Publish(session, () =>
         {
             if (!connected) { Retire(session, Ts6PortState.NoRemoteAppListener, false); return; }
-            if (session.Automatic && !_discovery.IsOwnedByTeamSpeak(session.Endpoint))
+            if (session.Endpoint.ProcessId > 0 && !_discovery.IsOwnedByTeamSpeak(session.Endpoint))
             { Retire(session, Ts6PortState.NoRemoteAppListener, false); return; }
             lock (_sync) { if (!IsCurrentLocked(session)) return; session.TransportConnected = true; }
             SetState(Ts6PortState.AuthorizationRequired, session.Revision);
@@ -222,6 +244,7 @@ internal sealed class Ts6ConnectionManager : ITs6Connection
                 if (!IsCurrentLocked(session) || !session.TransportConnected) return;
                 first = !session.Verified;
                 session.Verified = true;
+                _lastVerifiedEndpoint = session.Endpoint;
                 if (session.Automatic) _configuredPort = session.Endpoint.Port;
             }
             if (first) OnEndpointVerified?.Invoke(session.Endpoint);

@@ -2,11 +2,13 @@
 
 - 默认自动识别本机 TeamSpeak 的远程应用端口，收到有效快照后记忆；旧配置保留原端口，连接中断后约每 5 秒重新检测。
 - 只连接 TeamSpeak 进程拥有的本机监听，连接建立后再次检查归属；多个候选无法确定时提示手动设置，不扫描其他应用。
+- 自动识别校验当前 Windows 会话与官方签名，排除其他进程的重叠监听；有效授权响应的密钥保存同样受当前会话检查保护，不读取测试用户的真实密钥。
 - 保留手动模式，支持 1–65535 任意有效端口。修改端口或识别模式后立即重连，无需重启；旧连接的迟到消息不会覆盖新状态。
+- 手动模式优先解析该端口的 TS IPv4/IPv6 地址，无法检查时保留 IPv4 手动方式；未签名或签名无法验证的 TS 可手动连接。
 - 设置页新增当前连接端口、重新检测和七语言诊断。等待授权时保留连接，授权被拒后暂停自动重试。
 - TS 未启用远程应用或因 Windows 保留端口绑定失败时，仍需在 TS 内处理；悬浮窗不会修改 TS、Windows 或其他插件设置。
 - Automatically discover local TS-owned Remote Apps listeners, remember verified ports, and reconnect immediately after manual port/mode changes. Add localized diagnostics and retain manual fallback.
-- 验证：758 项回归检查通过；原生 IPv4/IPv6 监听与模拟会话测试不读取真实密钥、不连接真实 TeamSpeak。七语言设置页已渲染检查，真实 TS 连通性待用户试用。
+- 验证：784 项回归检查通过；原生 IPv4/IPv6 监听、签名检查与模拟会话测试不读取真实密钥、不连接真实 TeamSpeak。七语言设置页已渲染检查，真实 TS 连通性待用户试用。
 - 本地自包含 Windows x64 构建；本次未上传 GitHub，也未更改桌面快捷方式。应用内下载并更新仍是独立待实现功能。
 
 ## v1.7.5 — 字体搜索 / Font search

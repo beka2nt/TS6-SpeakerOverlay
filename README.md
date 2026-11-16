@@ -58,9 +58,11 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 3. 默认自动识别本机 TS 端口。右键托盘图标打开“设置 → 连接服务器”，可查看当前连接端口、诊断提示，或点击“重新检测”。
 4. 加入服务器与频道。若连接多个服务器，在“连接服务器”分类中选择展示来源。
 
-旧配置会默认启用自动识别，同时保留原端口。检测只检查 TeamSpeak 进程拥有的本机监听，不扫描其他应用。连接中断后约每 5 秒重新检测，健康连接不会反复检测。发现多个候选且无法根据已记忆端口确定时，会提示切换手动模式。
+旧配置会默认启用自动识别，同时保留原端口。检测只检查当前 Windows 会话中、官方签名可验证的 TeamSpeak 进程拥有的本机监听，不扫描其他应用；共享端口存在其他进程的重叠监听时不会自动认证。连接中断后约每 5 秒重新检测，健康连接不会反复检测。发现多个候选且无法根据已记忆端口确定时，会提示切换手动模式。
 
 关闭“自动识别 TS 远程应用端口”后，可输入 `1–65535` 中与 TS 设置一致的端口；离开输入框后立即重连，无需重启。授权被拒绝后等待你处理 TS 授权并点击“重新检测”，不会反复发起授权。
+
+手动模式会优先解析该端口的 TS 监听地址，支持已发现的 IPv6 端口；无法检查监听时沿用原有 IPv4 回环连接。使用未签名的 TS 构建、签名无法验证或进程检查权限不足时，可使用手动模式；仅 IPv6 的监听仍需要可用的监听检查。
 
 ### 设置分类
 
@@ -172,7 +174,7 @@ dotnet run --project tests/TS6-SpeakerOverlay.RegressionTests/TS6-SpeakerOverlay
 
 还会验证更新请求、数字版本比较、网络失败和取消处理、下载链接来源、七种语言资源与占位符、语言入口位置，以及 100% / 125% / 150% / 200% DPI 下的托盘布局。
 
-当前共有 **758 项离线回归检查**，包括真实但不可见窗口的定位与 Shift 锁轴、七种语言、字体搜索与字号输入验证、共享样式，以及模拟 Remote Apps 服务的静默心跳、断线重连和退出停止重试。端口检查涵盖原生 IPv4/IPv6 监听、进程归属、候选冲突、授权拒绝、旧连接迟到事件、即时切换及配置保存。测试不连接真实 TeamSpeak，也不读取其授权密钥。
+当前共有 **784 项离线回归检查**，包括真实但不可见窗口的定位与 Shift 锁轴、七种语言、字体搜索与字号输入验证、共享样式，以及模拟 Remote Apps 服务的静默心跳、断线重连和退出停止重试。端口检查涵盖原生 IPv4/IPv6 监听、进程身份及归属、共享端口冲突、授权拒绝、旧连接迟到事件及密钥保存、即时切换与配置保存。测试不连接真实 TeamSpeak，也不读取其授权密钥。
 
 ## 更新记录
 
@@ -241,6 +243,8 @@ Update checks require no GitHub login and send no TeamSpeak keys, settings or lo
 4. Join a server/channel, then select the server to display under Connection in Settings.
 
 Existing settings retain their port with automatic detection enabled. To specify a port, turn detection off and enter the port configured in TeamSpeak (1–65535); leaving the input reconnects immediately. Failed connections retry discovery about every five seconds; healthy connections remain untouched. Rejected authorization pauses until you explicitly retry. Ambiguous candidates require manual selection.
+
+Automatic discovery requires an official TeamSpeak signature and the current Windows session; overlapping foreign listener routes are excluded. Manual mode resolves a known TS listener's address family, retaining explicit IPv4 loopback fallback when inspection is unavailable. Unsigned builds or unavailable signature/process checks can use manual mode; IPv6-only manual selection requires listener inspection.
 
 If TeamSpeak has no Remote Apps listener, enable its interface or resolve its binding failure in TeamSpeak first. Windows-reserved ports may require choosing another TS port; the overlay can then follow it. The overlay does not change TS settings, reserved ports or firewall rules.
 

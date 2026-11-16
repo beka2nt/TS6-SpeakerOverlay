@@ -22,6 +22,22 @@ internal static class Program
         LanguageHelper.SetLanguage("en-US");
         try
         {
+            if (args.Length == 1 && args[0] == "--check-key-guard")
+            {
+                Console.WriteLine($"PASS: {SessionKeyChecks.Run()} session key checks.");
+                return 0;
+            }
+            if (args.Length == 2 && args[0] == "--check-ts-publisher")
+            {
+                if (!TeamSpeakProcessIdentity.HasTrustedPublisher(args[1])) throw new InvalidOperationException("TS publisher verification failed.");
+                Console.WriteLine("PASS: installed TeamSpeak publisher verified without opening a TS connection.");
+                return 0;
+            }
+            if (args.Length == 1 && args[0] == "--check-process-identity")
+            {
+                Console.WriteLine($"PASS: {ProcessIdentityChecks.Run()} process identity checks.");
+                return 0;
+            }
             if (args.Length == 2 && args[0] == "--preview-auto-port")
             {
                 AutoPortSettingsChecks.RenderPreviews(args[1]);
@@ -80,6 +96,8 @@ internal static class Program
             _checks += PortDiscoveryChecks.Run();
             _checks += AutoPortConnectionChecks.Run();
             _checks += AutoPortSettingsChecks.Run();
+            _checks += ProcessIdentityChecks.Run();
+            _checks += SessionKeyChecks.Run();
             Console.WriteLine($"PASS: {_checks} regression checks. No TeamSpeak connection was opened.");
             return 0;
         }

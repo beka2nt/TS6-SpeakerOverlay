@@ -17,3 +17,8 @@ public interface ITs6Connection : IDisposable
     Task StartAsync();
     bool SendAuth();
 }
+
+internal interface ISessionGuardedTs6Connection
+{
+    void SetSessionGuard(Action<Action> dispatchIfCurrent);
+}

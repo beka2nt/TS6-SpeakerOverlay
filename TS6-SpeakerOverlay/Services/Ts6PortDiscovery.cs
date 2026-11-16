@@ -52,14 +52,22 @@ internal sealed class WindowsTs6PortDiscovery : ITs6PortDiscovery
             running = ids.Count > 0;
             if (!running) return new(false, true, []);
             var candidates = new HashSet<Ts6Endpoint>();
-            foreach (var row in _listeners())
+            var listeners = _listeners();
+            foreach (var row in listeners)
             {
                 token.ThrowIfCancellationRequested();
                 if (!ids.Contains(row.ProcessId) || row.Port is < 1 or > 65535) continue;
                 string? host = row.Address.Equals(IPAddress.Any) ? "127.0.0.1"
                     : row.Address.Equals(IPAddress.IPv6Any) ? "::1"
                     : IPAddress.IsLoopback(row.Address) ? row.Address.ToString() : null;
-                if (host != null) candidates.Add(new(host, row.Port, row.ProcessId));
+                if (host == null) continue;
+                var destination = IPAddress.Parse(host);
+                // A wildcard binding can exclude another process's explicit address.
+                // Keep foreign rows until the actual destination is proven unambiguous.
+                bool overlap = listeners.Any(other => other.ProcessId != row.ProcessId && other.Port == row.Port
+                    && other.Address.AddressFamily == destination.AddressFamily
+                    && (other.Address.Equals(destination) || other.Address.Equals(IPAddress.Any) || other.Address.Equals(IPAddress.IPv6Any)));
+                if (!overlap) candidates.Add(new(host, row.Port, row.ProcessId));
             }
             return new(true, true, candidates.OrderBy(item => item.Port).ThenBy(item => item.Host).ToArray());
         }
@@ -73,7 +81,14 @@ internal sealed class WindowsTs6PortDiscovery : ITs6PortDiscovery
     private static IReadOnlyList<int> ReadTeamSpeakIds()
     {
         var processes = Process.GetProcessesByName("TeamSpeak");
-        try { return processes.Select(process => process.Id).ToArray(); }
+        using var current = Process.GetCurrentProcess();
+        try
+        {
+            return processes.Where(process => process.SessionId == current.SessionId
+                && process.MainModule?.FileName is string path
+                && TeamSpeakProcessIdentity.IsTrustedProcess(process.SessionId, current.SessionId, path))
+                .Select(process => process.Id).ToArray();
+        }
         finally { foreach (var process in processes) process.Dispose(); }
     }
 }

@@ -127,6 +127,41 @@ internal static class AutoPortConnectionChecks
         }
 
         var blocked = new TaskCompletionSource<Ts6DiscoveryResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var ipv6 = new Ts6Endpoint("::1", 7300, 100);
+        var manualEndpoints = new List<Ts6Endpoint>();
+        using (var manager = new Ts6ConnectionManager(new Discovery(new(true, true, [ipv6])), endpoint =>
+        { manualEndpoints.Add(endpoint); return new Connection(); }, true, 6200))
+        {
+            await manager.StartAsync();
+            await manager.ConfigureAsync(false, 7300);
+            Check(manualEndpoints.Count == 2 && manualEndpoints.All(endpoint => endpoint == ipv6),
+                "switching a verified IPv6 session to manual preserves the reachable TS address");
+        }
+        manualEndpoints.Clear();
+        using (var manager = new Ts6ConnectionManager(new Discovery(new(true, true, [ipv6, c])), endpoint =>
+        { manualEndpoints.Add(endpoint); return new Connection(); }, true, 6200))
+        {
+            await manager.StartAsync();
+            Check(manager.State == Ts6PortState.AmbiguousCandidates, "IPv6 manual fallback starts from an explicit ambiguous-candidate state");
+            await manager.ConfigureAsync(false, 7300);
+            Check(manualEndpoints.SequenceEqual([ipv6]), "manual port selection resolves the TS-owned IPv6 listener after ambiguity");
+        }
+        manualEndpoints.Clear();
+        using (var manager = new Ts6ConnectionManager(new Discovery(new(true, false, [])), endpoint =>
+        { manualEndpoints.Add(endpoint); return new Connection(); }, false, 6200))
+        {
+            await manager.StartAsync();
+            Check(manualEndpoints.Single() == new Ts6Endpoint("127.0.0.1", 6200, 0),
+                "explicit manual IPv4 mode remains usable when listener inspection is unavailable");
+        }
+        var manualOwner = new Discovery(new(true, true, [ipv6]));
+        var manualPeer = new Connection { BeforeConnect = () => manualOwner.Trusted = false };
+        using (var manager = new Ts6ConnectionManager(manualOwner, _ => manualPeer, false, 7300))
+        {
+            await manager.StartAsync();
+            Check(manualPeer.Disposed && manualPeer.AuthAttempts == 0,
+                "a resolved manual TS listener is rechecked before authentication");
+        }
         var slow = new Discovery(new(true, true, [a])) { Discover = _ => blocked.Task };
         var requested = new List<int>();
         using (var manager = new Ts6ConnectionManager(slow, endpoint => { requested.Add(endpoint.Port); return new Connection(); }, true, 6200))
@@ -241,7 +276,7 @@ internal static class AutoPortConnectionChecks
         public bool IsOwnedByTeamSpeak(Ts6Endpoint endpoint) => Trusted && Result.Candidates.Contains(endpoint);
     }
 
-    internal sealed class Connection : ITs6Connection
+    internal sealed class Connection : ITs6Connection, ISessionGuardedTs6Connection
     {
         public event Action<List<Ts6Server>>? OnServersUpdated;
         public event Action? OnSnapshotReceived;
@@ -255,6 +290,8 @@ internal static class AutoPortConnectionChecks
         internal int RejectCode, AuthAttempts, Starts;
         internal Action? BeforeConnect;
         internal Task? StartWait;
+        internal Ts6Service? GuardedService;
+        public void SetSessionGuard(Action<Action> dispatchIfCurrent) => ((ISessionGuardedTs6Connection?)GuardedService)?.SetSessionGuard(dispatchIfCurrent);
         public async Task StartAsync()
         {
             Starts++;
@@ -276,6 +313,6 @@ internal static class AutoPortConnectionChecks
             OnClientMoved?.Invoke(1, 1, "2", "1", "Fixture");
             OnServerMembershipChanged?.Invoke(1, 1, "Fixture", true);
         }
-        public void Dispose() => Disposed = true;
+        public void Dispose() { Disposed = true; GuardedService?.Dispose(); }
     }
 }
