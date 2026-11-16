@@ -11,6 +11,7 @@ config.json
 # Local packages, build artifacts, and runtime data
 /artifacts/
 /outputs/
+/.worktrees/
 publish_output/
 logs/
 avatars/
