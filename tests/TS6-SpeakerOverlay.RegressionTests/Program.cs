@@ -24,7 +24,7 @@ internal static class Program
         {
             if (args.Length == 1 && args[0] == "--check-auto-port")
             {
-                Console.WriteLine($"PASS: {PortDiscoveryChecks.Run()} port discovery checks.");
+                Console.WriteLine($"PASS: {PortDiscoveryChecks.Run() + AutoPortConnectionChecks.Run()} automatic port checks.");
                 return 0;
             }
             if (args.Length == 1 && args[0] == "--check-typography")
@@ -68,6 +68,7 @@ internal static class Program
             _checks += NameTypographyChecks.Run();
             _checks += ConnectionLifecycleChecks.Run();
             _checks += PortDiscoveryChecks.Run();
+            _checks += AutoPortConnectionChecks.Run();
             Console.WriteLine($"PASS: {_checks} regression checks. No TeamSpeak connection was opened.");
             return 0;
         }

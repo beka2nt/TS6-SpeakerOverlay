@@ -13,7 +13,7 @@ using System.Collections.Generic;
 
 namespace TS6_SpeakerOverlay.Services
 {
-    public sealed class Ts6Service : IDisposable
+    public sealed class Ts6Service : ITs6Connection
     {
         private const int DefaultPort = 5899;
         private readonly WebsocketClient _client;
@@ -38,12 +38,15 @@ namespace TS6_SpeakerOverlay.Services
         public event Action<int, int, string, string, string?>? OnClientMoved;
         public event Action<int, int, string, bool>? OnServerMembershipChanged;
         public event Action<bool>? OnConnectionStateChanged;
+        public event Action<int>? OnAuthenticationRejected;
 
         public Ts6Service(int port = DefaultPort) : this(port, true)
         {
         }
 
-        internal Ts6Service(int port, bool loadApiKey)
+        internal Ts6Service(int port, bool loadApiKey) : this(new Ts6Endpoint("127.0.0.1", port is >= 1 and <= 65535 ? port : DefaultPort, 0), loadApiKey, true) { }
+
+        internal Ts6Service(Ts6Endpoint endpoint, bool loadApiKey, bool autoReconnect)
         {
             if (loadApiKey) LoadApiKey();
             var factory = new Func<ClientWebSocket>(() =>
@@ -54,10 +57,11 @@ namespace TS6_SpeakerOverlay.Services
                 socket.Options.KeepAliveTimeout = TimeSpan.FromSeconds(10);
                 return socket;
             });
-            int selectedPort = port is >= 1 and <= 65535 ? port : DefaultPort;
+            int selectedPort = endpoint.Port;
             _remoteAppPort = selectedPort;
             AppLogger.Info($"Connecting to the local TS6 Remote App on port {selectedPort}.");
-            _client = new WebsocketClient(new Uri($"ws://127.0.0.1:{selectedPort}"), factory);
+            _client = new WebsocketClient(endpoint.ToUri(), factory);
+            _client.IsReconnectionEnabled = autoReconnect;
             
             // No talking/movement events is normal. Detect broken transports
             // with WebSocket PING/PONG, not an application-message idle timer.
@@ -155,6 +159,7 @@ namespace TS6_SpeakerOverlay.Services
             {
                 // Never log the raw auth payload, server message or API key.
                 AppLogger.Warning($"TS6 authentication rejected; statusCode={statusCode}; port={_remoteAppPort}. Review Remote Apps authorization in TeamSpeak.");
+                OnAuthenticationRejected?.Invoke(statusCode);
                 return;
             }
             var payload = node?["payload"];
