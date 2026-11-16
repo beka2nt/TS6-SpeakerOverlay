@@ -70,7 +70,7 @@
     <s:String x:Key="Lang_LogViewer_Empty">Keine passenden Protokolleinträge.</s:String>
     <s:String x:Key="Lang_LogViewer_Count">{0} aktuelle Einträge · bis zu 30 Dateien</s:String>
     <s:String x:Key="Lang_RemoteAppPort">Remote-Apps-Port</s:String>
-    <s:String x:Key="Lang_RemoteAppPort_Description">Den Port unter TS6-Einstellungen → Remote Apps übernehmen und das Overlay neu starten.</s:String>
+    <s:String x:Key="Lang_RemoteAppPort_Description">Im manuellen Modus den Remote-Apps-Port in TS verwenden. Änderungen verbinden sofort neu; kein Neustart nötig.</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Title">Einstellungen zurücksetzen</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Message">Alle Einstellungen auf die Standardwerte zurücksetzen?</s:String>
     <s:String x:Key="Lang_Tray_Show">Anzeigen</s:String>
@@ -128,4 +128,17 @@
     <s:String x:Key="Lang_NameFont_Search">Schrift nach Namen suchen</s:String>
     <s:String x:Key="Lang_NameFont_ClearSearch">Schriftsuche leeren</s:String>
     <s:String x:Key="Lang_NameFont_NoMatches">Keine passende Schrift; die aktuelle Schrift bleibt erhalten</s:String>
+    <s:String x:Key="Lang_Port_Auto">TS-Remote-Apps-Port automatisch erkennen</s:String>
+    <s:String x:Key="Lang_Port_AutoDescription">TS-Listener auf diesem PC folgen; zum manuellen Festlegen ausschalten</s:String>
+    <s:String x:Key="Lang_Port_Active">Verbundener Port</s:String>
+    <s:String x:Key="Lang_Port_Detect">Erneut erkennen</s:String>
+    <s:String x:Key="Lang_Port_Range">Port von 1 bis 65535 eingeben</s:String>
+    <s:String x:Key="Lang_Port_WaitingTS">Warte auf den Start von TeamSpeak</s:String>
+    <s:String x:Key="Lang_Port_Searching">TS-Remote-Apps-Port wird erkannt…</s:String>
+    <s:String x:Key="Lang_Port_Connecting">Verbindung zu TS Remote Apps…</s:String>
+    <s:String x:Key="Lang_Port_Connected">Mit TS Remote Apps auf Port {0} verbunden</s:String>
+    <s:String x:Key="Lang_Port_NoListener">TS läuft, aber kein Remote-Apps-Listener wurde gefunden. Schalter und Port in TS prüfen</s:String>
+    <s:String x:Key="Lang_Port_Ambiguous">Mehrere TS-Listener gefunden. Port im manuellen Modus festlegen</s:String>
+    <s:String x:Key="Lang_Port_Authorization">Remote-Apps-Berechtigung in TS bestätigen oder prüfen</s:String>
+    <s:String x:Key="Lang_Port_InspectionFailed">TS-Listener nicht lesbar. Port im manuellen Modus festlegen</s:String>
 </ResourceDictionary>

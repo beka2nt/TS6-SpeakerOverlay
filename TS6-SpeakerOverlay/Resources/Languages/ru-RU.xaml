@@ -71,7 +71,7 @@
     <s:String x:Key="Lang_LogViewer_Empty">Подходящих записей нет.</s:String>
     <s:String x:Key="Lang_LogViewer_Count">Последние записи: {0} · до 30 файлов</s:String>
     <s:String x:Key="Lang_RemoteAppPort">Порт удалённых приложений</s:String>
-    <s:String x:Key="Lang_RemoteAppPort_Description">Укажите тот же порт в настройках TS6 и перезапустите оверлей.</s:String>
+    <s:String x:Key="Lang_RemoteAppPort_Description">В ручном режиме укажите порт Remote Apps из TS. Изменения сразу переподключают приложение без перезапуска.</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Title">Сброс настроек</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Message">Вернуть все настройки к значениям по умолчанию?</s:String>
     
@@ -130,4 +130,17 @@
     <s:String x:Key="Lang_NameFont_Search">Поиск шрифта по названию</s:String>
     <s:String x:Key="Lang_NameFont_ClearSearch">Очистить поиск</s:String>
     <s:String x:Key="Lang_NameFont_NoMatches">Совпадений нет; текущий шрифт сохранён</s:String>
+    <s:String x:Key="Lang_Port_Auto">Автоматически определять порт TS</s:String>
+    <s:String x:Key="Lang_Port_AutoDescription">Следовать порту TS на этом ПК; отключите для ручного ввода</s:String>
+    <s:String x:Key="Lang_Port_Active">Подключённый порт</s:String>
+    <s:String x:Key="Lang_Port_Detect">Найти снова</s:String>
+    <s:String x:Key="Lang_Port_Range">Введите порт от 1 до 65535</s:String>
+    <s:String x:Key="Lang_Port_WaitingTS">Ожидание запуска TeamSpeak</s:String>
+    <s:String x:Key="Lang_Port_Searching">Определение порта TS Remote Apps…</s:String>
+    <s:String x:Key="Lang_Port_Connecting">Подключение к TS Remote Apps…</s:String>
+    <s:String x:Key="Lang_Port_Connected">TS Remote Apps подключён: порт {0}</s:String>
+    <s:String x:Key="Lang_Port_NoListener">TS запущен, но порт Remote Apps не найден. Проверьте переключатель и порт в TS</s:String>
+    <s:String x:Key="Lang_Port_Ambiguous">Найдено несколько портов TS. Укажите порт вручную</s:String>
+    <s:String x:Key="Lang_Port_Authorization">Подтвердите или проверьте разрешение Remote Apps в TS</s:String>
+    <s:String x:Key="Lang_Port_InspectionFailed">Не удалось прочитать порты TS. Укажите порт вручную</s:String>
 </ResourceDictionary>

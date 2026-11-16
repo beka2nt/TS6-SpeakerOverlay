@@ -70,7 +70,7 @@
     <s:String x:Key="Lang_LogViewer_Empty">조건에 맞는 로그가 없습니다.</s:String>
     <s:String x:Key="Lang_LogViewer_Count">최근 항목 {0}개 표시 · 최대 30개 파일</s:String>
     <s:String x:Key="Lang_RemoteAppPort">Remote Apps 포트</s:String>
-    <s:String x:Key="Lang_RemoteAppPort_Description">TS6 설정 → Remote Apps의 포트와 일치시킨 후 오버레이를 다시 시작하세요.</s:String>
+    <s:String x:Key="Lang_RemoteAppPort_Description">수동 모드에서는 TS 원격 앱 포트와 맞추세요. 변경 즉시 다시 연결되며 재시작은 필요 없습니다.</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Title">설정 초기화</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Message">모든 설정을 기본값으로 되돌릴까요?</s:String>
     <s:String x:Key="Lang_Tray_Show">표시</s:String>
@@ -128,4 +128,17 @@
     <s:String x:Key="Lang_NameFont_Search">이름으로 글꼴 검색</s:String>
     <s:String x:Key="Lang_NameFont_ClearSearch">글꼴 검색 지우기</s:String>
     <s:String x:Key="Lang_NameFont_NoMatches">일치하는 글꼴이 없습니다. 현재 글꼴은 유지됩니다</s:String>
+    <s:String x:Key="Lang_Port_Auto">TS 원격 앱 포트 자동 감지</s:String>
+    <s:String x:Key="Lang_Port_AutoDescription">이 PC의 TS 수신 포트를 따릅니다. 끄면 직접 지정할 수 있습니다</s:String>
+    <s:String x:Key="Lang_Port_Active">연결된 포트</s:String>
+    <s:String x:Key="Lang_Port_Detect">다시 감지</s:String>
+    <s:String x:Key="Lang_Port_Range">1–65535 사이의 포트를 입력하세요</s:String>
+    <s:String x:Key="Lang_Port_WaitingTS">TeamSpeak 시작 대기 중</s:String>
+    <s:String x:Key="Lang_Port_Searching">TS 원격 앱 포트 감지 중…</s:String>
+    <s:String x:Key="Lang_Port_Connecting">TS 원격 앱에 연결 중…</s:String>
+    <s:String x:Key="Lang_Port_Connected">TS 원격 앱 연결됨: 포트 {0}</s:String>
+    <s:String x:Key="Lang_Port_NoListener">TS는 실행 중이지만 원격 앱 수신 포트가 없습니다. TS의 스위치와 포트를 확인하세요</s:String>
+    <s:String x:Key="Lang_Port_Ambiguous">TS 수신 포트가 여러 개입니다. 수동 모드에서 지정하세요</s:String>
+    <s:String x:Key="Lang_Port_Authorization">TS에서 원격 앱 권한을 확인하거나 승인하세요</s:String>
+    <s:String x:Key="Lang_Port_InspectionFailed">TS 수신 정보를 읽을 수 없습니다. 수동으로 포트를 지정하세요</s:String>
 </ResourceDictionary>

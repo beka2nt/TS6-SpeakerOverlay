@@ -91,6 +91,7 @@ namespace TS6_SpeakerOverlay.Models
         [ObservableProperty] private string _language = "zh-CN";
         [ObservableProperty] private string _selectedServerUniqueIdentifier = string.Empty;
         [ObservableProperty] private int _remoteAppPort = 5899;
+        [ObservableProperty] private bool _autoDetectRemoteAppPort = true;
 
         [JsonIgnore]
         public SolidColorBrush TalkingBrush => new(GetTalkingColor());
@@ -148,6 +149,7 @@ namespace TS6_SpeakerOverlay.Models
             TalkingColor = "#19B889";
             SelectedServerUniqueIdentifier = string.Empty;
             RemoteAppPort = 5899;
+            AutoDetectRemoteAppPort = true;
         }
     }
 }

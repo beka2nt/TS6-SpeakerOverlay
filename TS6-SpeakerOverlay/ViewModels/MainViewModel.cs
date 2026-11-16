@@ -19,7 +19,6 @@ namespace TS6_SpeakerOverlay.ViewModels
         public ObservableCollection<Ts6Server> Servers { get; } = new();
         
         public AppConfig Config { get; }
-        public IReadOnlyList<int> RemoteAppPorts { get; } = [5899, 6100, 6200, 7000];
         public IReadOnlyList<OverlayFontOption> NameFonts => OverlayFontCatalog.ForSelection(Config.NameFontFamily)
             .Where(font => font.FamilyName == Config.NameFontFamily || OverlayFontCatalog.Matches(font, NameFontSearch))
             .ToArray();
@@ -59,7 +58,55 @@ namespace TS6_SpeakerOverlay.ViewModels
             Config.PositionPreset = preset;
             PositionPresetRequested?.Invoke(preset);
         }
-        private readonly Ts6Service _tsService;
+        private readonly ITs6Connection _tsService;
+        private readonly Ts6ConnectionManager? _connectionManager;
+        private Ts6PortState _portState = Ts6PortState.Searching;
+        private bool _savingDetectedPort;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PortDetectionStatusText))]
+        private int? _activeRemoteAppPort;
+        public string PortDetectionStatusText => _connectionManager == null
+            ? LanguageHelper.GetString(IsConnected ? "Lang_Status_Connected" : "Lang_Status_RemoteUnavailable")
+            : _portState switch
+            {
+                Ts6PortState.WaitingForTeamSpeak => LanguageHelper.GetString("Lang_Port_WaitingTS"),
+                Ts6PortState.Searching => LanguageHelper.GetString("Lang_Port_Searching"),
+                Ts6PortState.Connecting => LanguageHelper.GetString("Lang_Port_Connecting"),
+                Ts6PortState.Connected => string.Format(LanguageHelper.GetString("Lang_Port_Connected"), ActiveRemoteAppPort?.ToString() ?? "—"),
+                Ts6PortState.NoRemoteAppListener => LanguageHelper.GetString("Lang_Port_NoListener"),
+                Ts6PortState.AmbiguousCandidates => LanguageHelper.GetString("Lang_Port_Ambiguous"),
+                Ts6PortState.AuthorizationRequired => LanguageHelper.GetString("Lang_Port_Authorization"),
+                _ => LanguageHelper.GetString("Lang_Port_InspectionFailed")
+            };
+
+        private bool CanDetectRemoteApp() => _connectionManager != null && !_isDisposed;
+        [RelayCommand(CanExecute = nameof(CanDetectRemoteApp))]
+        private Task DetectRemoteAppAsync() => _connectionManager?.DetectNowAsync() ?? Task.CompletedTask;
+
+        private void ApplyPortState(Ts6PortState state)
+        {
+            if (_isDisposed) return;
+            _portState = state;
+            ActiveRemoteAppPort = _connectionManager?.ActivePort;
+            OnPropertyChanged(nameof(PortDetectionStatusText));
+            if (!IsConnected && state != Ts6PortState.Connected) ConnectionStatus = PortDetectionStatusText;
+        }
+
+        private void RememberEndpoint(Ts6Endpoint endpoint)
+        {
+            if (_isDisposed || !Config.AutoDetectRemoteAppPort) return;
+            _savingDetectedPort = true;
+            try { Config.RemoteAppPort = endpoint.Port; }
+            finally { _savingDetectedPort = false; }
+        }
+
+        private async void ConnectionConfigChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+        {
+            if (_isDisposed || _savingDetectedPort || _connectionManager == null ||
+                args.PropertyName is not (nameof(AppConfig.AutoDetectRemoteAppPort) or nameof(AppConfig.RemoteAppPort))) return;
+            try { await _connectionManager.ConfigureAsync(Config.AutoDetectRemoteAppPort, Config.RemoteAppPort); }
+            catch (Exception error) { AppLogger.Error("Unable to apply the Remote Apps port setting.", error); }
+        }
         private int _currentConnectionId;
         private string _currentChannelId = "";
         private bool _isUpdatingServerSelection;
@@ -90,14 +137,16 @@ namespace TS6_SpeakerOverlay.ViewModels
         
         // 连接状态文本
         [ObservableProperty] private string _connectionStatus = "Connecting...";
-        [ObservableProperty] private bool _isConnected = false;
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(PortDetectionStatusText))]
+        private bool _isConnected = false;
         [ObservableProperty] private Ts6Server? _selectedServer;
 
         public MainViewModel() : this(ConfigService.Load(), null)
         {
         }
 
-        internal MainViewModel(AppConfig config, Ts6Service? service, bool startService = true, UpdateService? updateService = null)
+        internal MainViewModel(AppConfig config, ITs6Connection? service, bool startService = true, UpdateService? updateService = null)
         {
             Config = config;
             Config.PropertyChanged += NameFontConfigChanged;
@@ -107,7 +156,17 @@ namespace TS6_SpeakerOverlay.ViewModels
             _updateService = updateService ?? new UpdateService();
             LanguageHelper.LanguageChanged += OnLanguageChanged;
 
-            _tsService = service ?? new Ts6Service(Config.RemoteAppPort);
+            _tsService = service ?? new Ts6ConnectionManager(new WindowsTs6PortDiscovery(),
+                endpoint => new Ts6Service(endpoint, true, false), Config.AutoDetectRemoteAppPort, Config.RemoteAppPort,
+                dispatch: action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+            _connectionManager = _tsService as Ts6ConnectionManager;
+            if (_connectionManager != null)
+            {
+                _portState = _connectionManager.State;
+                _connectionManager.OnPortStateChanged += state => System.Windows.Application.Current.Dispatcher.Invoke(() => ApplyPortState(state));
+                _connectionManager.OnEndpointVerified += endpoint => System.Windows.Application.Current.Dispatcher.Invoke(() => RememberEndpoint(endpoint));
+                Config.PropertyChanged += ConnectionConfigChanged;
+            }
             
             _tsService.OnConnectionStateChanged += async (isConnected) =>
             {
@@ -132,7 +191,8 @@ namespace TS6_SpeakerOverlay.ViewModels
                 {
                     if (_isDisposed || IsConnected) return;
 
-                    ConnectionStatus = LanguageHelper.GetString("Lang_Status_RemoteUnavailable");
+                    ConnectionStatus = _connectionManager == null
+                        ? LanguageHelper.GetString("Lang_Status_RemoteUnavailable") : PortDetectionStatusText;
                     Users.Clear();
                     Servers.Clear();
                     _currentConnectionId = 0;
@@ -256,7 +316,12 @@ namespace TS6_SpeakerOverlay.ViewModels
             }
         }
 
-        private void OnLanguageChanged() => OnPropertyChanged(nameof(UpdateStatusText));
+        private void OnLanguageChanged()
+        {
+            OnPropertyChanged(nameof(UpdateStatusText));
+            OnPropertyChanged(nameof(PortDetectionStatusText));
+            if (!IsConnected && _connectionManager != null) ConnectionStatus = PortDetectionStatusText;
+        }
 
         [RelayCommand]
         private async Task CheckForUpdatesAsync()
@@ -390,7 +455,8 @@ namespace TS6_SpeakerOverlay.ViewModels
             CancelManualRefresh();
             if (!IsConnected)
             {
-                ConnectionStatus = LanguageHelper.GetString("Lang_Status_RemoteUnavailable");
+                ConnectionStatus = _connectionManager == null
+                    ? LanguageHelper.GetString("Lang_Status_RemoteUnavailable") : PortDetectionStatusText;
                 return;
             }
 
@@ -484,6 +550,8 @@ namespace TS6_SpeakerOverlay.ViewModels
             _isDisposed = true;
             LanguageHelper.LanguageChanged -= OnLanguageChanged;
             Config.PropertyChanged -= NameFontConfigChanged;
+            Config.PropertyChanged -= ConnectionConfigChanged;
+            DetectRemoteAppCommand.NotifyCanExecuteChanged();
             _updateLifetime.Cancel();
             _updateLifetime.Dispose();
             CancelManualRefresh();

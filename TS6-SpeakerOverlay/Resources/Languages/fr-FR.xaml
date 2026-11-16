@@ -71,7 +71,7 @@
     <s:String x:Key="Lang_LogViewer_Empty">Aucune entrée correspondante.</s:String>
     <s:String x:Key="Lang_LogViewer_Count">{0} entrées récentes · 30 fichiers max.</s:String>
     <s:String x:Key="Lang_RemoteAppPort">Port des apps distantes</s:String>
-    <s:String x:Key="Lang_RemoteAppPort_Description">Utilisez le même port dans les réglages TS6, puis relancez l’overlay.</s:String>
+    <s:String x:Key="Lang_RemoteAppPort_Description">En mode manuel, utilisez le port Remote Apps de TS. Les changements reconnectent immédiatement, sans redémarrer.</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Title">Réinitialiser les paramètres</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Message">Rétablir tous les paramètres par défaut ?</s:String>
 
@@ -130,4 +130,17 @@
     <s:String x:Key="Lang_NameFont_Search">Rechercher une police par nom</s:String>
     <s:String x:Key="Lang_NameFont_ClearSearch">Effacer la recherche</s:String>
     <s:String x:Key="Lang_NameFont_NoMatches">Aucune police trouvée ; la police actuelle est conservée</s:String>
+    <s:String x:Key="Lang_Port_Auto">Détecter automatiquement le port de TS</s:String>
+    <s:String x:Key="Lang_Port_AutoDescription">Suivre les ports TS de ce PC ; désactiver pour choisir manuellement</s:String>
+    <s:String x:Key="Lang_Port_Active">Port connecté</s:String>
+    <s:String x:Key="Lang_Port_Detect">Détecter à nouveau</s:String>
+    <s:String x:Key="Lang_Port_Range">Saisir un port de 1 à 65535</s:String>
+    <s:String x:Key="Lang_Port_WaitingTS">En attente du démarrage de TeamSpeak</s:String>
+    <s:String x:Key="Lang_Port_Searching">Détection du port TS Remote Apps…</s:String>
+    <s:String x:Key="Lang_Port_Connecting">Connexion à TS Remote Apps…</s:String>
+    <s:String x:Key="Lang_Port_Connected">Connecté à TS Remote Apps sur le port {0}</s:String>
+    <s:String x:Key="Lang_Port_NoListener">TS est lancé, mais aucun port Remote Apps n’a été trouvé. Vérifiez le commutateur et le port dans TS</s:String>
+    <s:String x:Key="Lang_Port_Ambiguous">Plusieurs ports TS détectés. Choisissez le port en mode manuel</s:String>
+    <s:String x:Key="Lang_Port_Authorization">Confirmez ou vérifiez l’autorisation Remote Apps dans TS</s:String>
+    <s:String x:Key="Lang_Port_InspectionFailed">Impossible de lire les ports TS. Choisissez le port manuellement</s:String>
 </ResourceDictionary>

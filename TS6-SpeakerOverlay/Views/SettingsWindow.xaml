@@ -660,13 +660,46 @@
                                 </TextBlock>
                             </Grid>
                         </StackPanel>
+                        <CheckBox x:Name="AutoDetectPortToggle" Style="{StaticResource ToggleSwitch}"
+                                  IsChecked="{Binding Config.AutoDetectRemoteAppPort, Mode=TwoWay}">
+                            <TextBlock Text="{DynamicResource Lang_Port_Auto}" TextWrapping="Wrap" Margin="0,0,12,0"/>
+                        </CheckBox>
+                        <TextBlock Text="{DynamicResource Lang_Port_AutoDescription}" Style="{StaticResource SectionDescription}" Margin="0,4,0,16"/>
                         <TextBlock Text="{DynamicResource Lang_RemoteAppPort}" Style="{StaticResource SettingLabel}" Margin="0,0,0,8"/>
-                        <ComboBox Style="{StaticResource ModernComboBox}" ItemsSource="{Binding RemoteAppPorts}"
-                            SelectedItem="{Binding Config.RemoteAppPort, Mode=TwoWay}"/>
-                        <TextBlock Text="{DynamicResource Lang_RemoteAppPort_Description}" Style="{StaticResource SectionDescription}" Margin="0,7,0,22"/>
+                        <TextBox x:Name="RemoteAppPortInput" Width="144" HorizontalAlignment="Left"
+                                 ToolTip="{DynamicResource Lang_Port_Range}" AutomationProperties.Name="{DynamicResource Lang_RemoteAppPort}">
+                            <TextBox.Style>
+                                <Style TargetType="TextBox" BasedOn="{StaticResource TextInput}">
+                                    <Style.Triggers><DataTrigger Binding="{Binding Config.AutoDetectRemoteAppPort}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers>
+                                </Style>
+                            </TextBox.Style>
+                            <TextBox.Text>
+                                <Binding Path="Config.RemoteAppPort" Mode="TwoWay" UpdateSourceTrigger="LostFocus" ValidatesOnExceptions="True">
+                                    <Binding.ValidationRules><helpers:RemoteAppPortValidationRule/></Binding.ValidationRules>
+                                </Binding>
+                            </TextBox.Text>
+                        </TextBox>
+                        <TextBlock Text="{DynamicResource Lang_RemoteAppPort_Description}" Style="{StaticResource SectionDescription}" Margin="0,8,0,16"/>
                         <Border Height="1" Background="#DDE5E1" Margin="0,0,0,16"/>
-                        <TextBlock Text="{Binding ConnectionStatus}" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,12" Foreground="{StaticResource MutedBrush}"/>
-                        <Button x:Name="ConnectionRefreshButton" Content="{DynamicResource Lang_Tray_Refresh}" Click="BtnRefresh_Click" HorizontalAlignment="Left" Style="{StaticResource QuietButton}"/>
+                        <Grid Margin="0,0,0,8">
+                            <TextBlock Text="{DynamicResource Lang_Port_Active}" Style="{StaticResource SettingLabel}"/>
+                            <TextBlock x:Name="ActiveRemoteAppPortText" Text="{Binding ActiveRemoteAppPort, TargetNullValue=—}" Style="{StaticResource ValueLabel}"/>
+                        </Grid>
+                        <TextBlock x:Name="PortDetectionStatus" Text="{Binding PortDetectionStatusText}" Style="{StaticResource SectionDescription}" Margin="0,0,0,12"/>
+                        <TextBlock Text="{Binding ConnectionStatus}" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,12" Foreground="{StaticResource MutedBrush}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsConnected}" Value="False"><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                        <DataTrigger Binding="{Binding ConnectionStatus}" Value=""><Setter Property="Visibility" Value="Collapsed"/></DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                        <WrapPanel>
+                            <Button x:Name="DetectRemoteAppButton" Content="{DynamicResource Lang_Port_Detect}" Command="{Binding DetectRemoteAppCommand}" Style="{StaticResource QuietButton}" Margin="0,0,8,8"/>
+                            <Button x:Name="ConnectionRefreshButton" Content="{DynamicResource Lang_Tray_Refresh}" Click="BtnRefresh_Click" Style="{StaticResource QuietButton}" Margin="0,0,0,8"/>
+                        </WrapPanel>
                     </StackPanel>
                 </ScrollViewer>
                 <ScrollViewer x:Name="ApplicationScroller" Grid.Column="0" Background="#FFFFFF"

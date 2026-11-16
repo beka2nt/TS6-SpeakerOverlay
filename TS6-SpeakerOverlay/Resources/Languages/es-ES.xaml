@@ -70,7 +70,7 @@
     <s:String x:Key="Lang_LogViewer_Empty">No hay entradas que coincidan.</s:String>
     <s:String x:Key="Lang_LogViewer_Count">Mostrando {0} entradas recientes · hasta 30 archivos</s:String>
     <s:String x:Key="Lang_RemoteAppPort">Puerto de Remote Apps</s:String>
-    <s:String x:Key="Lang_RemoteAppPort_Description">Usa el puerto de Configuración de TS6 → Remote Apps y reinicia el overlay.</s:String>
+    <s:String x:Key="Lang_RemoteAppPort_Description">En modo manual, usa el puerto de Remote Apps de TS. Los cambios reconectan al instante, sin reiniciar.</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Title">Restablecer configuración</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Message">¿Quieres restablecer todos los ajustes a sus valores predeterminados?</s:String>
     <s:String x:Key="Lang_Tray_Show">Mostrar</s:String>
@@ -128,4 +128,17 @@
     <s:String x:Key="Lang_NameFont_Search">Buscar fuente por nombre</s:String>
     <s:String x:Key="Lang_NameFont_ClearSearch">Borrar búsqueda</s:String>
     <s:String x:Key="Lang_NameFont_NoMatches">No hay coincidencias; se conserva la fuente actual</s:String>
+    <s:String x:Key="Lang_Port_Auto">Detectar automáticamente el puerto de TS</s:String>
+    <s:String x:Key="Lang_Port_AutoDescription">Seguir los puertos de TS en este equipo; desactiva para indicarlo a mano</s:String>
+    <s:String x:Key="Lang_Port_Active">Puerto conectado</s:String>
+    <s:String x:Key="Lang_Port_Detect">Detectar de nuevo</s:String>
+    <s:String x:Key="Lang_Port_Range">Introduce un puerto de 1 a 65535</s:String>
+    <s:String x:Key="Lang_Port_WaitingTS">Esperando que se inicie TeamSpeak</s:String>
+    <s:String x:Key="Lang_Port_Searching">Detectando el puerto de TS Remote Apps…</s:String>
+    <s:String x:Key="Lang_Port_Connecting">Conectando con TS Remote Apps…</s:String>
+    <s:String x:Key="Lang_Port_Connected">Conectado a TS Remote Apps en el puerto {0}</s:String>
+    <s:String x:Key="Lang_Port_NoListener">TS está abierto, pero no se encontró un puerto de Remote Apps. Revisa el interruptor y el puerto en TS</s:String>
+    <s:String x:Key="Lang_Port_Ambiguous">Se encontraron varios puertos de TS. Especifica uno en modo manual</s:String>
+    <s:String x:Key="Lang_Port_Authorization">Confirma o revisa la autorización de Remote Apps en TS</s:String>
+    <s:String x:Key="Lang_Port_InspectionFailed">No se pueden leer los puertos de TS. Especifica uno manualmente</s:String>
 </ResourceDictionary>

@@ -71,7 +71,7 @@
     <s:String x:Key="Lang_LogViewer_Empty">没有符合条件的日志。</s:String>
     <s:String x:Key="Lang_LogViewer_Count">显示最近 {0} 条记录 · 最多保留 30 个文件</s:String>
     <s:String x:Key="Lang_RemoteAppPort">远程应用端口</s:String>
-    <s:String x:Key="Lang_RemoteAppPort_Description">须与 TS6 的“设置 → 远程应用程序”端口一致。修改后重启悬浮窗。</s:String>
+    <s:String x:Key="Lang_RemoteAppPort_Description">手动模式须与 TS 的远程应用端口一致；修改后即时重连，无需重启悬浮窗</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Title">恢复默认设置</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Message">确定要将所有设置恢复为默认值吗？</s:String>
 
@@ -130,4 +130,17 @@
     <s:String x:Key="Lang_NameFont_Search">搜索字体（中文 / 英文）</s:String>
     <s:String x:Key="Lang_NameFont_ClearSearch">清除字体搜索</s:String>
     <s:String x:Key="Lang_NameFont_NoMatches">未找到匹配字体，当前使用的字体已保留</s:String>
+    <s:String x:Key="Lang_Port_Auto">自动识别 TS 远程应用端口</s:String>
+    <s:String x:Key="Lang_Port_AutoDescription">自动跟随 TS 的本机监听；关闭后可手动指定端口</s:String>
+    <s:String x:Key="Lang_Port_Active">当前连接端口</s:String>
+    <s:String x:Key="Lang_Port_Detect">重新检测</s:String>
+    <s:String x:Key="Lang_Port_Range">输入 1–65535 之间的端口</s:String>
+    <s:String x:Key="Lang_Port_WaitingTS">等待 TeamSpeak 启动</s:String>
+    <s:String x:Key="Lang_Port_Searching">正在检测 TS 远程应用端口…</s:String>
+    <s:String x:Key="Lang_Port_Connecting">正在连接 TS 远程应用…</s:String>
+    <s:String x:Key="Lang_Port_Connected">已连接 TS 远程应用（端口 {0}）</s:String>
+    <s:String x:Key="Lang_Port_NoListener">TS 已运行，但未发现远程应用监听。请检查 TS 中的开关及端口是否可用</s:String>
+    <s:String x:Key="Lang_Port_Ambiguous">发现多个 TS 监听端口，暂不能唯一确定。请切换手动模式指定</s:String>
+    <s:String x:Key="Lang_Port_Authorization">请在 TS 中确认或检查远程应用授权</s:String>
+    <s:String x:Key="Lang_Port_InspectionFailed">无法读取 TS 监听信息。可切换手动模式指定端口</s:String>
 </ResourceDictionary>

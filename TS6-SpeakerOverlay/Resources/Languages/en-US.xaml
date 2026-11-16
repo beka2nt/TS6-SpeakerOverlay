@@ -72,7 +72,7 @@
     <s:String x:Key="Lang_LogViewer_Empty">No matching log entries.</s:String>
     <s:String x:Key="Lang_LogViewer_Count">Showing {0} recent entries · up to 30 files</s:String>
     <s:String x:Key="Lang_RemoteAppPort">Remote Apps port</s:String>
-    <s:String x:Key="Lang_RemoteAppPort_Description">Match the port in TS6 Settings → Remote Apps, then restart the overlay.</s:String>
+    <s:String x:Key="Lang_RemoteAppPort_Description">In manual mode, match the Remote Apps port in TS. Changes reconnect immediately; no restart needed.</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Title">Reset settings</s:String>
     <s:String x:Key="Lang_Reset_Confirm_Message">Reset every setting to its default value?</s:String>
 
@@ -132,4 +132,17 @@
     <s:String x:Key="Lang_NameFont_Search">Search fonts by name</s:String>
     <s:String x:Key="Lang_NameFont_ClearSearch">Clear font search</s:String>
     <s:String x:Key="Lang_NameFont_NoMatches">No matching fonts; the current font is kept</s:String>
+    <s:String x:Key="Lang_Port_Auto">Detect TS Remote Apps port automatically</s:String>
+    <s:String x:Key="Lang_Port_AutoDescription">Follow TS listeners on this PC; turn off to specify a port manually</s:String>
+    <s:String x:Key="Lang_Port_Active">Connected port</s:String>
+    <s:String x:Key="Lang_Port_Detect">Detect again</s:String>
+    <s:String x:Key="Lang_Port_Range">Enter a port from 1 to 65535</s:String>
+    <s:String x:Key="Lang_Port_WaitingTS">Waiting for TeamSpeak to start</s:String>
+    <s:String x:Key="Lang_Port_Searching">Detecting the TS Remote Apps port…</s:String>
+    <s:String x:Key="Lang_Port_Connecting">Connecting to TS Remote Apps…</s:String>
+    <s:String x:Key="Lang_Port_Connected">Connected to TS Remote Apps on port {0}</s:String>
+    <s:String x:Key="Lang_Port_NoListener">TS is running, but no Remote Apps listener was found. Check its switch and port in TS</s:String>
+    <s:String x:Key="Lang_Port_Ambiguous">Multiple TS listeners were found. Switch to manual mode to specify the port</s:String>
+    <s:String x:Key="Lang_Port_Authorization">Confirm or review Remote Apps authorization in TS</s:String>
+    <s:String x:Key="Lang_Port_InspectionFailed">Unable to inspect TS listeners. Use manual mode to specify the port</s:String>
 </ResourceDictionary>

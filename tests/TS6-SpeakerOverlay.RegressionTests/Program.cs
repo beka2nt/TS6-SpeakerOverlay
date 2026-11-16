@@ -22,6 +22,16 @@ internal static class Program
         LanguageHelper.SetLanguage("en-US");
         try
         {
+            if (args.Length == 2 && args[0] == "--preview-auto-port")
+            {
+                AutoPortSettingsChecks.RenderPreviews(args[1]);
+                return 0;
+            }
+            if (args.Length == 1 && args[0] == "--check-port-ui")
+            {
+                Console.WriteLine($"PASS: {AutoPortSettingsChecks.Run()} port settings checks.");
+                return 0;
+            }
             if (args.Length == 1 && args[0] == "--check-auto-port")
             {
                 Console.WriteLine($"PASS: {PortDiscoveryChecks.Run() + AutoPortConnectionChecks.Run()} automatic port checks.");
@@ -69,6 +79,7 @@ internal static class Program
             _checks += ConnectionLifecycleChecks.Run();
             _checks += PortDiscoveryChecks.Run();
             _checks += AutoPortConnectionChecks.Run();
+            _checks += AutoPortSettingsChecks.Run();
             Console.WriteLine($"PASS: {_checks} regression checks. No TeamSpeak connection was opened.");
             return 0;
         }

@@ -6,9 +6,9 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 
 ![Windows x64](https://img.shields.io/badge/Windows-x64-168F76)
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
-![Source version](https://img.shields.io/badge/source-v1.7.5-168F76)
+![Source version](https://img.shields.io/badge/source-v1.7.6-168F76)
 
-当前源码版本为 **1.7.5**。下载链接指向 GitHub Releases 中最新的已发布版本；也可以按下方说明构建当前源码。
+当前源码版本为 **1.7.6**。下载链接指向 GitHub Releases 中最新的已发布版本；也可以按下方说明构建当前源码。
 
 本次界面精修参考 unslop 的小范围流程，保留原生 WPF/WinForms 实现与既有功能；[设计记录与署名](docs/ui-polish.md)。
 
@@ -27,6 +27,8 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 
 ![字体搜索](docs/images/font-search.png)
 
+![自动识别远程应用端口（虚构测试数据）](docs/images/connection-auto-port.png)
+
 </details>
 
 ## 功能
@@ -35,6 +37,7 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 - **四种显示模式**：显示头像、仅头像、仅指示灯、仅名字；分别展示闭麦、关闭声音与离开状态。
 - **Discord 式说话模式**：隐藏静默成员，只显示正在说话的人；解锁后保留定位入口。
 - **服务器选择**：同时连接多个服务器时，可选择展示来源，头像优先使用所选服务器上的头像。
+- **自动识别端口**：跟随本机 TeamSpeak 的远程应用监听，成功连接后记忆端口；保留手动输入，修改后立即重连。
 - **进出通知**：所选服务器成员上线、离线，以及当前频道进入、离开，可分别开关。
 - **外观设置**：字体、头像大小、列表间距、背景深度与整体缩放即时生效。
 - **鼠标穿透与定位**：通过托盘锁定、解锁、显示、隐藏悬浮窗；解锁后拖动定位，重启后恢复锁定状态。
@@ -50,22 +53,24 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 
 使用自包含 exe 需要 **Windows x64 和 TeamSpeak 6**，无需单独安装 .NET。从源码构建需要 **.NET 10 SDK**。
 
-1. 启动 TeamSpeak 6，在“设置 → 远程应用程序”中确认接口已启用，并记下端口。
+1. 启动 TeamSpeak 6，在“设置 → 远程应用程序”中确认接口已启用。
 2. 启动悬浮窗，在 TeamSpeak 弹出的授权提示中允许连接。
-3. 右键 Windows 托盘图标打开“设置”。选择“连接服务器”，将“远程应用端口”设为与 TeamSpeak 一致。**修改端口后重启悬浮窗。**
+3. 默认自动识别本机 TS 端口。右键托盘图标打开“设置 → 连接服务器”，可查看当前连接端口、诊断提示，或点击“重新检测”。
 4. 加入服务器与频道。若连接多个服务器，在“连接服务器”分类中选择展示来源。
 
-默认端口为 `5899`，设置中提供 `5899 / 6100 / 6200 / 7000` 选项，以你自己的 TeamSpeak 设置为准。
+旧配置会默认启用自动识别，同时保留原端口。检测只检查 TeamSpeak 进程拥有的本机监听，不扫描其他应用。连接中断后约每 5 秒重新检测，健康连接不会反复检测。发现多个候选且无法根据已记忆端口确定时，会提示切换手动模式。
+
+关闭“自动识别 TS 远程应用端口”后，可输入 `1–65535` 中与 TS 设置一致的端口；离开输入框后立即重连，无需重启。授权被拒绝后等待你处理 TS 授权并点击“重新检测”，不会反复发起授权。
 
 ### 设置分类
 
 - **显示外观**：头像模式、只显示说话者、亮灯颜色、字体与头像大小、背景透明度。
 - **排列定位**：列表对齐、八方向预设、边缘间距与吸附、列表间距、整体缩放。
 - **进出通知**：通知总开关、服务器进出、当前频道进出。
-- **连接服务器**：展示服务器、远程应用端口、连接状态与刷新。
+- **连接服务器**：展示服务器、自动识别或手动端口、当前连接端口、重新检测与状态刷新。
 - **应用与日志**：Windows / TeamSpeak 启动方式、检查更新、查看日志和打开日志文件夹。
 
-语言入口固定在顶部，分类切换不影响现有设置。右侧只保留预览与自动保存说明；端口变更需重启。
+语言入口固定在顶部，分类切换不影响现有设置。右侧保留预览与自动保存说明；端口和识别模式的修改即时生效。
 
 ### 成员名字字体与字号
 
@@ -127,7 +132,9 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 
 **一直等待加入服务器或无法连接**
 
-确认 TeamSpeak 正在运行、已加入服务器，并检查远程应用程序接口与端口。v1.7.4 不再把频道静默视为断线：通过 WebSocket 心跳检测连接，真正断开后每 5 秒重试。端口变更后需要重启悬浮窗；可使用托盘“刷新状态”重新请求状态，并在日志查看器中检查连接或错误记录。
+先查看“连接服务器”的诊断提示，确认 TeamSpeak 正在运行、远程应用接口已启用，并已允许悬浮窗连接。自动识别会跟随 TS 的有效监听；也可切换手动模式填写相同端口。v1.7.4 起通过 WebSocket 心跳判断连接，不再把频道静默视为断线。
+
+若提示 TS 正在运行但没有远程应用监听，自动识别无法修复 TS 自身绑定失败。Windows 保留端口等情况仍需在 TS 内改用可用端口并重新启用接口，悬浮窗随后自动跟随。软件不会修改 TS 设置、Windows 保留端口或防火墙。成员列表问题可使用“刷新状态”；端口问题使用“重新检测”，具体异常可在日志查看器中检查。
 
 **说话模式下找不到拖动位置**
 
@@ -165,12 +172,13 @@ dotnet run --project tests/TS6-SpeakerOverlay.RegressionTests/TS6-SpeakerOverlay
 
 还会验证更新请求、数字版本比较、网络失败和取消处理、下载链接来源、七种语言资源与占位符、语言入口位置，以及 100% / 125% / 150% / 200% DPI 下的托盘布局。
 
-当前共有 **624 项离线回归检查**，包括真实但不可见窗口的定位与 Shift 锁轴、七种语言、字体搜索与字号输入验证、共享样式，以及模拟 Remote Apps 服务的静默心跳、断线重连和退出停止重试。测试不连接真实 TeamSpeak，也不读取其授权密钥。
+当前共有 **758 项离线回归检查**，包括真实但不可见窗口的定位与 Shift 锁轴、七种语言、字体搜索与字号输入验证、共享样式，以及模拟 Remote Apps 服务的静默心跳、断线重连和退出停止重试。端口检查涵盖原生 IPv4/IPv6 监听、进程归属、候选冲突、授权拒绝、旧连接迟到事件、即时切换及配置保存。测试不连接真实 TeamSpeak，也不读取其授权密钥。
 
 ## 更新记录
 
 | 版本 | 更新 |
 | --- | --- |
+| 1.7.6 | 自动识别并记忆 TS 远程应用端口，断线后重新检测；保留任意有效端口手动输入，修改即时重连，七语言诊断提示。 |
 | 1.7.5 | 保留字体下拉框并增加中英文字体搜索，支持清除与无匹配提示，搜索不改变已选字体。 |
 | 1.7.4 | 新增成员名字字体及字号输入；修复静默误断线，增加 WebSocket 心跳与具体断线日志。 |
 | 1.7.3 | 按小范围精修流程改善设置、日志和托盘的可读性与密度，保留功能及七种语言。 |
@@ -190,7 +198,9 @@ dotnet run --project tests/TS6-SpeakerOverlay.RegressionTests/TS6-SpeakerOverlay
 
 ## English
 
-TS6 Speaker Overlay is a Windows x64 voice overlay for TeamSpeak 6. The current source version is **1.7.5**.
+TS6 Speaker Overlay is a Windows x64 voice overlay for TeamSpeak 6. The current source version is **1.7.6**.
+
+Version 1.7.6 automatically follows local TeamSpeak Remote Apps listeners and remembers a port only after a valid snapshot. Manual ports (1–65535) and mode changes apply without restarting. Discovery checks TS process ownership, reports ambiguous candidates, and prevents stale sessions from updating the overlay after a switch.
 
 Version 1.7.5 adds case-insensitive search for localized and English font names while keeping the font dropdown and preserving the applied font. Clearing the query restores all fonts; search text is not saved.
 
@@ -227,10 +237,12 @@ Update checks require no GitHub login and send no TeamSpeak keys, settings or lo
 
 1. Run TeamSpeak 6 and enable its Remote Apps interface.
 2. Launch the overlay and allow its connection in TeamSpeak.
-3. Open **Settings** from the tray. Under Connection, choose the same Remote Apps port as TeamSpeak. Restart the overlay after changing the port.
+3. Automatic port detection is enabled by default. Open **Settings → Connection** to see the connected port and diagnostics, or select **Detect again**.
 4. Join a server/channel, then select the server to display under Connection in Settings.
 
-The default port is `5899`; Settings offers `5899 / 6100 / 6200 / 7000`. Use the value configured in your TeamSpeak client.
+Existing settings retain their port with automatic detection enabled. To specify a port, turn detection off and enter the port configured in TeamSpeak (1–65535); leaving the input reconnects immediately. Failed connections retry discovery about every five seconds; healthy connections remain untouched. Rejected authorization pauses until you explicitly retry. Ambiguous candidates require manual selection.
+
+If TeamSpeak has no Remote Apps listener, enable its interface or resolve its binding failure in TeamSpeak first. Windows-reserved ports may require choosing another TS port; the overlay can then follow it. The overlay does not change TS settings, reserved ports or firewall rules.
 
 Unlock from the tray to drag the overlay, then lock it for click-through. `Ctrl+L` also works when the overlay has focus. Changes save automatically.
 

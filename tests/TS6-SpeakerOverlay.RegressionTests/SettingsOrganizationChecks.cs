@@ -25,7 +25,7 @@ internal static class SettingsOrganizationChecks
         ["Config.AvatarDisplayMode", "Config.ShowOnlyTalking", "Config.FontSize", "Config.NameFontFamily", "Config.AvatarSize", "Config.BackgroundOpacity"],
         ["Config.UserListAlignment", "Config.ScreenEdgeGap", "Config.SnapToScreenEdges", "Config.ItemSpacing", "Config.UiScale"],
         ["Config.EnableNotifications", "Config.EnableServerNotifications", "Config.EnableChannelNotifications"],
-        ["SelectedServer", "Config.RemoteAppPort"],
+        ["SelectedServer", "Config.RemoteAppPort", "Config.AutoDetectRemoteAppPort"],
         ["Config.AutoStart", "Config.AutoOpenWithTeamSpeak", "Config.CheckUpdatesOnStartup"]
     ];
     private static int _checks;
@@ -50,7 +50,7 @@ internal static class SettingsOrganizationChecks
         BindingOperations.GetBinding(node, property)?.Path.Path == path;
 
     private static readonly DependencyProperty[] BoundProperties =
-        [ToggleButton.IsCheckedProperty, Selector.SelectedValueProperty, Selector.SelectedItemProperty, RangeBase.ValueProperty];
+        [ToggleButton.IsCheckedProperty, Selector.SelectedValueProperty, Selector.SelectedItemProperty, RangeBase.ValueProperty, System.Windows.Controls.TextBox.TextProperty];
 
     private static T BoundControl<T>(SettingsWindow window, string category, string path) where T : DependencyObject =>
         Descendants((DependencyObject)window.FindName(category + "Settings")).OfType<T>()
@@ -94,8 +94,8 @@ internal static class SettingsOrganizationChecks
                 foreach (string path in ExpectedBindings[Array.IndexOf(Categories, category)])
                 {
                     var controls = Descendants((DependencyObject)window.FindName(category + "Settings"));
-                    Check(controls.Count(node => BoundProperties.Any(property => BoundTo(node, property, path))) == 1,
-                        language.Code + " " + path + " has exactly one control in its category");
+                    Check(controls.Count(node => BoundProperties.Any(property => BoundTo(node, property, path))) == (path == "Config.FontSize" ? 2 : 1),
+                        language.Code + " " + path + " has its expected controls in the correct category");
                 }
                 var selector = (ComboBox)window.FindName("LanguageSelector");
                 Check(selector.Visibility == Visibility.Visible && selector.TransformToAncestor((FrameworkElement)window.Content).Transform(new System.Windows.Point()).Y < 146,
