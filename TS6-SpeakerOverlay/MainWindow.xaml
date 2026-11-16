@@ -170,6 +170,7 @@
                                 </Border>
 
                                 <TextBlock x:Name="UserName" Grid.Column="2" Text="{Binding Name}" Foreground="#F0F8F8"
+                                           FontFamily="{Binding DataContext.Config.NameFontFamily, RelativeSource={RelativeSource AncestorType=Window}}"
                                            FontSize="{Binding DataContext.Config.FontSize, RelativeSource={RelativeSource AncestorType=Window}}"
                                            FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0"
                                            TextTrimming="CharacterEllipsis" MaxWidth="190"/>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows;
@@ -6,15 +7,20 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using TS6_SpeakerOverlay.Services;
+using Brush = System.Windows.Media.Brush;
 
 namespace TS6_SpeakerOverlay.Views
 {
     public partial class LogViewerWindow : Window
     {
         private bool _errorsOnly;
+        private readonly Func<bool, IReadOnlyList<string>> _readEntries;
 
-        public LogViewerWindow()
+        public LogViewerWindow() : this(errorsOnly => AppLogger.ReadRecentEntries(200, errorsOnly)) { }
+
+        internal LogViewerWindow(Func<bool, IReadOnlyList<string>> readEntries)
         {
+            _readEntries = readEntries;
             InitializeComponent();
             RefreshEntries();
         }
@@ -42,15 +48,17 @@ namespace TS6_SpeakerOverlay.Views
 
         private void RefreshEntries()
         {
-            var entries = AppLogger.ReadRecentEntries(200, _errorsOnly);
+            var entries = _readEntries(_errorsOnly);
             LogTextBox.Text = entries.Count == 0
                 ? (TryFindResource("Lang_LogViewer_Empty") as string ?? "No matching log entries.")
                 : string.Join(Environment.NewLine + Environment.NewLine, entries.Reverse());
             StatusText.Text = string.Format(
                 TryFindResource("Lang_LogViewer_Count") as string ?? "Showing {0} recent entries",
                 entries.Count);
-            AllButton.Background = new SolidColorBrush(_errorsOnly ? System.Windows.Media.Color.FromRgb(255, 255, 255) : System.Windows.Media.Color.FromRgb(220, 244, 236));
-            ErrorsButton.Background = new SolidColorBrush(_errorsOnly ? System.Windows.Media.Color.FromRgb(220, 244, 236) : System.Windows.Media.Color.FromRgb(255, 255, 255));
+            AllButton.Background = (Brush)FindResource(_errorsOnly ? "SurfaceRaisedBrush" : "SelectionBrush");
+            ErrorsButton.Background = (Brush)FindResource(_errorsOnly ? "SelectionBrush" : "SurfaceRaisedBrush");
+            AllButton.BorderBrush = (Brush)FindResource(_errorsOnly ? "BorderBrush" : "AccentBrush");
+            ErrorsButton.BorderBrush = (Brush)FindResource(_errorsOnly ? "AccentBrush" : "BorderBrush");
         }
 
         private void Copy_Click(object sender, RoutedEventArgs e)

@@ -6,9 +6,11 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 
 ![Windows x64](https://img.shields.io/badge/Windows-x64-168F76)
 ![.NET 10](https://img.shields.io/badge/.NET-10-512BD4)
-![Source version](https://img.shields.io/badge/source-v1.7.2-168F76)
+![Source version](https://img.shields.io/badge/source-v1.7.5-168F76)
 
-当前源码版本为 **1.7.2**。下载链接指向 GitHub Releases 中最新的已发布版本；也可以按下方说明构建当前源码。
+当前源码版本为 **1.7.5**。下载链接指向 GitHub Releases 中最新的已发布版本；也可以按下方说明构建当前源码。
+
+本次界面精修参考 unslop 的小范围流程，保留原生 WPF/WinForms 实现与既有功能；[设计记录与署名](docs/ui-polish.md)。
 
 ## 界面预览
 
@@ -20,6 +22,10 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 ![应用与日志](docs/images/settings-diagnostics.png)
 
 ![托盘菜单](docs/images/tray-menu.png)
+
+![日志窗口（虚构测试数据）](docs/images/log-viewer.png)
+
+![字体搜索](docs/images/font-search.png)
 
 </details>
 
@@ -60,6 +66,14 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 - **应用与日志**：Windows / TeamSpeak 启动方式、检查更新、查看日志和打开日志文件夹。
 
 语言入口固定在顶部，分类切换不影响现有设置。右侧只保留预览与自动保存说明；端口变更需重启。
+
+### 成员名字字体与字号
+
+在“设置 → 显示外观 → 成员名字字体”选择本机安装的字体；字号可在输入框中填写，也可用滑块调整，范围为 10–36。输入框在失去焦点后应用；无效输入会显示提示并保留上一次有效值。
+
+字体标签右侧的搜索框支持中英文名称、部分名称与不区分大小写筛选。当前字体始终保留；无匹配时会提示，点击“×”恢复完整列表。只有选择下拉列表中的字体才会应用，搜索文字不写入配置。
+
+修改仅影响成员名字，右侧预览与实际悬浮窗同步变化。设置会自动保存，恢复默认时回到原来的字体回退与 14 号字。仅头像模式下名字隐藏，但字体选择仍会保存。
 
 ### 移动与锁定
 
@@ -113,7 +127,7 @@ TeamSpeak 6 的 Windows 语音悬浮窗，查看当前频道成员与发言状�
 
 **一直等待加入服务器或无法连接**
 
-确认 TeamSpeak 正在运行、已加入服务器，并检查远程应用程序接口与端口。端口变更后需要重启悬浮窗；可使用托盘“刷新状态”重新请求状态，并在日志查看器中检查连接或错误记录。
+确认 TeamSpeak 正在运行、已加入服务器，并检查远程应用程序接口与端口。v1.7.4 不再把频道静默视为断线：通过 WebSocket 心跳检测连接，真正断开后每 5 秒重试。端口变更后需要重启悬浮窗；可使用托盘“刷新状态”重新请求状态，并在日志查看器中检查连接或错误记录。
 
 **说话模式下找不到拖动位置**
 
@@ -151,12 +165,15 @@ dotnet run --project tests/TS6-SpeakerOverlay.RegressionTests/TS6-SpeakerOverlay
 
 还会验证更新请求、数字版本比较、网络失败和取消处理、下载链接来源、七种语言资源与占位符、语言入口位置，以及 100% / 125% / 150% / 200% DPI 下的托盘布局。
 
-当前共有 **467 项离线回归检查**，包括真实但不可见窗口的定位与 Shift 锁轴，以及七种语言中的分类导航、设置绑定、独立滚动、颜色预设和刷新操作。
+当前共有 **624 项离线回归检查**，包括真实但不可见窗口的定位与 Shift 锁轴、七种语言、字体搜索与字号输入验证、共享样式，以及模拟 Remote Apps 服务的静默心跳、断线重连和退出停止重试。测试不连接真实 TeamSpeak，也不读取其授权密钥。
 
 ## 更新记录
 
 | 版本 | 更新 |
 | --- | --- |
+| 1.7.5 | 保留字体下拉框并增加中英文字体搜索，支持清除与无匹配提示，搜索不改变已选字体。 |
+| 1.7.4 | 新增成员名字字体及字号输入；修复静默误断线，增加 WebSocket 心跳与具体断线日志。 |
+| 1.7.3 | 按小范围精修流程改善设置、日志和托盘的可读性与密度，保留功能及七种语言。 |
 | 1.7.2 | 设置按外观、定位、通知、连接、应用与日志重新分类，七种语言同步更新。 |
 | 1.7.1 | 修复 Shift 实时键状态读取，拖动中松键、靠近边缘松键不跳位；补充真实窗口拖动回归检查。 |
 | 1.7.0 | 新增用户列表三种对齐、八方向快速定位、可调边缘间距、屏幕吸附与 Shift 锁轴；适配多屏坐标与显示缩放。 |
@@ -173,7 +190,13 @@ dotnet run --project tests/TS6-SpeakerOverlay.RegressionTests/TS6-SpeakerOverlay
 
 ## English
 
-TS6 Speaker Overlay is a Windows x64 voice overlay for TeamSpeak 6. The current source version is **1.7.2**.
+TS6 Speaker Overlay is a Windows x64 voice overlay for TeamSpeak 6. The current source version is **1.7.5**.
+
+Version 1.7.5 adds case-insensitive search for localized and English font names while keeping the font dropdown and preserving the applied font. Clearing the query restores all fonts; search text is not saved.
+
+Version 1.7.4 adds font selection and numeric size (10–36) for overlay member names. Changes are previewed live and saved. It also replaces the event-silence reconnect timer with protocol-level heartbeats; real connection failures still retry automatically.
+
+Version 1.7.3 refines spacing, text contrast, shared settings/log styles and tray density without changing TeamSpeak connection behavior. [Design notes and unslop credit](docs/ui-polish.md).
 
 Version 1.7.2 organizes settings into Display & appearance, Layout & position, Notifications, Connection, and App & logs. Language selection stays visible at the top; each category has independent scrolling and preserves live preferences.
 

@@ -123,4 +123,11 @@
     <s:String x:Key="Lang_Settings_ApplicationDescription">管理启动方式、版本更新和运行日志。</s:String>
     <s:String x:Key="Lang_Settings_Startup">启动方式</s:String>
     <s:String x:Key="Lang_Settings_AutoSaved">设置会自动保存；外观与位置修改即时生效。</s:String>
+    <s:String x:Key="Lang_NameFont_Title">成员名字字体</s:String>
+    <s:String x:Key="Lang_NameFont_Description">只调整悬浮窗中的成员名字，修改即时生效</s:String>
+    <s:String x:Key="Lang_NameFont_Family">字体</s:String>
+    <s:String x:Key="Lang_NameFont_Range">字号范围：10–36，可输入数字或拖动滑块</s:String>
+    <s:String x:Key="Lang_NameFont_Search">搜索字体（中文 / 英文）</s:String>
+    <s:String x:Key="Lang_NameFont_ClearSearch">清除字体搜索</s:String>
+    <s:String x:Key="Lang_NameFont_NoMatches">未找到匹配字体，当前使用的字体已保留</s:String>
 </ResourceDictionary>

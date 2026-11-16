@@ -123,4 +123,11 @@
     <s:String x:Key="Lang_Settings_ApplicationDescription">Настройте запуск, обновления и журналы работы.</s:String>
     <s:String x:Key="Lang_Settings_Startup">Запуск приложения</s:String>
     <s:String x:Key="Lang_Settings_AutoSaved">Настройки сохраняются автоматически. Внешний вид и положение меняются сразу.</s:String>
+    <s:String x:Key="Lang_NameFont_Title">Шрифт имён участников</s:String>
+    <s:String x:Key="Lang_NameFont_Description">Меняет только имена в оверлее, с мгновенным предпросмотром</s:String>
+    <s:String x:Key="Lang_NameFont_Family">Шрифт</s:String>
+    <s:String x:Key="Lang_NameFont_Range">Размер: 10–36; введите число или используйте ползунок</s:String>
+    <s:String x:Key="Lang_NameFont_Search">Поиск шрифта по названию</s:String>
+    <s:String x:Key="Lang_NameFont_ClearSearch">Очистить поиск</s:String>
+    <s:String x:Key="Lang_NameFont_NoMatches">Совпадений нет; текущий шрифт сохранён</s:String>
 </ResourceDictionary>

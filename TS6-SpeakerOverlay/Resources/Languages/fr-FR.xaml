@@ -123,4 +123,11 @@
     <s:String x:Key="Lang_Settings_ApplicationDescription">Gérez le démarrage, les mises à jour et les journaux d’activité.</s:String>
     <s:String x:Key="Lang_Settings_Startup">Démarrage</s:String>
     <s:String x:Key="Lang_Settings_AutoSaved">Les réglages sont enregistrés automatiquement. L’aspect et la position changent immédiatement.</s:String>
+    <s:String x:Key="Lang_NameFont_Title">Police des noms</s:String>
+    <s:String x:Key="Lang_NameFont_Description">Modifie uniquement les noms dans l’overlay, avec aperçu immédiat</s:String>
+    <s:String x:Key="Lang_NameFont_Family">Police</s:String>
+    <s:String x:Key="Lang_NameFont_Range">Taille : 10–36 ; saisissez un nombre ou utilisez le curseur</s:String>
+    <s:String x:Key="Lang_NameFont_Search">Rechercher une police par nom</s:String>
+    <s:String x:Key="Lang_NameFont_ClearSearch">Effacer la recherche</s:String>
+    <s:String x:Key="Lang_NameFont_NoMatches">Aucune police trouvée ; la police actuelle est conservée</s:String>
 </ResourceDictionary>

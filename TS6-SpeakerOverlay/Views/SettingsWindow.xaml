@@ -11,24 +11,20 @@
         AllowsTransparency="True"
         Background="Transparent"
         WindowStartupLocation="CenterOwner"
-        FontFamily="Segoe UI Variable Text, Microsoft YaHei UI, Malgun Gothic, Segoe UI"
+        FontFamily="{DynamicResource UtilityFont}"
+        FontSize="13"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType">
     <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="../Resources/Styles/UtilityWindowTheme.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
         <helpers:PresetSelectionConverter x:Key="PresetSelectionConverter"/>
-        <SolidColorBrush x:Key="SurfaceBrush" Color="#F2F7F7"/>
-        <SolidColorBrush x:Key="SurfaceRaisedBrush" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="RailBrush" Color="#EDF5F4"/>
-        <SolidColorBrush x:Key="BorderBrush" Color="#D6E4E6"/>
-        <SolidColorBrush x:Key="TextBrush" Color="#16323A"/>
-        <SolidColorBrush x:Key="MutedBrush" Color="#657C84"/>
-        <SolidColorBrush x:Key="AccentBrush" Color="#19B889"/>
-        <SolidColorBrush x:Key="AccentHoverBrush" Color="#28C99A"/>
-        <SolidColorBrush x:Key="VoiceBrush" Color="#19B889"/>
 
         <Style TargetType="{x:Type ScrollBar}">
             <Setter Property="Width" Value="10"/>
-            <Setter Property="Background" Value="#F2F7F7"/>
+            <Setter Property="Background" Value="#F6F8F7"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ScrollBar">
@@ -62,33 +58,9 @@
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
         </Style>
 
-        <Style x:Key="SectionTitle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="FontFamily" Value="Segoe UI Variable Display, Microsoft YaHei UI, Segoe UI"/>
-            <Setter Property="FontSize" Value="20"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-        </Style>
 
-        <Style x:Key="SectionDescription" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
-            <Setter Property="FontSize" Value="12.5"/>
-            <Setter Property="LineHeight" Value="19"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
-        </Style>
 
-        <Style x:Key="SettingLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="FontSize" Value="13.5"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-        </Style>
 
-        <Style x:Key="ValueLabel" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="HorizontalAlignment" Value="Right"/>
-        </Style>
 
         <Style x:Key="ThinSlider" TargetType="Slider">
             <Setter Property="Height" Value="24"/>
@@ -97,7 +69,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Slider">
                         <Grid Background="Transparent">
-                            <Border Height="4" CornerRadius="2" Background="#CFDFE0" VerticalAlignment="Center"/>
+                            <Border Height="4" CornerRadius="2" Background="#D5E0D9" VerticalAlignment="Center"/>
                             <Track x:Name="PART_Track" VerticalAlignment="Center">
                                 <Track.DecreaseRepeatButton>
                                     <RepeatButton Command="Slider.DecreaseLarge" Focusable="False">
@@ -210,10 +182,10 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
-                        <Grid Background="Transparent" MinHeight="40">
+                        <Grid Background="Transparent" MinHeight="36">
                             <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="44"/></Grid.ColumnDefinitions>
                             <ContentPresenter VerticalAlignment="Center" RecognizesAccessKey="True"/>
-                            <Border x:Name="Track" Grid.Column="1" Width="38" Height="22" Background="#CAD9DD" CornerRadius="11" HorizontalAlignment="Right">
+                            <Border x:Name="Track" Grid.Column="1" Width="38" Height="22" Background="#C8D7CF" CornerRadius="11" HorizontalAlignment="Right">
                                 <Ellipse x:Name="Knob" Width="16" Height="16" Fill="#FFFFFF" HorizontalAlignment="Left" Margin="3"/>
                             </Border>
                         </Grid>
@@ -221,7 +193,7 @@
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="Track" Property="Background" Value="{StaticResource AccentBrush}"/>
                                 <Setter TargetName="Knob" Property="HorizontalAlignment" Value="Right"/>
-                                <Setter TargetName="Knob" Property="Fill" Value="#EAF2F2"/>
+                                <Setter TargetName="Knob" Property="Fill" Value="#F1F5F3"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Track" Property="Opacity" Value="0.9"/></Trigger>
                             <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45"/></Trigger>
@@ -231,33 +203,6 @@
             </Setter>
         </Style>
 
-        <Style x:Key="QuietButton" TargetType="Button">
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
-            <Setter Property="Background" Value="#EAF2F2"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonBorder" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="8" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="ButtonBorder" Property="BorderBrush" Value="#71A99D"/></Trigger>
-                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="ButtonBorder" Property="Opacity" Value="0.75"/></Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="ButtonBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}"/></Trigger>
-                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="ButtonBorder" Property="Opacity" Value="0.45"/><Setter Property="Cursor" Value="Arrow"/></Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
 
         <Style x:Key="PositionPresetButton" TargetType="Button" BasedOn="{StaticResource QuietButton}">
             <Setter Property="Width" Value="48"/><Setter Property="Height" Value="36"/>
@@ -271,20 +216,11 @@
                             <Binding Path="Config.PositionPreset"/><Binding Path="Tag" RelativeSource="{RelativeSource Self}"/>
                         </MultiBinding>
                     </DataTrigger.Binding>
-                    <Setter Property="Background" Value="#DDF5ED"/><Setter Property="BorderBrush" Value="#19B889"/>
+                    <Setter Property="Background" Value="#E4F1EB"/><Setter Property="BorderBrush" Value="#19B889"/>
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
-        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource QuietButton}">
-            <Setter Property="MinWidth" Value="128"/>
-            <Setter Property="Foreground" Value="#FFFFFF"/>
-            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True"><Setter Property="Background" Value="{StaticResource AccentHoverBrush}"/><Setter Property="BorderBrush" Value="{StaticResource AccentHoverBrush}"/></Trigger>
-            </Style.Triggers>
-        </Style>
 
         <Style x:Key="ColorSwatchButton" TargetType="Button">
             <Setter Property="Width" Value="32"/>
@@ -294,7 +230,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="SwatchBorder" CornerRadius="9" Background="#EAF2F2" BorderBrush="#B4CDCE" BorderThickness="1">
+                        <Border x:Name="SwatchBorder" CornerRadius="9" Background="#F1F5F3" BorderBrush="#B4CDCE" BorderThickness="1">
                             <Ellipse Width="18" Height="18" Fill="{TemplateBinding Background}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -322,37 +258,38 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="CategoryShell" Property="Background" Value="#F0F6F5"/></Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="CategoryShell" Property="Background" Value="#DDF5ED"/>
-                                <Setter Property="Foreground" Value="#176D5B"/>
+                                <Setter TargetName="CategoryShell" Property="Background" Value="#E4F1EB"/>
+                                <Setter Property="Foreground" Value="#147D64"/>
                             </Trigger>
-                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="CategoryShell" Property="BorderBrush" Value="#176D5B"/></Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True"><Setter TargetName="CategoryShell" Property="BorderBrush" Value="#147D64"/></Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+        </ResourceDictionary>
     </Window.Resources>
 
-    <Border Background="#F2F7F7" BorderBrush="#C8DADC" BorderThickness="1" CornerRadius="18">
+    <Border Background="#F6F8F7" BorderBrush="#CFDCD5" BorderThickness="1" CornerRadius="18">
         <Grid ClipToBounds="True">
             <Grid.RowDefinitions>
-                <RowDefinition Height="78"/>
-                <RowDefinition Height="68"/>
-                <RowDefinition Height="56"/>
-                <RowDefinition Height="*"/>
                 <RowDefinition Height="64"/>
+                <RowDefinition Height="56"/>
+                <RowDefinition Height="48"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="56"/>
             </Grid.RowDefinitions>
 
             <Border Grid.Row="0" Background="{StaticResource SurfaceRaisedBrush}" CornerRadius="18,18,0,0"
-                    BorderBrush="#D6E4E6" BorderThickness="0,0,0,1" MouseDown="TitleBar_MouseDown">
-                <Grid Margin="30,0,22,0">
+                    BorderBrush="#DDE5E1" BorderThickness="0,0,0,1" MouseDown="TitleBar_MouseDown">
+                <Grid Margin="32,0,24,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="42"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="44"/>
                     </Grid.ColumnDefinitions>
-                    <Border Width="38" Height="38" Background="#DDF5ED" CornerRadius="11" HorizontalAlignment="Left">
+                    <Border Width="38" Height="38" Background="#E4F1EB" CornerRadius="11" HorizontalAlignment="Left">
                         <Grid Width="18" Height="18" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <Rectangle Width="3" Height="8" RadiusX="1.5" Fill="{StaticResource AccentBrush}" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                             <Rectangle Width="3" Height="16" RadiusX="1.5" Fill="{StaticResource AccentBrush}" HorizontalAlignment="Center"/>
@@ -360,8 +297,8 @@
                         </Grid>
                     </Border>
                     <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="2,0,0,0">
-                        <TextBlock Text="{DynamicResource Lang_Settings_Title}" FontFamily="Segoe UI Variable Display, Microsoft YaHei UI, Segoe UI" FontSize="22" FontWeight="SemiBold"/>
-                        <TextBlock Text="{DynamicResource Lang_Settings_Subtitle}" Foreground="{StaticResource MutedBrush}" FontSize="11.5" Margin="0,3,0,0"/>
+                        <TextBlock Text="{DynamicResource Lang_Settings_Title}" FontFamily="Segoe UI Variable Display, Microsoft YaHei UI, Segoe UI" FontSize="20" FontWeight="SemiBold"/>
+                        <TextBlock Text="{DynamicResource Lang_Settings_Subtitle}" Foreground="{StaticResource MutedBrush}" FontSize="12" Margin="0,4,0,0"/>
                     </StackPanel>
                     <Border Grid.Column="2" Background="#E5F0F0" CornerRadius="12" Padding="10,5" VerticalAlignment="Center" Margin="0,0,10,0">
                         <StackPanel Orientation="Horizontal">
@@ -373,7 +310,7 @@
                                     </Style>
                                 </Ellipse.Style>
                             </Ellipse>
-                            <TextBlock FontSize="11.5" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center">
+                            <TextBlock FontSize="12" Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center">
                                 <TextBlock.Style>
                                     <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                                         <Setter Property="Text" Value="{DynamicResource Lang_Status_Waiting}"/>
@@ -383,24 +320,13 @@
                             </TextBlock>
                         </StackPanel>
                     </Border>
-                    <Button Grid.Column="3" Width="34" Height="34" Background="Transparent" BorderThickness="0" Foreground="{StaticResource MutedBrush}"
-                            FontSize="21" FontWeight="Light" Content="×" Cursor="Hand" Click="BtnClose_Click" ToolTip="Close">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border x:Name="CloseBorder" CornerRadius="8" Background="{TemplateBinding Background}">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-2,0,0"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="CloseBorder" Property="Background" Value="#FBE9E9"/><Setter Property="Foreground" Value="#BD4E5B"/></Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
+                    <Button Grid.Column="3" Content="×" Style="{StaticResource CloseButton}"
+                            Click="BtnClose_Click" ToolTip="Close" VerticalAlignment="Center"/>
                 </Grid>
             </Border>
 
-            <Border Grid.Row="1" Background="#EDF5F4" BorderBrush="#D6E4E6" BorderThickness="0,0,0,1">
-                <Grid Margin="34,0,30,0">
+            <Border Grid.Row="1" Background="#F1F5F3" BorderBrush="#DDE5E1" BorderThickness="0,0,0,1">
+                <Grid Margin="32,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="220"/>
@@ -408,7 +334,7 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,18,0">
-                        <Viewbox Width="21" Height="21" Margin="0,0,10,0">
+                        <Viewbox Width="20" Height="20" Margin="0,0,10,0">
                             <Canvas Width="24" Height="24">
                                 <Ellipse Width="20" Height="20" Canvas.Left="2" Canvas.Top="2" Stroke="#238D75" StrokeThickness="1.5"/>
                                 <Ellipse Width="8" Height="20" Canvas.Left="8" Canvas.Top="2" Stroke="#238D75" StrokeThickness="1.5"/>
@@ -426,8 +352,8 @@
                     <StackPanel Grid.Column="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="12,0">
                         <TextBlock Text="{Binding CurrentVersion, StringFormat=v{0}}" FontSize="12" HorizontalAlignment="Right"
                                    Foreground="{StaticResource MutedBrush}"/>
-                        <TextBlock Text="{Binding UpdateStatusText}" FontSize="10.5" MaxWidth="240" TextTrimming="CharacterEllipsis"
-                                   ToolTip="{Binding UpdateStatusText}" Foreground="#176D5B" Margin="0,3,0,0"/>
+                        <TextBlock Text="{Binding UpdateStatusText}" FontSize="12" MaxWidth="240" TextTrimming="CharacterEllipsis"
+                                   ToolTip="{Binding UpdateStatusText}" Foreground="#147D64" Margin="0,4,0,0"/>
                     </StackPanel>
                     <Button Grid.Column="3" ToolTip="{Binding UpdateStatusText}" VerticalAlignment="Center">
                         <Button.Style>
@@ -438,7 +364,7 @@
                                     <DataTrigger Binding="{Binding IsUpdateAvailable}" Value="True">
                                         <Setter Property="Content" Value="{DynamicResource Lang_Update_Download}"/>
                                         <Setter Property="Command" Value="{Binding OpenUpdateCommand}"/>
-                                        <Setter Property="Background" Value="#DDF5ED"/>
+                                        <Setter Property="Background" Value="#E4F1EB"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -447,7 +373,7 @@
                 </Grid>
             </Border>
 
-            <Border Grid.Row="2" Background="#FFFFFF" BorderBrush="#D6E4E6" BorderThickness="0,0,0,1">
+            <Border Grid.Row="2" Background="#FFFFFF" BorderBrush="#DDE5E1" BorderThickness="0,0,0,1">
                 <UniformGrid Rows="1" Margin="20,7">
                     <RadioButton x:Name="NavDisplay" GroupName="SettingsCategories" Style="{StaticResource CategoryButton}" IsChecked="True" Content="{DynamicResource Lang_Settings_Display}" AutomationProperties.Name="{DynamicResource Lang_Settings_Display}"/>
                     <RadioButton x:Name="NavPosition" GroupName="SettingsCategories" Style="{StaticResource CategoryButton}" Content="{DynamicResource Lang_Settings_Position}" AutomationProperties.Name="{DynamicResource Lang_Settings_Position}"/>
@@ -460,20 +386,20 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="1"/>
-                    <ColumnDefinition Width="300"/>
+                    <ColumnDefinition Width="280"/>
                 </Grid.ColumnDefinitions>
                 <ScrollViewer x:Name="SettingsScroller" Grid.Column="0" Background="#FFFFFF"
                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                     Visibility="{Binding IsChecked, ElementName=NavDisplay, Converter={StaticResource BooleanVisibility}}">
-                    <StackPanel x:Name="DisplaySettings" Margin="34,26,34,30">
+                    <StackPanel x:Name="DisplaySettings" Margin="32,24,32,24">
                         <TextBlock Text="{DynamicResource Lang_Appearance}" Style="{StaticResource SectionTitle}"/>
-                        <TextBlock Text="{DynamicResource Lang_Appearance_Description}" Style="{StaticResource SectionDescription}" Margin="0,5,0,21"/>
-                        <Grid Margin="0,0,0,21">
+                        <TextBlock Text="{DynamicResource Lang_Appearance_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,16"/>
+                        <Grid Margin="0,0,0,16">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition/>
                                 <ColumnDefinition Width="225"/>
                             </Grid.ColumnDefinitions>
-                            <StackPanel VerticalAlignment="Center" Margin="0,0,22,0">
+                            <StackPanel VerticalAlignment="Center" Margin="0,0,24,0">
                                 <TextBlock Text="{DynamicResource Lang_AvatarMode}" Style="{StaticResource SettingLabel}"/>
                                 <TextBlock Text="{DynamicResource Lang_AvatarMode_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,0"/>
                             </StackPanel>
@@ -485,16 +411,16 @@
                                 <ComboBoxItem Content="{DynamicResource Lang_Mode_None}" Tag="{x:Static models:AvatarMode.None}"/>
                             </ComboBox>
                         </Grid>
-                        <StackPanel Margin="0,0,0,20">
+                        <StackPanel Margin="0,0,0,16">
                             <CheckBox Style="{StaticResource ToggleSwitch}"
                                 IsChecked="{Binding Config.ShowOnlyTalking, Mode=TwoWay}">
                                 <TextBlock Text="{DynamicResource Lang_ShowOnlyTalking}" TextWrapping="Wrap" Margin="0,0,10,0"/>
                             </CheckBox>
                             <TextBlock Text="{DynamicResource Lang_ShowOnlyTalking_Description}"
-                                Style="{StaticResource SectionDescription}" TextWrapping="Wrap" Margin="0,3,0,0"/>
+                                Style="{StaticResource SectionDescription}" TextWrapping="Wrap" Margin="0,4,0,0"/>
                         </StackPanel>
-                        <Border Height="1" Background="#DCE8E9" Margin="0,0,0,20"/>
-                        <StackPanel Margin="0,0,0,20">
+                        <Border Height="1" Background="#DDE5E1" Margin="0,0,0,16"/>
+                        <StackPanel Margin="0,0,0,16">
                             <Grid>
                                 <TextBlock Text="{DynamicResource Lang_TalkingColor}" Style="{StaticResource SettingLabel}"/>
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
@@ -502,7 +428,7 @@
                                     <TextBlock Text="{Binding Config.TalkingColor}" Style="{StaticResource ValueLabel}"/>
                                 </StackPanel>
                             </Grid>
-                            <TextBlock Text="{DynamicResource Lang_TalkingColor_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,10"/>
+                            <TextBlock Text="{DynamicResource Lang_TalkingColor_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,8"/>
                             <StackPanel Orientation="Horizontal">
                                 <Button Style="{StaticResource ColorSwatchButton}" Background="#19B889" Tag="#19B889" ToolTip="Mint" Click="TalkingColorPreset_Click"/>
                                 <Button Style="{StaticResource ColorSwatchButton}" Background="#58BEFF" Tag="#58BEFF" ToolTip="Sky" Click="TalkingColorPreset_Click"/>
@@ -513,41 +439,80 @@
                                 <Button Content="{DynamicResource Lang_TalkingColor_Custom}" Style="{StaticResource QuietButton}" Height="32" Padding="12,0" Click="TalkingColorCustom_Click"/>
                             </StackPanel>
                         </StackPanel>
-                        <Border Height="1" Background="#DCE8E9" Margin="0,0,0,20"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition/>
-                                <ColumnDefinition Width="24"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <Grid>
-                                    <TextBlock Text="{DynamicResource Lang_FontSize}" Style="{StaticResource SettingLabel}"/>
-                                    <TextBlock Text="{Binding Config.FontSize, StringFormat={}{0:0} px}" Style="{StaticResource ValueLabel}"/>
+                        <Border Height="1" Background="#DDE5E1" Margin="0,0,0,16"/>
+                        <StackPanel Margin="0,0,0,20">
+                            <TextBlock Text="{DynamicResource Lang_NameFont_Title}" Style="{StaticResource SettingLabel}"/>
+                            <TextBlock Text="{DynamicResource Lang_NameFont_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,12"/>
+                            <Grid>
+                                <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="16"/><ColumnDefinition Width="96"/></Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                                <Grid Margin="0,0,0,8">
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition/><ColumnDefinition Width="220"/><ColumnDefinition Width="8"/><ColumnDefinition Width="28"/></Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource Lang_NameFont_Family}" Style="{StaticResource SettingLabel}" VerticalAlignment="Center"/>
+                                    <Grid Grid.Column="2">
+                                        <TextBox x:Name="NameFontSearchInput" Style="{StaticResource TextInput}" Height="28" FontSize="12" Padding="8,0"
+                                                 Text="{Binding NameFontSearch, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 ToolTip="{DynamicResource Lang_NameFont_Search}" AutomationProperties.Name="{DynamicResource Lang_NameFont_Search}"/>
+                                        <TextBlock Text="{DynamicResource Lang_NameFont_Search}" Margin="8,0" VerticalAlignment="Center"
+                                                   Foreground="{StaticResource MutedBrush}" FontSize="12" TextTrimming="CharacterEllipsis" IsHitTestVisible="False">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers><DataTrigger Binding="{Binding NameFontSearch}" Value=""><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </Grid>
+                                    <Button Grid.Column="4" Content="×" Height="28" Command="{Binding ClearNameFontSearchCommand}"
+                                            ToolTip="{DynamicResource Lang_NameFont_ClearSearch}" AutomationProperties.Name="{DynamicResource Lang_NameFont_ClearSearch}">
+                                        <Button.Style>
+                                            <Style TargetType="Button" BasedOn="{StaticResource QuietButton}">
+                                                <Setter Property="Padding" Value="0"/><Setter Property="FontSize" Value="18"/>
+                                                <Style.Triggers><DataTrigger Binding="{Binding NameFontSearch}" Value=""><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers>
+                                            </Style>
+                                        </Button.Style>
+                                    </Button>
                                 </Grid>
-                                <Slider Style="{StaticResource ThinSlider}" Minimum="10" Maximum="24" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.FontSize, Mode=TwoWay}" Margin="0,7,0,0"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="2">
-                                <Grid>
-                                    <TextBlock Text="{DynamicResource Lang_AvatarSize}" Style="{StaticResource SettingLabel}"/>
-                                    <TextBlock Text="{Binding Config.AvatarSize, StringFormat={}{0:0} px}" Style="{StaticResource ValueLabel}"/>
-                                </Grid>
-                                <Slider Style="{StaticResource ThinSlider}" Minimum="14" Maximum="38" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.AvatarSize, Mode=TwoWay}" Margin="0,7,0,0"/>
-                            </StackPanel>
-                        </Grid>
-                        <StackPanel Margin="0,24,0,0">
+                                <TextBlock Grid.Column="2" Text="{DynamicResource Lang_FontSize}" Style="{StaticResource SettingLabel}" VerticalAlignment="Center" Margin="0,0,0,8"/>
+                                <ComboBox x:Name="NameFontSelector" Grid.Row="1" Style="{StaticResource ModernComboBox}"
+                                          Height="36" ItemsSource="{Binding NameFonts}" DisplayMemberPath="DisplayName" SelectedValuePath="FamilyName"
+                                          SelectedValue="{Binding Config.NameFontFamily, Mode=TwoWay}" IsTextSearchEnabled="True"
+                                          AutomationProperties.Name="{DynamicResource Lang_NameFont_Family}"/>
+                                <TextBox x:Name="NameFontSizeInput" Grid.Row="1" Grid.Column="2" Style="{StaticResource TextInput}"
+                                         ToolTip="{DynamicResource Lang_NameFont_Range}" AutomationProperties.Name="{DynamicResource Lang_FontSize}">
+                                    <TextBox.Text>
+                                        <Binding Path="Config.FontSize" Mode="TwoWay" UpdateSourceTrigger="LostFocus" ValidatesOnExceptions="True" StringFormat="{}{0:0.#}">
+                                            <Binding.ValidationRules><helpers:NameFontSizeValidationRule/></Binding.ValidationRules>
+                                        </Binding>
+                                    </TextBox.Text>
+                                </TextBox>
+                            </Grid>
+                            <TextBlock Text="{DynamicResource Lang_NameFont_NoMatches}" Style="{StaticResource SectionDescription}" Margin="0,8,0,0"
+                                       Visibility="{Binding HasNoNameFontMatches, Converter={StaticResource BooleanVisibility}}"/>
+                            <Slider Style="{StaticResource ThinSlider}" Minimum="10" Maximum="36" TickFrequency="1" IsSnapToTickEnabled="True"
+                                    Value="{Binding Config.FontSize, Mode=TwoWay}" Margin="0,8,0,0"/>
+                        </StackPanel>
+                        <StackPanel>
+                            <Grid>
+                                <TextBlock Text="{DynamicResource Lang_AvatarSize}" Style="{StaticResource SettingLabel}"/>
+                                <TextBlock Text="{Binding Config.AvatarSize, StringFormat={}{0:0} px}" Style="{StaticResource ValueLabel}"/>
+                            </Grid>
+                            <Slider Style="{StaticResource ThinSlider}" Minimum="14" Maximum="38" TickFrequency="1" IsSnapToTickEnabled="True"
+                                    Value="{Binding Config.AvatarSize, Mode=TwoWay}" Margin="0,8,0,0"/>
+                        </StackPanel>
+                        <StackPanel Margin="0,20,0,0">
                             <Grid>
                                 <TextBlock Text="{DynamicResource Lang_Opacity}" Style="{StaticResource SettingLabel}"/>
                                 <TextBlock Text="{Binding Config.BackgroundOpacity, StringFormat={}{0:P0}}" Style="{StaticResource ValueLabel}"/>
                             </Grid>
-                            <Slider Style="{StaticResource ThinSlider}" Minimum="0.15" Maximum="1" TickFrequency="0.05" IsSnapToTickEnabled="True" Value="{Binding Config.BackgroundOpacity, Mode=TwoWay}" Margin="0,7,0,0"/>
+                            <Slider Style="{StaticResource ThinSlider}" Minimum="0.15" Maximum="1" TickFrequency="0.05" IsSnapToTickEnabled="True" Value="{Binding Config.BackgroundOpacity, Mode=TwoWay}" Margin="0,8,0,0"/>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
                 <ScrollViewer x:Name="PositionScroller" Grid.Column="0" Background="#FFFFFF"
                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                     Visibility="{Binding IsChecked, ElementName=NavPosition, Converter={StaticResource BooleanVisibility}}">
-                    <StackPanel x:Name="PositionSettings" Margin="34,26,34,30">
+                    <StackPanel x:Name="PositionSettings" Margin="32,24,32,24">
                         <TextBlock Text="{DynamicResource Lang_Position_Title}" Style="{StaticResource SectionTitle}"/>
                         <TextBlock Text="{DynamicResource Lang_Position_Description}" Style="{StaticResource SectionDescription}" Margin="0,5,0,18"/>
                         <Grid>
@@ -575,7 +540,7 @@
                             </StackPanel>
                             <StackPanel Grid.Column="2">
                                 <TextBlock Text="{DynamicResource Lang_Position_Quick}" Style="{StaticResource SettingLabel}" Margin="0,0,0,8"/>
-                                <Border BorderBrush="#C6DCDD" BorderThickness="1" CornerRadius="10" Padding="6" Background="#F2F7F7">
+                                <Border BorderBrush="#C6DCDD" BorderThickness="1" CornerRadius="10" Padding="6" Background="#F6F8F7">
                                     <Grid>
                                         <Grid.RowDefinitions>
                                             <RowDefinition/>
@@ -622,33 +587,33 @@
                                         <Ellipse Grid.Row="1" Grid.Column="1" Width="6" Height="6" Fill="#A3C2BC" VerticalAlignment="Center" HorizontalAlignment="Center" IsHitTestVisible="False"/>
                                     </Grid>
                                 </Border>
-                                <TextBlock Text="{DynamicResource Lang_Position_Screen}" Style="{StaticResource SectionDescription}" FontSize="11.5" Margin="0,7,0,0"/>
+                                <TextBlock Text="{DynamicResource Lang_Position_Screen}" Style="{StaticResource SectionDescription}" FontSize="12" Margin="0,8,0,0"/>
                             </StackPanel>
                         </Grid>
                         <TextBlock Text="{DynamicResource Lang_Position_DragHint}" Style="{StaticResource SectionDescription}" Margin="0,14,0,0"/>
-                        <Border Height="1" Background="#DCE8E9" Margin="0,24,0,20"/>
+                        <Border Height="1" Background="#DDE5E1" Margin="0,24,0,16"/>
                         <StackPanel>
                             <Grid>
                                 <TextBlock Text="{DynamicResource Lang_Spacing}" Style="{StaticResource SettingLabel}"/>
                                 <TextBlock Text="{Binding Config.ItemSpacing, StringFormat={}{0:0} px}" Style="{StaticResource ValueLabel}"/>
                             </Grid>
-                            <Slider Style="{StaticResource ThinSlider}" Minimum="0" Maximum="16" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.ItemSpacing, Mode=TwoWay}" Margin="0,7,0,0"/>
+                            <Slider Style="{StaticResource ThinSlider}" Minimum="0" Maximum="16" TickFrequency="1" IsSnapToTickEnabled="True" Value="{Binding Config.ItemSpacing, Mode=TwoWay}" Margin="0,8,0,0"/>
                         </StackPanel>
-                        <StackPanel Margin="0,24,0,0">
+                        <StackPanel Margin="0,20,0,0">
                             <Grid>
                                 <TextBlock Text="{DynamicResource Lang_Scale}" Style="{StaticResource SettingLabel}"/>
                                 <TextBlock Text="{Binding Config.UiScale, StringFormat={}{0:P0}}" Style="{StaticResource ValueLabel}"/>
                             </Grid>
-                            <Slider Style="{StaticResource ThinSlider}" Minimum="0.65" Maximum="1.5" TickFrequency="0.05" IsSnapToTickEnabled="True" Value="{Binding Config.UiScale, Mode=TwoWay}" Margin="0,7,0,0"/>
+                            <Slider Style="{StaticResource ThinSlider}" Minimum="0.65" Maximum="1.5" TickFrequency="0.05" IsSnapToTickEnabled="True" Value="{Binding Config.UiScale, Mode=TwoWay}" Margin="0,8,0,0"/>
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
                 <ScrollViewer x:Name="NotificationsScroller" Grid.Column="0" Background="#FFFFFF"
                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                     Visibility="{Binding IsChecked, ElementName=NavNotifications, Converter={StaticResource BooleanVisibility}}">
-                    <StackPanel x:Name="NotificationsSettings" Margin="34,26,34,30">
+                    <StackPanel x:Name="NotificationsSettings" Margin="32,24,32,24">
                         <TextBlock Text="{DynamicResource Lang_Settings_Notifications}" Style="{StaticResource SectionTitle}"/>
-                        <TextBlock Text="{DynamicResource Lang_Settings_NotificationsDescription}" Style="{StaticResource SectionDescription}" Margin="0,5,0,22"/>
+                        <TextBlock Text="{DynamicResource Lang_Settings_NotificationsDescription}" Style="{StaticResource SectionDescription}" Margin="0,4,0,16"/>
                         <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Config.EnableNotifications, Mode=TwoWay}">
                             <TextBlock Text="{DynamicResource Lang_EnableNotify}" TextWrapping="Wrap" Margin="0,0,10,0"/>
                         </CheckBox>
@@ -669,9 +634,9 @@
                 <ScrollViewer x:Name="ConnectionScroller" Grid.Column="0" Background="#FFFFFF"
                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                     Visibility="{Binding IsChecked, ElementName=NavConnection, Converter={StaticResource BooleanVisibility}}">
-                    <StackPanel x:Name="ConnectionSettings" Margin="34,26,34,30">
+                    <StackPanel x:Name="ConnectionSettings" Margin="32,24,32,24">
                         <TextBlock Text="{DynamicResource Lang_ConnectionSettings}" Style="{StaticResource SectionTitle}"/>
-                        <TextBlock Text="{DynamicResource Lang_ConnectionSettings_Description}" Style="{StaticResource SectionDescription}" Margin="0,5,0,22"/>
+                        <TextBlock Text="{DynamicResource Lang_ConnectionSettings_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,16"/>
                         <StackPanel Margin="0,0,0,24"
                             ToolTip="{DynamicResource Lang_ServerSource_Description}">
                             <TextBlock Text="{DynamicResource Lang_ServerSource}" Foreground="{StaticResource MutedBrush}" Style="{StaticResource SettingLabel}" Margin="0,0,0,8"/>
@@ -699,7 +664,7 @@
                         <ComboBox Style="{StaticResource ModernComboBox}" ItemsSource="{Binding RemoteAppPorts}"
                             SelectedItem="{Binding Config.RemoteAppPort, Mode=TwoWay}"/>
                         <TextBlock Text="{DynamicResource Lang_RemoteAppPort_Description}" Style="{StaticResource SectionDescription}" Margin="0,7,0,22"/>
-                        <Border Height="1" Background="#DCE8E9" Margin="0,0,0,20"/>
+                        <Border Height="1" Background="#DDE5E1" Margin="0,0,0,16"/>
                         <TextBlock Text="{Binding ConnectionStatus}" TextWrapping="Wrap" FontSize="13" Margin="0,0,0,12" Foreground="{StaticResource MutedBrush}"/>
                         <Button x:Name="ConnectionRefreshButton" Content="{DynamicResource Lang_Tray_Refresh}" Click="BtnRefresh_Click" HorizontalAlignment="Left" Style="{StaticResource QuietButton}"/>
                     </StackPanel>
@@ -707,9 +672,9 @@
                 <ScrollViewer x:Name="ApplicationScroller" Grid.Column="0" Background="#FFFFFF"
                     VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"
                     Visibility="{Binding IsChecked, ElementName=NavApplication, Converter={StaticResource BooleanVisibility}}">
-                    <StackPanel x:Name="ApplicationSettings" Margin="34,26,34,30">
+                    <StackPanel x:Name="ApplicationSettings" Margin="32,24,32,24">
                         <TextBlock Text="{DynamicResource Lang_Settings_Application}" Style="{StaticResource SectionTitle}"/>
-                        <TextBlock Text="{DynamicResource Lang_Settings_ApplicationDescription}" Style="{StaticResource SectionDescription}" Margin="0,5,0,22"/>
+                        <TextBlock Text="{DynamicResource Lang_Settings_ApplicationDescription}" Style="{StaticResource SectionDescription}" Margin="0,4,0,16"/>
                         <TextBlock Text="{DynamicResource Lang_Settings_Startup}" Style="{StaticResource SettingLabel}"/>
                         <StackPanel Margin="0,13,0,0">
                             <CheckBox Style="{StaticResource ToggleSwitch}"
@@ -717,7 +682,7 @@
                                 <TextBlock Text="{DynamicResource Lang_AutoStart}" TextWrapping="Wrap" Margin="0,0,10,0"/>
                             </CheckBox>
                             <TextBlock Text="{DynamicResource Lang_AutoStart_Description}"
-                                Style="{StaticResource SectionDescription}" Margin="0,3,0,0"/>
+                                Style="{StaticResource SectionDescription}" Margin="0,4,0,0"/>
                         </StackPanel>
                         <StackPanel Margin="0,13,0,0">
                             <CheckBox Style="{StaticResource ToggleSwitch}"
@@ -725,13 +690,13 @@
                                 <TextBlock Text="{DynamicResource Lang_AutoOpenWithTeamSpeak}" TextWrapping="Wrap" Margin="0,0,10,0"/>
                             </CheckBox>
                             <TextBlock Text="{DynamicResource Lang_AutoOpenWithTeamSpeak_Description}"
-                                Style="{StaticResource SectionDescription}" Margin="0,3,0,0"/>
+                                Style="{StaticResource SectionDescription}" Margin="0,4,0,0"/>
                         </StackPanel>
-                        <Border Height="1" Background="#DCE8E9" Margin="0,24,0,20"/>
+                        <Border Height="1" Background="#DDE5E1" Margin="0,24,0,16"/>
                         <TextBlock Text="{DynamicResource Lang_Update_Title}" Style="{StaticResource SettingLabel}"/>
                         <TextBlock Text="{DynamicResource Lang_Update_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,9"/>
                         <TextBlock Text="{Binding UpdateStatusText}" FontSize="13" FontWeight="SemiBold"
-                            Foreground="#176D5B" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                            Foreground="#147D64" TextWrapping="Wrap" Margin="0,0,0,10"/>
                         <WrapPanel>
                             <Button Content="{DynamicResource Lang_Update_Check}" Style="{StaticResource QuietButton}"
                                 Command="{Binding CheckForUpdatesCommand}" Margin="0,0,9,8"/>
@@ -741,7 +706,7 @@
                         <CheckBox Style="{StaticResource ToggleSwitch}" IsChecked="{Binding Config.CheckUpdatesOnStartup, Mode=TwoWay}">
                             <TextBlock Text="{DynamicResource Lang_Update_AutoCheck}" TextWrapping="Wrap"/>
                         </CheckBox>
-                        <Border Height="1" Background="#DCE8E9" Margin="0,24,0,20"/>
+                        <Border Height="1" Background="#DDE5E1" Margin="0,24,0,16"/>
                         <TextBlock Text="{DynamicResource Lang_Diagnostics}" Style="{StaticResource SettingLabel}"/>
                         <TextBlock Text="{DynamicResource Lang_Diagnostics_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,11"/>
                         <StackPanel Orientation="Horizontal">
@@ -750,13 +715,13 @@
                         </StackPanel>
                     </StackPanel>
                 </ScrollViewer>
-                <Border Grid.Column="1" Background="#D6E4E6"/>
+                <Border Grid.Column="1" Background="#DDE5E1"/>
                 <Border Grid.Column="2" Background="{StaticResource RailBrush}">
                     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                        <StackPanel Margin="24,26,24,24">
+                        <StackPanel Margin="24">
                             <TextBlock Text="{DynamicResource Lang_LivePreview}" FontSize="14" FontWeight="SemiBold"/>
                             <TextBlock Text="{DynamicResource Lang_LivePreview_Description}" Style="{StaticResource SectionDescription}" Margin="0,4,0,12"/>
-                            <Border Background="#0D2026" CornerRadius="14" Padding="10" Height="160">
+                            <Border Background="#0D2026" CornerRadius="14" Padding="10" Height="144">
                                 <Border BorderBrush="#34515A" BorderThickness="1" CornerRadius="10" Padding="12" VerticalAlignment="{Binding Config.UserListAlignment}">
                                     <Border.Style>
                                         <Style TargetType="Border">
@@ -822,7 +787,7 @@
                                                 </Border.Style>
                                             </Border>
                                         </Grid>
-                                        <TextBlock Grid.Column="1" Text="Nova" FontSize="{Binding Config.FontSize}" FontWeight="SemiBold" Foreground="#F5FBFA" VerticalAlignment="Center" Margin="10,0" TextTrimming="CharacterEllipsis">
+                                        <TextBlock x:Name="PreviewUserName" Grid.Column="1" Text="Nova" FontFamily="{Binding Config.NameFontFamily}" FontSize="{Binding Config.FontSize}" FontWeight="SemiBold" Foreground="#F5FBFA" VerticalAlignment="Center" Margin="10,0" TextTrimming="CharacterEllipsis">
                                             <TextBlock.Style>
                                                 <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
                                                     <Style.Triggers>
@@ -850,15 +815,15 @@
                                     </Grid>
                                 </Border>
                             </Border>
-                            <Border Height="1" Background="#D6E4E6" Margin="0,24"/>
+                            <Border Height="1" Background="#DDE5E1" Margin="0,24"/>
                             <TextBlock Text="{DynamicResource Lang_Settings_AutoSaved}" Style="{StaticResource SectionDescription}"/>
                         </StackPanel>
                     </ScrollViewer>
                 </Border>
             </Grid>
 
-            <Border Grid.Row="4" Background="{StaticResource SurfaceRaisedBrush}" BorderBrush="#D6E4E6" BorderThickness="0,1,0,0" CornerRadius="0,0,18,18">
-                <Grid Margin="30,0">
+            <Border Grid.Row="4" Background="{StaticResource SurfaceRaisedBrush}" BorderBrush="#DDE5E1" BorderThickness="0,1,0,0" CornerRadius="0,0,18,18">
+                <Grid Margin="32,0">
                     <Button Content="{DynamicResource Lang_Reset}" Style="{StaticResource QuietButton}" HorizontalAlignment="Left" Click="BtnReset_Click"/>
                     <Button Content="{DynamicResource Lang_Save}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Right" Click="BtnSave_Click"/>
                 </Grid>

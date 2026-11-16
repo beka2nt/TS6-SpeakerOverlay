@@ -22,7 +22,7 @@ internal static class SettingsOrganizationChecks
     internal static readonly string[] Categories = ["Display", "Position", "Notifications", "Connection", "Application"];
     private static readonly string[][] ExpectedBindings =
     [
-        ["Config.AvatarDisplayMode", "Config.ShowOnlyTalking", "Config.FontSize", "Config.AvatarSize", "Config.BackgroundOpacity"],
+        ["Config.AvatarDisplayMode", "Config.ShowOnlyTalking", "Config.FontSize", "Config.NameFontFamily", "Config.AvatarSize", "Config.BackgroundOpacity"],
         ["Config.UserListAlignment", "Config.ScreenEdgeGap", "Config.SnapToScreenEdges", "Config.ItemSpacing", "Config.UiScale"],
         ["Config.EnableNotifications", "Config.EnableServerNotifications", "Config.EnableChannelNotifications"],
         ["SelectedServer", "Config.RemoteAppPort"],
@@ -122,6 +122,10 @@ internal static class SettingsOrganizationChecks
             Check(vm.Config.AvatarDisplayMode == AvatarMode.AvatarOnly && vm.Config.FontSize == 20,
                 language.Code + " category switches retain live appearance changes");
             var appearanceScroller = (ScrollViewer)window.FindName("SettingsScroller");
+            // Force overflow to test scroll retention even when the refined
+            // layout fits the regular viewport without scrolling.
+            appearanceScroller.Height = 240;
+            Arrange(window);
             appearanceScroller.ScrollToBottom();
             Arrange(window);
             double savedOffset = appearanceScroller.VerticalOffset;
@@ -131,6 +135,7 @@ internal static class SettingsOrganizationChecks
             Select(window, "Display");
             Check(savedOffset > 0 && appearanceScroller.VerticalOffset == savedOffset,
                 language.Code + " categories retain independent scroll positions");
+            appearanceScroller.ClearValue(FrameworkElement.HeightProperty);
             Select(window, "Application");
             LanguageHelper.SetLanguage(language.Code == "en-US" ? "de-DE" : "en-US");
             Arrange(window);

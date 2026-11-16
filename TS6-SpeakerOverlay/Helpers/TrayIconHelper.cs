@@ -79,7 +79,7 @@ namespace TS6_SpeakerOverlay.Helpers
             _contextMenu = CreateMenuShell();
 
             _statusLabel = CreateMenuItem("TS6 Speaker Overlay", MenuGlyph.Status);
-            _statusLabel.ForeColor = Color.FromArgb(22, 50, 58);
+            _statusLabel.ForeColor = Color.FromArgb(24, 51, 45);
             _statusLabel.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, GraphicsUnit.Point);
             ((ModernTrayMenuItem)_statusLabel).MenuIcon?.Dispose();
             ((ModernTrayMenuItem)_statusLabel).MenuIcon = CreateMenuGlyph(MenuGlyph.Status, Color.FromArgb(25, 184, 137));
@@ -143,8 +143,8 @@ namespace TS6_SpeakerOverlay.Helpers
 
         internal static ContextMenuStrip CreateMenuShell() => new()
         {
-            BackColor = Color.FromArgb(246, 250, 249),
-            ForeColor = Color.FromArgb(22, 50, 58),
+            BackColor = Color.FromArgb(246, 248, 247),
+            ForeColor = Color.FromArgb(24, 51, 45),
             Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, GraphicsUnit.Point),
             AutoSize = false, Padding = new Padding(6), ShowImageMargin = false, ShowCheckMargin = false,
             Renderer = new ModernTrayMenuRenderer(), DropShadowEnabled = true
@@ -164,7 +164,7 @@ namespace TS6_SpeakerOverlay.Helpers
             {
                 item.AutoSize = false;
                 item.Size = new System.Drawing.Size(width, (int)Math.Ceiling(
-                    (item is ToolStripSeparator ? 10 : Equals(item.Tag, "header") ? 42 : 38) * scale));
+                    (item is ToolStripSeparator ? 8 : Equals(item.Tag, "header") ? 40 : 36) * scale));
                 if (item.Available) height += item.Height + item.Margin.Vertical;
             }
             menu.Size = new System.Drawing.Size(width + menu.Padding.Horizontal, height);
@@ -176,10 +176,10 @@ namespace TS6_SpeakerOverlay.Helpers
             return new ModernTrayMenuItem(text)
             {
                 AutoSize = false,
-                ForeColor = isDanger ? Color.FromArgb(183, 61, 78) : Color.FromArgb(22, 50, 58),
+                ForeColor = isDanger ? Color.FromArgb(183, 61, 78) : Color.FromArgb(24, 51, 45),
                 MenuIcon = CreateMenuGlyph(
                     glyph,
-                    isDanger ? Color.FromArgb(183, 61, 78) : Color.FromArgb(92, 120, 127)),
+                    isDanger ? Color.FromArgb(183, 61, 78) : Color.FromArgb(89, 110, 101)),
                 ImageScaling = ToolStripItemImageScaling.None,
                 ImageAlign = ContentAlignment.MiddleCenter,
                 TextAlign = ContentAlignment.MiddleLeft,
@@ -354,7 +354,7 @@ namespace TS6_SpeakerOverlay.Helpers
             graphics.Clear(Color.Transparent);
             graphics.ScaleTransform(3F, 3F);
 
-            using var pen = new Pen(color, 1.8F)
+            using var pen = new Pen(color, 1.5F)
             {
                 StartCap = LineCap.Round,
                 EndCap = LineCap.Round,
@@ -475,14 +475,14 @@ namespace TS6_SpeakerOverlay.Helpers
             {
                 if (!e.Item.Selected || Equals(e.Item.Tag, "header"))
                 {
-                    using var backgroundBrush = new SolidBrush(e.ToolStrip?.BackColor ?? Color.FromArgb(246, 250, 249));
+                    using var backgroundBrush = new SolidBrush(e.ToolStrip?.BackColor ?? Color.FromArgb(246, 248, 247));
                     e.Graphics.FillRectangle(backgroundBrush, new Rectangle(0, 0, e.Item.Width, e.Item.Height));
                     return;
                 }
 
                 Color background = Equals(e.Item.Tag, "danger")
                     ? Color.FromArgb(251, 232, 234)
-                    : Color.FromArgb(222, 244, 236);
+                    : Color.FromArgb(228, 241, 235);
                 using var brush = new SolidBrush(background);
                 using GraphicsPath path = CreateRoundedRectanglePath(
                     new Rectangle(3, 1, e.Item.Width - 6, e.Item.Height - 2), 6);
@@ -492,7 +492,7 @@ namespace TS6_SpeakerOverlay.Helpers
 
             protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
             {
-                using var pen = new Pen(Color.FromArgb(214, 228, 230));
+                using var pen = new Pen(Color.FromArgb(221, 229, 225));
                 int y = e.Item.Height / 2;
                 var layout = TrayMenuLayout.Calculate(e.Item.Width, e.Item.Height, e.Graphics.DpiX);
                 e.Graphics.DrawLine(pen, layout.Text.Left, y, layout.Text.Right, y);
@@ -532,7 +532,7 @@ namespace TS6_SpeakerOverlay.Helpers
 
             protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
             {
-                using var pen = new Pen(Color.FromArgb(200, 218, 220));
+                using var pen = new Pen(Color.FromArgb(207, 220, 213));
                 using GraphicsPath path = CreateRoundedRectanglePath(
                     new Rectangle(0, 0, e.ToolStrip.Width - 1, e.ToolStrip.Height - 1), 10);
                 e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -542,9 +542,9 @@ namespace TS6_SpeakerOverlay.Helpers
 
         private sealed class ModernTrayColorTable : ProfessionalColorTable
         {
-            private static readonly Color Background = Color.FromArgb(246, 250, 249);
-            private static readonly Color Selected = Color.FromArgb(222, 244, 236);
-            private static readonly Color Border = Color.FromArgb(200, 218, 220);
+            private static readonly Color Background = Color.FromArgb(246, 248, 247);
+            private static readonly Color Selected = Color.FromArgb(228, 241, 235);
+            private static readonly Color Border = Color.FromArgb(207, 220, 213);
 
             public override Color ToolStripDropDownBackground => Background;
             public override Color ImageMarginGradientBegin => Background;
@@ -555,8 +555,8 @@ namespace TS6_SpeakerOverlay.Helpers
             public override Color MenuItemSelected => Selected;
             public override Color MenuItemSelectedGradientBegin => Selected;
             public override Color MenuItemSelectedGradientEnd => Selected;
-            public override Color SeparatorDark => Color.FromArgb(214, 228, 230);
-            public override Color SeparatorLight => Color.FromArgb(214, 228, 230);
+            public override Color SeparatorDark => Color.FromArgb(221, 229, 225);
+            public override Color SeparatorLight => Color.FromArgb(221, 229, 225);
         }
 
         private void ExitApplication()

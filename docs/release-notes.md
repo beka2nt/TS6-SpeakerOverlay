@@ -1,3 +1,34 @@
+## v1.7.5 — 字体搜索 / Font search
+
+- 保留原字体下拉框，在字体标签旁增加搜索框，支持中英文名字、部分名称和不区分大小写筛选。
+- 搜索不会改变已应用字体；当前字体始终保留，无匹配时显示提示，清除按钮可恢复完整列表。
+- 搜索文字只用于当前界面，不写入配置；选中搜索结果后，预览和浮窗名字即时更新。
+- Keep the font dropdown and add search by localized or English family names. Preserve the applied font, show a no-match hint, and clear the query without resetting preferences.
+- 包含 v1.7.4 的连接修复，本次不再修改连接逻辑。
+- 验证：624 项完整回归检查通过，包括中英文匹配、搜索结果选择、无匹配保留字体、清除搜索及搜索状态下恢复默认。
+
+## v1.7.4 — 名字字体与连接修复 / Name fonts and connection fix
+
+- 在显示外观中新增成员名字字体选择与字号输入框，支持本机字体、10–36 字号和即时预览；保留滑块，设置自动保存。
+- 字体仅应用到悬浮窗成员名字，不改变设置、状态提示或头像文字；旧配置继续沿用原字体回退与字号。
+- 修复 5 秒没有说话或频道事件就主动断线的问题。取消应用消息静默超时，改用 20 秒 WebSocket 心跳与 10 秒响应超时检测失效连接。
+- 真正断开或连接失败后保留 5 秒自动重试；断线日志新增端口、断线类型、关闭状态与异常详情，认证错误仅记录状态码，不记录原始授权消息或密钥。
+- Add an installed-font selector and numeric 10–36 size field for member names, with live preview and saved preferences.
+- Stop reconnecting solely because the channel is silent. Use protocol-level PING/PONG and retain automatic retries after real failures, with more specific diagnostics.
+- 真实 TeamSpeak 连接需用户启动后验证；回归测试使用隔离的本机模拟服务，不读取真实授权密钥。
+- 验证：616 项完整回归通过；包含 32 秒静默与心跳窗口、真实关闭后的重连、字体输入校验及实际浮窗绑定。
+
+## v1.7.3 — 小范围界面精修 / Focused UI polish
+
+- 保留浅色风格和五类设置，压缩设置页顶部与页脚留白，让首屏显示更多常用选项。
+- 深化按钮与数值文字的绿色，提高文字对比度；统一间距、说明文字、圆角和键盘焦点。
+- 设置与日志窗口使用共享样式。日志工具栏支持窄窗口换行，筛选状态更明确。
+- 托盘统一浅灰配色、图标线宽和菜单密度，保留现有功能、语音亮灯与七种语言。
+- Keep the light theme, five settings categories and all existing behavior. Refine spacing, text contrast and shared window styles; wrap log actions in narrow windows and unify tray styling.
+- 本次不修改 TeamSpeak 连接或重连逻辑 / TeamSpeak connection behavior is unchanged.
+- 验证：586 项离线回归检查通过，含七语言、共享样式、对比度与日志操作 / 586 offline checks passed.
+- 设计流程参考 [unslop](https://github.com/heydamir/unslop)，Damir Sokolovsky / @heydamir，CC BY 4.0；适配原生 WPF/WinForms。
+
 ## v1.7.2 — 设置分类优化 / Organized settings
 
 - 设置重组为显示外观、排列定位、进出通知、连接服务器、应用与日志五个分类，默认打开常用外观设置。

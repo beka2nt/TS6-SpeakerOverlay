@@ -232,6 +232,19 @@ internal static class FeatureChecks
             using (var stream = File.Create(Path.Combine(directory, "diagnostics-" + language.Code + ".png"))) diagnosticsEncoder.Save(stream);
             window.Close();
 
+            // Preview only fixtures, never a user's local logs.
+            var logs = new LogViewerWindow(errorsOnly => UtilityPolishChecks.FixtureEntries(errorsOnly));
+            var logRoot = (FrameworkElement)logs.Content;
+            logRoot.Measure(new System.Windows.Size(860, 610));
+            logRoot.Arrange(new Rect(0, 0, 860, 610));
+            logRoot.UpdateLayout();
+            var logBitmap = new RenderTargetBitmap(860, 610, 96, 96, PixelFormats.Pbgra32);
+            logBitmap.Render(logRoot);
+            var logEncoder = new PngBitmapEncoder();
+            logEncoder.Frames.Add(BitmapFrame.Create(logBitmap));
+            using (var stream = File.Create(Path.Combine(directory, "logs-" + language.Code + ".png"))) logEncoder.Save(stream);
+            logs.Close();
+
             using var menu = TrayIconHelper.CreateMenuShell();
             menu.CreateControl();
             menu.Items.Add(TrayIconHelper.CreateMenuItem("TS6 Speaker Overlay", TrayIconHelper.MenuGlyph.Status));

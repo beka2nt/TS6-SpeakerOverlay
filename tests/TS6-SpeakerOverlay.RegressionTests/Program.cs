@@ -22,6 +22,16 @@ internal static class Program
         LanguageHelper.SetLanguage("en-US");
         try
         {
+            if (args.Length == 1 && args[0] == "--check-typography")
+            {
+                Console.WriteLine($"PASS: {NameTypographyChecks.Run()} typography checks.");
+                return 0;
+            }
+            if (args.Length == 1 && args[0] == "--check-connection")
+            {
+                Console.WriteLine($"PASS: {ConnectionLifecycleChecks.Run()} connection lifecycle checks; no real TeamSpeak connection.");
+                return 0;
+            }
             if (args.Length == 2 && args[0] == "--preview-settings")
             {
                 SettingsOrganizationChecks.RenderPreviews(args[1]);
@@ -49,6 +59,9 @@ internal static class Program
             RefreshTests();
             _checks += FeatureChecks.Run();
             _checks += SettingsOrganizationChecks.Run();
+            _checks += UtilityPolishChecks.Run();
+            _checks += NameTypographyChecks.Run();
+            _checks += ConnectionLifecycleChecks.Run();
             Console.WriteLine($"PASS: {_checks} regression checks. No TeamSpeak connection was opened.");
             return 0;
         }

@@ -121,4 +121,11 @@
     <s:String x:Key="Lang_Settings_ApplicationDescription">Gestiona el inicio, las actualizaciones y los registros de actividad.</s:String>
     <s:String x:Key="Lang_Settings_Startup">Inicio de la aplicación</s:String>
     <s:String x:Key="Lang_Settings_AutoSaved">Los ajustes se guardan solos. El aspecto y la posición cambian al instante.</s:String>
+    <s:String x:Key="Lang_NameFont_Title">Texto de los nombres</s:String>
+    <s:String x:Key="Lang_NameFont_Description">Solo cambia los nombres del overlay, con vista previa al instante</s:String>
+    <s:String x:Key="Lang_NameFont_Family">Fuente</s:String>
+    <s:String x:Key="Lang_NameFont_Range">Tamaño: 10–36; escribe un número o usa el control</s:String>
+    <s:String x:Key="Lang_NameFont_Search">Buscar fuente por nombre</s:String>
+    <s:String x:Key="Lang_NameFont_ClearSearch">Borrar búsqueda</s:String>
+    <s:String x:Key="Lang_NameFont_NoMatches">No hay coincidencias; se conserva la fuente actual</s:String>
 </ResourceDictionary>

@@ -121,4 +121,11 @@
     <s:String x:Key="Lang_Settings_ApplicationDescription">Startverhalten, Updates und Aktivitätsprotokolle verwalten.</s:String>
     <s:String x:Key="Lang_Settings_Startup">Startverhalten</s:String>
     <s:String x:Key="Lang_Settings_AutoSaved">Einstellungen werden automatisch gespeichert. Darstellung und Position ändern sich sofort.</s:String>
+    <s:String x:Key="Lang_NameFont_Title">Schrift der Mitgliedsnamen</s:String>
+    <s:String x:Key="Lang_NameFont_Description">Gilt nur für Namen im Overlay und wird sofort angezeigt</s:String>
+    <s:String x:Key="Lang_NameFont_Family">Schriftart</s:String>
+    <s:String x:Key="Lang_NameFont_Range">Größe: 10–36; Zahl eingeben oder Regler verwenden</s:String>
+    <s:String x:Key="Lang_NameFont_Search">Schrift nach Namen suchen</s:String>
+    <s:String x:Key="Lang_NameFont_ClearSearch">Schriftsuche leeren</s:String>
+    <s:String x:Key="Lang_NameFont_NoMatches">Keine passende Schrift; die aktuelle Schrift bleibt erhalten</s:String>
 </ResourceDictionary>

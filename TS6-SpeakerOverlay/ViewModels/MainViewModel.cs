@@ -20,6 +20,33 @@ namespace TS6_SpeakerOverlay.ViewModels
         
         public AppConfig Config { get; }
         public IReadOnlyList<int> RemoteAppPorts { get; } = [5899, 6100, 6200, 7000];
+        public IReadOnlyList<OverlayFontOption> NameFonts => OverlayFontCatalog.ForSelection(Config.NameFontFamily)
+            .Where(font => font.FamilyName == Config.NameFontFamily || OverlayFontCatalog.Matches(font, NameFontSearch))
+            .ToArray();
+        public bool HasNoNameFontMatches => !string.IsNullOrWhiteSpace(NameFontSearch)
+            && !OverlayFontCatalog.ForSelection(Config.NameFontFamily).Any(font => OverlayFontCatalog.Matches(font, NameFontSearch));
+        [ObservableProperty]
+        [NotifyPropertyChangedFor(nameof(NameFonts))]
+        [NotifyPropertyChangedFor(nameof(HasNoNameFontMatches))]
+        private string _nameFontSearch = string.Empty;
+
+        [RelayCommand]
+        private void ClearNameFontSearch() => NameFontSearch = string.Empty;
+
+        private void NameFontConfigChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs args)
+        {
+            if (args.PropertyName != nameof(AppConfig.NameFontFamily)) return;
+            // A ComboBox selection writes this property while its selection
+            // transaction is active. Replacing ItemsSource inside that same
+            // transaction can write null back and recursively reset the font.
+            System.Windows.Application.Current.Dispatcher.BeginInvoke(
+                System.Windows.Threading.DispatcherPriority.DataBind, new Action(() =>
+                {
+                    if (_isDisposed) return;
+                    OnPropertyChanged(nameof(NameFonts));
+                    OnPropertyChanged(nameof(HasNoNameFontMatches));
+                }));
+        }
         public event Action<OverlayPosition>? PositionPresetRequested;
 
         [RelayCommand]
@@ -73,6 +100,7 @@ namespace TS6_SpeakerOverlay.ViewModels
         internal MainViewModel(AppConfig config, Ts6Service? service, bool startService = true, UpdateService? updateService = null)
         {
             Config = config;
+            Config.PropertyChanged += NameFontConfigChanged;
             LanguageHelper.SetLanguage(Config.Language); 
             if (Config.Language != LanguageHelper.CurrentLanguage) Config.Language = LanguageHelper.CurrentLanguage;
             IsOverlayLocked = Config.IsLocked;
@@ -455,6 +483,7 @@ namespace TS6_SpeakerOverlay.ViewModels
             if (_isDisposed) return;
             _isDisposed = true;
             LanguageHelper.LanguageChanged -= OnLanguageChanged;
+            Config.PropertyChanged -= NameFontConfigChanged;
             _updateLifetime.Cancel();
             _updateLifetime.Dispose();
             CancelManualRefresh();

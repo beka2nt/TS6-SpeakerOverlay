@@ -17,6 +17,7 @@ namespace TS6_SpeakerOverlay.Services
     {
         private const int DefaultPort = 5899;
         private readonly WebsocketClient _client;
+        private readonly int _remoteAppPort;
         private readonly CompositeDisposable _subscriptions = new();
         private readonly object _refreshSync = new();
         private readonly object _stateSync = new();
@@ -45,24 +46,37 @@ namespace TS6_SpeakerOverlay.Services
         internal Ts6Service(int port, bool loadApiKey)
         {
             if (loadApiKey) LoadApiKey();
-            var factory = new Func<ClientWebSocket>(() => new ClientWebSocket());
+            var factory = new Func<ClientWebSocket>(() =>
+            {
+                var socket = new ClientWebSocket();
+                socket.Options.Proxy = null; // Remote Apps is strictly local.
+                socket.Options.KeepAliveInterval = TimeSpan.FromSeconds(20);
+                socket.Options.KeepAliveTimeout = TimeSpan.FromSeconds(10);
+                return socket;
+            });
             int selectedPort = port is >= 1 and <= 65535 ? port : DefaultPort;
+            _remoteAppPort = selectedPort;
             AppLogger.Info($"Connecting to the local TS6 Remote App on port {selectedPort}.");
             _client = new WebsocketClient(new Uri($"ws://127.0.0.1:{selectedPort}"), factory);
             
-            _client.ReconnectTimeout = TimeSpan.FromSeconds(5); 
+            // No talking/movement events is normal. Detect broken transports
+            // with WebSocket PING/PONG, not an application-message idle timer.
+            _client.ReconnectTimeout = null;
             _client.ErrorReconnectTimeout = TimeSpan.FromSeconds(5);
+            _client.LostReconnectTimeout = TimeSpan.FromSeconds(5);
 
             _subscriptions.Add(_client.ReconnectionHappened.Subscribe(info =>
             {
-                AppLogger.Info("TS6 WebSocket connected.");
+                AppLogger.Info($"TS6 WebSocket connected; port={_remoteAppPort}; type={info.Type}; sending authentication.");
                 OnConnectionStateChanged?.Invoke(true); 
                 SendAuth();
             }));
 
             _subscriptions.Add(_client.DisconnectionHappened.Subscribe(info =>
             {
-                AppLogger.Warning("TS6 WebSocket disconnected; waiting to reconnect.");
+                string context = $"TS6 WebSocket disconnected; port={_remoteAppPort}; type={info.Type}; closeStatus={info.CloseStatus?.ToString() ?? "none"}; retryDelay=5s.";
+                if (info.Exception != null) AppLogger.Error(context, info.Exception);
+                else AppLogger.Warning(context);
                 lock (_stateSync)
                 {
                     _cachedServers.Clear();
@@ -136,6 +150,13 @@ namespace TS6_SpeakerOverlay.Services
 
         private void HandleAuthResponse(JsonNode? node)
         {
+            int statusCode = GetInt(node?["status"]?["code"]);
+            if (statusCode != 0)
+            {
+                // Never log the raw auth payload, server message or API key.
+                AppLogger.Warning($"TS6 authentication rejected; statusCode={statusCode}; port={_remoteAppPort}. Review Remote Apps authorization in TeamSpeak.");
+                return;
+            }
             var payload = node?["payload"];
             if (payload == null) return;
 

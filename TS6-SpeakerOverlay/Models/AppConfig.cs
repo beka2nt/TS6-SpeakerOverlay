@@ -21,6 +21,7 @@ namespace TS6_SpeakerOverlay.Models
 
     public partial class AppConfig : ObservableObject
     {
+        public const string DefaultNameFontFamily = "Microsoft YaHei UI, Segoe UI Variable Text, Segoe UI";
         [ObservableProperty] private double _windowTop = 50;
         [ObservableProperty] private double _windowLeft = 50;
         [ObservableProperty] private System.Windows.VerticalAlignment _userListAlignment = System.Windows.VerticalAlignment.Top;
@@ -55,6 +56,19 @@ namespace TS6_SpeakerOverlay.Models
         [ObservableProperty] private double _uiScale = 1.0; 
         [ObservableProperty] private double _backgroundOpacity = 0.6;
         [ObservableProperty] private double _fontSize = 14.0;
+        [ObservableProperty] private string _nameFontFamily = DefaultNameFontFamily;
+
+        partial void OnNameFontFamilyChanged(string value)
+        {
+            string normalized = string.IsNullOrWhiteSpace(value) ? DefaultNameFontFamily : value.Trim();
+            if (normalized != value) NameFontFamily = normalized;
+        }
+
+        partial void OnFontSizeChanged(double value)
+        {
+            double normalized = double.IsFinite(value) ? Math.Clamp(value, 10, 36) : 14;
+            if (normalized != value) FontSize = normalized;
+        }
         [ObservableProperty] private double _itemSpacing = 4.0;
         [ObservableProperty] private double _avatarSize = 20.0;
         
@@ -119,6 +133,7 @@ namespace TS6_SpeakerOverlay.Models
             ScreenEdgeGap = 16;
             BackgroundOpacity = 0.6;
             FontSize = 14.0;
+            NameFontFamily = DefaultNameFontFamily;
             ItemSpacing = 4.0;
             AvatarSize = 20.0;
             AvatarDisplayMode = AvatarMode.Avatar; // 默认显示头像

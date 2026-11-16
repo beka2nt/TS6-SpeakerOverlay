@@ -121,4 +121,11 @@
     <s:String x:Key="Lang_Settings_ApplicationDescription">시작 방식, 업데이트 및 활동 로그를 관리하세요.</s:String>
     <s:String x:Key="Lang_Settings_Startup">시작 방식</s:String>
     <s:String x:Key="Lang_Settings_AutoSaved">설정은 자동 저장됩니다. 외관과 위치는 즉시 적용됩니다.</s:String>
+    <s:String x:Key="Lang_NameFont_Title">멤버 이름 글꼴</s:String>
+    <s:String x:Key="Lang_NameFont_Description">오버레이의 멤버 이름에만 적용되며 즉시 반영됩니다</s:String>
+    <s:String x:Key="Lang_NameFont_Family">글꼴</s:String>
+    <s:String x:Key="Lang_NameFont_Range">크기: 10–36. 숫자를 입력하거나 슬라이더를 사용하세요</s:String>
+    <s:String x:Key="Lang_NameFont_Search">이름으로 글꼴 검색</s:String>
+    <s:String x:Key="Lang_NameFont_ClearSearch">글꼴 검색 지우기</s:String>
+    <s:String x:Key="Lang_NameFont_NoMatches">일치하는 글꼴이 없습니다. 현재 글꼴은 유지됩니다</s:String>
 </ResourceDictionary>

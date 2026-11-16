@@ -125,4 +125,11 @@
     <s:String x:Key="Lang_Settings_ApplicationDescription">Manage startup behavior, software updates and activity logs.</s:String>
     <s:String x:Key="Lang_Settings_Startup">Startup behavior</s:String>
     <s:String x:Key="Lang_Settings_AutoSaved">Settings save automatically. Appearance and position changes apply immediately.</s:String>
+    <s:String x:Key="Lang_NameFont_Title">Member name typography</s:String>
+    <s:String x:Key="Lang_NameFont_Description">Applies only to member names in the overlay, with a live preview</s:String>
+    <s:String x:Key="Lang_NameFont_Family">Font family</s:String>
+    <s:String x:Key="Lang_NameFont_Range">Size: 10–36; enter a number or use the slider</s:String>
+    <s:String x:Key="Lang_NameFont_Search">Search fonts by name</s:String>
+    <s:String x:Key="Lang_NameFont_ClearSearch">Clear font search</s:String>
+    <s:String x:Key="Lang_NameFont_NoMatches">No matching fonts; the current font is kept</s:String>
 </ResourceDictionary>
