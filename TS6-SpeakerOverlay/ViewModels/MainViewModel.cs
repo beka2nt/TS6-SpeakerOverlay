@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -81,7 +81,8 @@ namespace TS6_SpeakerOverlay.ViewModels
 
         private bool CanDetectRemoteApp() => _connectionManager != null && !_isDisposed;
         [RelayCommand(CanExecute = nameof(CanDetectRemoteApp))]
-        private Task DetectRemoteAppAsync() => _connectionManager?.DetectNowAsync() ?? Task.CompletedTask;
+        private Task DetectRemoteAppAsync() =>
+            _connectionManager?.DetectNowAsync(restartSession: !IsConnected) ?? Task.CompletedTask;
 
         private void ApplyPortState(Ts6PortState state)
         {
@@ -455,8 +456,10 @@ namespace TS6_SpeakerOverlay.ViewModels
             CancelManualRefresh();
             if (!IsConnected)
             {
-                ConnectionStatus = _connectionManager == null
-                    ? LanguageHelper.GetString("Lang_Status_RemoteUnavailable") : PortDetectionStatusText;
+                if (_connectionManager != null)
+                    _ = _connectionManager.DetectNowAsync(restartSession: true);
+                else
+                    ConnectionStatus = LanguageHelper.GetString("Lang_Status_RemoteUnavailable");
                 return;
             }
 
@@ -481,6 +484,13 @@ namespace TS6_SpeakerOverlay.ViewModels
 
                 if (!ReferenceEquals(_manualRefreshCancellation, cancellation) || _isDisposed) return;
                 _manualRefreshCancellation = null;
+                if (_connectionManager != null)
+                {
+                    AppLogger.Warning("TS6 refresh received no snapshot; reconnecting to Remote Apps.");
+                    await _connectionManager.DetectNowAsync(restartSession: true);
+                    return;
+                }
+
                 ConnectionStatus = LanguageHelper.GetString("Lang_Status_RefreshTimeout");
                 AppLogger.Warning("TS6 refresh failed or timed out. Check Remote App authorization and the configured port.");
             }

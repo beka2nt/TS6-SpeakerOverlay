@@ -99,14 +99,32 @@ internal sealed class Ts6ConnectionManager : ITs6Connection
         return started ? AttemptAsync(true) : Task.CompletedTask;
     }
 
-    internal Task DetectNowAsync()
+    internal Task DetectNowAsync(bool restartSession = false) => DetectNowAsync(restartSession, null);
+
+    private Task DetectNowAsync(bool restartSession, Session? expectedSession)
     {
+        Session? previous = null;
+        long revision = 0;
         bool started;
         lock (_sync)
         {
-            if (_disposed) return Task.CompletedTask;
+            if (_disposed || (expectedSession != null && (!IsCurrentLocked(expectedSession) || !expectedSession.Verified)))
+                return Task.CompletedTask;
             _authorizationBlocked = false;
             started = _started;
+            if (restartSession)
+            {
+                revision = ++_revision;
+                previous = _current;
+                if (previous != null) previous.Active = false;
+                _current = null;
+            }
+        }
+
+        if (restartSession)
+        {
+            previous?.Connection.Dispose();
+            PublishRevision(revision, () => SetDisconnected(revision));
         }
         return started ? AttemptAsync(true) : StartAsync();
     }
@@ -223,6 +241,8 @@ internal sealed class Ts6ConnectionManager : ITs6Connection
         var connection = session.Connection;
         if (connection is ISessionGuardedTs6Connection guarded)
             guarded.SetSessionGuard(action => Publish(session, action, true));
+        if (connection is Ts6Service service)
+            service.OnServerJoined += () => _ = DetectNowAsync(restartSession: true, expectedSession: session);
         connection.OnConnectionStateChanged += connected => Publish(session, () =>
         {
             if (!connected) { Retire(session, Ts6PortState.NoRemoteAppListener, false); return; }

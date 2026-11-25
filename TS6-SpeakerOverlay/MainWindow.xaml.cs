@@ -18,6 +18,7 @@ namespace TS6_SpeakerOverlay
         private readonly MainViewModel _viewModel;
         private readonly bool _enableShellIntegration;
         private TrayIconHelper? _trayIcon;
+        private Views.SettingsWindow? _settingsWindow;
         private bool _isDragging;
 
         public MainWindow() : this(new MainViewModel(), true) { }
@@ -35,7 +36,7 @@ namespace TS6_SpeakerOverlay
             viewModel.PositionPresetRequested += _placement.ApplyPreset;
             if (enableShellIntegration)
                 _trayIcon = new TrayIconHelper(this, GetIsLocked, Lock, Unlock, OpenSettings, RefreshData,
-                    CheckForUpdates, trayIcon => _trayIcon = trayIcon);
+                    trayIcon => _trayIcon = trayIcon);
 
             Loaded += MainWindow_Loaded;
             Closing += MainWindow_Closing;
@@ -123,13 +124,18 @@ namespace TS6_SpeakerOverlay
 
         private void OpenSettings()
         {
-            new Views.SettingsWindow(_viewModel).Show();
-        }
+            if (_settingsWindow is { } existing)
+            {
+                if (existing.WindowState == WindowState.Minimized)
+                    existing.WindowState = WindowState.Normal;
+                existing.Activate();
+                return;
+            }
 
-        private void CheckForUpdates()
-        {
-            OpenSettings();
-            _viewModel.CheckForUpdatesCommand.Execute(null);
+            var window = new Views.SettingsWindow(_viewModel);
+            _settingsWindow = window;
+            window.Closed += (_, _) => _settingsWindow = null;
+            window.Show();
         }
 
         public void ShowOverlay()

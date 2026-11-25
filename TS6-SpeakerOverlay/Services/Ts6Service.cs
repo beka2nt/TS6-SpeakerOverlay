@@ -42,6 +42,7 @@ namespace TS6_SpeakerOverlay.Services
         public event Action<int, int, string, bool>? OnServerMembershipChanged;
         public event Action<bool>? OnConnectionStateChanged;
         public event Action<int>? OnAuthenticationRejected;
+        internal event Action? OnServerJoined;
 
         public Ts6Service(int port = DefaultPort) : this(port, true)
         {
@@ -166,6 +167,7 @@ namespace TS6_SpeakerOverlay.Services
                 switch (type)
                 {
                     case "auth": HandleAuthResponse(node); break;
+                    case "connectStatusChanged": HandleConnectStatusChanged(node?["payload"]); break;
                     case "talkStatusChanged": HandleTalkStatus(node); break;
                     case "clientPropertiesUpdated": HandlePropertiesUpdated(node); break;
                     case "clientMoved": HandleClientMoved(node); break;
@@ -175,6 +177,21 @@ namespace TS6_SpeakerOverlay.Services
             {
                 AppLogger.Error("Failed to process a TS6 message.", ex);
             }
+        }
+
+        private void HandleConnectStatusChanged(JsonNode? payload)
+        {
+            const int connectionEstablished = 4;
+            int connectionId = GetInt(payload?["connectionId"]);
+            if (connectionId <= 0 || GetInt(payload?["status"]) != connectionEstablished) return;
+
+            lock (_stateSync)
+            {
+                if (!_hasAuthoritativeSnapshot || _cachedServers.Any(server =>
+                    server.ConnectionId == connectionId && server.MyChannelId is not ("" or "0"))) return;
+            }
+
+            OnServerJoined?.Invoke();
         }
 
         private void HandleAuthResponse(JsonNode? node)

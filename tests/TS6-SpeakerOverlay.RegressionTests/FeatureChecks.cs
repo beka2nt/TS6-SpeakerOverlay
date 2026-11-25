@@ -29,6 +29,8 @@ internal static class FeatureChecks
         UpdateTests();
         LanguageTests();
         LayoutTests();
+        TrayInteractionTests();
+        SettingsWindowReuseTests();
         return _checks;
     }
 
@@ -170,6 +172,75 @@ internal static class FeatureChecks
         Check(LanguageHelper.CurrentLanguage == "en-US", "unsupported language falls back safely");
     }
 
+    private static void TrayInteractionTests()
+    {
+        const System.Reflection.BindingFlags privateInstance =
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic;
+        bool locked = true;
+        int toggles = 0, settingsOpened = 0;
+        var window = new Window();
+        using var tray = new TrayIconHelper(window, () => locked, () => { locked = true; toggles++; },
+            () => { locked = false; toggles++; }, () => settingsOpened++, () => { }, _ => { });
+
+        var icon = (System.Windows.Forms.NotifyIcon)typeof(TrayIconHelper).GetField("_notifyIcon", privateInstance)!.GetValue(tray)!;
+        var mouseDown = icon.GetType().GetMethod("WmMouseDown", privateInstance)!;
+        var mouseUp = icon.GetType().GetMethod("WmMouseUp", privateInstance)!;
+        var left = System.Windows.Forms.MouseButtons.Left;
+        int wait = System.Windows.Forms.SystemInformation.DoubleClickTime + 100;
+
+        mouseDown.Invoke(icon, [left, 1]);
+        mouseUp.Invoke(icon, [left]);
+        Check(locked && toggles == 0, "tray single click waits until it can be distinguished from a double-click");
+        Await(Task.Delay(wait));
+        Check(!locked && toggles == 1 && settingsOpened == 0, "tray single click enables dragging once");
+        mouseDown.Invoke(icon, [left, 1]);
+        mouseUp.Invoke(icon, [left]);
+        mouseDown.Invoke(icon, [left, 2]);
+        mouseUp.Invoke(icon, [left]);
+        Await(Task.Delay(wait));
+        Check(!locked && toggles == 1 && settingsOpened == 1, "tray double-click opens settings without toggling drag mode");
+        mouseDown.Invoke(icon, [left, 1]);
+        mouseUp.Invoke(icon, [left]);
+        Await(Task.Delay(wait));
+        Check(locked && toggles == 2, "tray single click can lock dragging again after a double-click");
+        Check(!icon.ContextMenuStrip!.Items.Cast<System.Windows.Forms.ToolStripItem>()
+            .Any(item => item.Text == LanguageHelper.GetString("Lang_Update_Check")),
+            "tray menu omits the update command");
+        window.Close();
+    }
+
+    private static void SettingsWindowReuseTests()
+    {
+        using var viewModel = new MainViewModel(new AppConfig { Language = "en-US" }, new Ts6Service(65534, false), false);
+        var overlay = new TS6_SpeakerOverlay.MainWindow(viewModel);
+        var openSettings = overlay.GetType().GetMethod("OpenSettings",
+            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+        SettingsWindow[] OpenWindows() => Application.Current.Windows.OfType<SettingsWindow>()
+            .Where(window => ReferenceEquals(window.DataContext, viewModel)).ToArray();
+
+        try
+        {
+            openSettings.Invoke(overlay, null);
+            var originalWindow = OpenWindows().Single();
+            originalWindow.WindowState = WindowState.Minimized;
+            openSettings.Invoke(overlay, null);
+            openSettings.Invoke(overlay, null);
+            var windows = OpenWindows();
+            Check(windows.Length == 1 && ReferenceEquals(windows[0], originalWindow),
+                "repeated settings requests reuse the existing window");
+            Check(originalWindow.WindowState == WindowState.Normal, "opening settings restores its minimized window");
+
+            originalWindow.Close();
+            openSettings.Invoke(overlay, null);
+            Check(!ReferenceEquals(OpenWindows().Single(), originalWindow), "settings can reopen after being closed");
+        }
+        finally
+        {
+            foreach (var window in OpenWindows()) window.Close();
+            overlay.Close();
+        }
+    }
+
     private static void LayoutTests()
     {
         using (var menu = TrayIconHelper.CreateMenuShell())
@@ -250,10 +321,10 @@ internal static class FeatureChecks
             menu.Items.Add(TrayIconHelper.CreateMenuItem("TS6 Speaker Overlay", TrayIconHelper.MenuGlyph.Status));
             menu.Items[0].Tag = "header";
             menu.Items.Add(new System.Windows.Forms.ToolStripSeparator());
-            string[] menuKeys = ["Lang_Tray_Settings", "", "Lang_Update_Check", "Lang_Tray_Refresh", "Lang_Tray_OpenLogs",
+            string[] menuKeys = ["Lang_Tray_Settings", "", "Lang_Tray_Refresh", "Lang_Tray_OpenLogs",
                 "Lang_Tray_Hide", "Lang_Tray_Unlock", "Lang_Tray_Exit"];
             TrayIconHelper.MenuGlyph[] glyphs = [TrayIconHelper.MenuGlyph.Settings, TrayIconHelper.MenuGlyph.Language,
-                TrayIconHelper.MenuGlyph.Update, TrayIconHelper.MenuGlyph.Refresh, TrayIconHelper.MenuGlyph.Logs,
+                TrayIconHelper.MenuGlyph.Refresh, TrayIconHelper.MenuGlyph.Logs,
                 TrayIconHelper.MenuGlyph.Window, TrayIconHelper.MenuGlyph.Unlock, TrayIconHelper.MenuGlyph.Exit];
             for (int i = 0; i < menuKeys.Length; i++)
                 menu.Items.Add(TrayIconHelper.CreateMenuItem(menuKeys[i] == "" ? "Language / 语言" : LanguageHelper.GetString(menuKeys[i]), glyphs[i], i == menuKeys.Length - 1));

@@ -23,6 +23,7 @@ internal static class ConnectionLifecycleChecks
 
     private static async Task<int> RunAsync()
     {
+        await ServerJoinRefreshesEmptySnapshot();
         await using var server = new SilentRemoteApp();
         using var service = new Ts6Service(server.Port, false);
         var client = (WebsocketClient)typeof(Ts6Service).GetField("_client", BindingFlags.NonPublic | BindingFlags.Instance)!.GetValue(service)!;
@@ -55,6 +56,38 @@ internal static class ConnectionLifecycleChecks
         return _checks;
     }
 
+    private static async Task ServerJoinRefreshesEmptySnapshot()
+    {
+        await using var remote = new SilentRemoteApp();
+        var endpoint = new Ts6Endpoint("127.0.0.1", remote.Port, 100);
+        using var manager = new Ts6ConnectionManager(
+            new AutoPortConnectionChecks.Discovery(new(true, true, [endpoint])),
+            address => new Ts6Service(address, loadApiKey: false, autoReconnect: false),
+            true, remote.Port, TimeSpan.FromHours(1));
+        var emptySnapshot = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var joinedSnapshot = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        manager.OnConnectionStateChanged += connected => { if (connected) emptySnapshot.TrySetResult(); };
+        manager.OnServersUpdated += servers =>
+        {
+            if (servers.SingleOrDefault()?.MyChannelId == "10") joinedSnapshot.TrySetResult();
+        };
+
+        await manager.StartAsync();
+        await emptySnapshot.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Check(!joinedSnapshot.Task.IsCompleted && remote.ConnectionCount == 1,
+            "overlay can start with an authenticated empty server list");
+
+        remote.AuthReply = """
+            {"type":"auth","payload":{"connections":[{"id":1,"clientId":2,"clientInfos":[{"id":2,"channelId":"10"}]}]}}
+            """;
+        await remote.SendFirstPeer("""
+            {"type":"connectStatusChanged","payload":{"connectionId":1,"status":4,"info":{"clientId":2}}}
+            """);
+        await Task.WhenAny(joinedSnapshot.Task, Task.Delay(TimeSpan.FromSeconds(5)));
+        Check(joinedSnapshot.Task.IsCompleted && remote.ConnectionCount == 2,
+            "joining a TeamSpeak server after startup fetches its channel roster without manual refresh");
+    }
+
     private static async Task WaitUntil(Func<bool> condition, TimeSpan timeout)
     {
         using var deadline = new CancellationTokenSource(timeout);
@@ -69,6 +102,7 @@ internal static class ConnectionLifecycleChecks
         private readonly ConcurrentQueue<WebSocket> _peers = new();
         private readonly Task _accept;
         private int _connections;
+        internal string AuthReply { get; set; } = """{"type":"auth","status":{"code":0},"payload":{"connections":[]}}""";
         internal int ConnectionCount => Volatile.Read(ref _connections);
         internal int Port => ((IPEndPoint)_listener.LocalEndpoint).Port;
 
@@ -126,12 +160,18 @@ internal static class ConnectionLifecycleChecks
                         // The production service sends auth. Reply without any
                         // apiKey: tests must never write a user's key file.
                         if (message.EndOfMessage && message.MessageType == WebSocketMessageType.Text)
-                            await socket.SendAsync(Encoding.UTF8.GetBytes("{\"type\":\"auth\",\"status\":{\"code\":0},\"payload\":{\"connections\":[]}}"),
+                            await socket.SendAsync(Encoding.UTF8.GetBytes(AuthReply),
                                 WebSocketMessageType.Text, true, _lifetime.Token);
                     }
                 }
                 catch (Exception error) when (error is OperationCanceledException or IOException or WebSocketException) { }
             }
+        }
+
+        internal async Task SendFirstPeer(string json)
+        {
+            if (!_peers.TryPeek(out var peer)) throw new InvalidOperationException("Fixture peer not available.");
+            await peer.SendAsync(Encoding.UTF8.GetBytes(json), WebSocketMessageType.Text, true, _lifetime.Token);
         }
 
         internal async Task CloseFirstPeer()

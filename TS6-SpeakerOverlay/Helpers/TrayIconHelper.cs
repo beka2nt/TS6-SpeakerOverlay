@@ -20,7 +20,7 @@ namespace TS6_SpeakerOverlay.Helpers
         private readonly Action _unlockAction;
         private readonly Action _openSettingsAction;
         private readonly Action _refreshAction; // [新增] 刷新回调
-        private readonly Action _checkUpdatesAction;
+        private readonly System.Windows.Forms.Timer _singleClickTimer = new();
         private readonly Action<TrayIconHelper?> _setTrayIconRef;
         private bool _isExiting;
 
@@ -32,7 +32,6 @@ namespace TS6_SpeakerOverlay.Helpers
         private ToolStripMenuItem? _statusLabel;
         private ToolStripMenuItem? _settingsMenuItem;
         private ToolStripMenuItem? _refreshMenuItem; // [新增]
-        private ToolStripMenuItem? _updatesMenuItem;
         private ToolStripMenuItem? _languageMenuItem;
         private ToolStripMenuItem? _openLogsMenuItem;
         private ToolStripMenuItem? _showMenuItem;
@@ -42,7 +41,7 @@ namespace TS6_SpeakerOverlay.Helpers
         private ToolStripMenuItem? _exitMenuItem;
 
         // [修改] 构造函数增加 refreshAction
-        public TrayIconHelper(Window mainWindow, Func<bool> getIsLocked, Action lockAction, Action unlockAction, Action openSettingsAction, Action refreshAction, Action checkUpdatesAction, Action<TrayIconHelper?> setTrayIconRef)
+        public TrayIconHelper(Window mainWindow, Func<bool> getIsLocked, Action lockAction, Action unlockAction, Action openSettingsAction, Action refreshAction, Action<TrayIconHelper?> setTrayIconRef)
         {
             _mainWindow = mainWindow;
             _getIsLocked = getIsLocked;
@@ -50,7 +49,7 @@ namespace TS6_SpeakerOverlay.Helpers
             _unlockAction = unlockAction;
             _openSettingsAction = openSettingsAction;
             _refreshAction = refreshAction;
-            _checkUpdatesAction = checkUpdatesAction;
+            _singleClickTimer.Tick += (_, _) => CompleteSingleClick();
             _setTrayIconRef = setTrayIconRef;
             InitializeTrayIcon();
             UpdateTrayIcon();
@@ -66,14 +65,21 @@ namespace TS6_SpeakerOverlay.Helpers
                 Text = "TS6 Speaker Overlay"
             };
 
-            _notifyIcon.Click += (_, e) =>
+            _notifyIcon.MouseClick += (_, e) =>
             {
-                if (e is MouseEventArgs { Button: MouseButtons.Left })
-                {
-                    if (_getIsLocked()) _unlockAction.Invoke();
-                    else _lockAction.Invoke();
-                    UpdateTrayIcon();
-                }
+                if (e.Button != MouseButtons.Left) return;
+
+                // WinForms reports the first click before it can report a double-click.
+                if (_singleClickTimer.Enabled) CompleteSingleClick();
+                _singleClickTimer.Interval = SystemInformation.DoubleClickTime;
+                _singleClickTimer.Start();
+            };
+            _notifyIcon.MouseDoubleClick += (_, e) =>
+            {
+                if (e.Button != MouseButtons.Left) return;
+
+                _singleClickTimer.Stop();
+                _openSettingsAction.Invoke();
             };
 
             _contextMenu = CreateMenuShell();
@@ -91,8 +97,6 @@ namespace TS6_SpeakerOverlay.Helpers
             _refreshMenuItem = CreateMenuItem("Refresh", MenuGlyph.Refresh);
             _refreshMenuItem.Click += (_, _) => _refreshAction.Invoke();
 
-            _updatesMenuItem = CreateMenuItem("Check for updates", MenuGlyph.Update);
-            _updatesMenuItem.Click += (_, _) => _checkUpdatesAction.Invoke();
             _languageMenuItem = CreateMenuItem("Language / 语言", MenuGlyph.Language);
             _languageMenuItem.Click += (_, _) => _openSettingsAction.Invoke();
 
@@ -118,7 +122,6 @@ namespace TS6_SpeakerOverlay.Helpers
             _contextMenu.Items.Add(CreateSeparator());
             _contextMenu.Items.Add(_settingsMenuItem);
             _contextMenu.Items.Add(_languageMenuItem);
-            _contextMenu.Items.Add(_updatesMenuItem);
             _contextMenu.Items.Add(_refreshMenuItem);
             _contextMenu.Items.Add(_openLogsMenuItem);
             _contextMenu.Items.Add(CreateSeparator());
@@ -139,6 +142,14 @@ namespace TS6_SpeakerOverlay.Helpers
 
             _notifyIcon.ContextMenuStrip = _contextMenu;
             UpdateMenuText();
+        }
+
+        private void CompleteSingleClick()
+        {
+            _singleClickTimer.Stop();
+            if (_getIsLocked()) _unlockAction.Invoke();
+            else _lockAction.Invoke();
+            UpdateTrayIcon();
         }
 
         internal static ContextMenuStrip CreateMenuShell() => new()
@@ -216,7 +227,6 @@ namespace TS6_SpeakerOverlay.Helpers
             _settingsMenuItem.Text = LanguageHelper.GetString("Lang_Tray_Settings");
             // 刷新按钮的多语言 key，如果没加翻译就默认显示 Refresh
             _refreshMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Refresh"); 
-            _updatesMenuItem!.Text = LanguageHelper.GetString("Lang_Update_Check");
             _openLogsMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_OpenLogs");
             _showMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Show");
             _hideMenuItem!.Text = LanguageHelper.GetString("Lang_Tray_Hide");
@@ -408,11 +418,6 @@ namespace TS6_SpeakerOverlay.Helpers
                     graphics.DrawLine(pen, 12F, 6F, 15F, 9F);
                     graphics.DrawLine(pen, 15F, 9F, 12F, 12F);
                     break;
-                case MenuGlyph.Update:
-                    graphics.DrawLine(pen, 9F, 2F, 9F, 12F);
-                    graphics.DrawLines(pen, [new PointF(5F, 8F), new PointF(9F, 12F), new PointF(13F, 8F)]);
-                    graphics.DrawLines(pen, [new PointF(3F, 12F), new PointF(3F, 15F), new PointF(15F, 15F), new PointF(15F, 12F)]);
-                    break;
                 case MenuGlyph.Language:
                     graphics.DrawEllipse(pen, 2F, 2F, 14F, 14F);
                     graphics.DrawEllipse(pen, 6F, 2F, 6F, 14F);
@@ -447,7 +452,6 @@ namespace TS6_SpeakerOverlay.Helpers
             Lock,
             Unlock,
             Exit,
-            Update,
             Language
         }
 
@@ -570,6 +574,7 @@ namespace TS6_SpeakerOverlay.Helpers
         {
             if (_isExiting) return;
             _isExiting = true;
+            _singleClickTimer.Dispose();
             LanguageHelper.LanguageChanged -= UpdateMenuText;
             if (_notifyIcon != null)
             {

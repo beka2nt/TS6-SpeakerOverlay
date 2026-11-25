@@ -10,6 +10,7 @@ using TS6_SpeakerOverlay.Models;
 using TS6_SpeakerOverlay.Services;
 using TS6_SpeakerOverlay.ViewModels;
 using TS6_SpeakerOverlay.Views;
+using Button = System.Windows.Controls.Button;
 using CheckBox = System.Windows.Controls.CheckBox;
 using TextBox = System.Windows.Controls.TextBox;
 using Size = System.Windows.Size;
@@ -54,6 +55,10 @@ internal static class AutoPortSettingsChecks
         old.AutoDetectRemoteAppPort = false;
         var copied = JsonSerializer.Deserialize<AppConfig>(JsonSerializer.Serialize(old))!;
         Check(!copied.AutoDetectRemoteAppPort && copied.RemoteAppPort == 6200, "manual connection mode survives config roundtrip");
+
+        RefreshRecoversConnection(false, false);
+        RefreshRecoversConnection(true, false);
+        RefreshRecoversConnection(false, true);
 
         foreach (var language in LanguageHelper.SupportedLanguages)
         {
@@ -114,6 +119,33 @@ internal static class AutoPortSettingsChecks
         }
         LanguageHelper.SetLanguage("en-US");
         return _checks;
+    }
+
+    private static void RefreshRecoversConnection(bool redetect, bool initiallyVerified)
+    {
+        var endpoint = new Ts6Endpoint("127.0.0.1", 6200, 100);
+        var discovery = new AutoPortConnectionChecks.Discovery(new(true, true, [endpoint]));
+        var first = new AutoPortConnectionChecks.Connection { AutoSnapshot = initiallyVerified };
+        var next = new AutoPortConnectionChecks.Connection();
+        int sessions = 0;
+        using var manager = new Ts6ConnectionManager(discovery, _ => sessions++ == 0 ? first : next,
+            true, 6200, TimeSpan.FromHours(1), action => System.Windows.Application.Current.Dispatcher.Invoke(action));
+        using var vm = new MainViewModel(new AppConfig { Language = "en-US", RemoteAppPort = 6200 }, manager, false);
+        var window = new SettingsWindow(vm);
+        try
+        {
+            Await(manager.StartAsync());
+            if (redetect)
+                Await(vm.DetectRemoteAppCommand.ExecuteAsync(null));
+            else
+                ((Button)window.FindName("ConnectionRefreshButton")).RaiseEvent(new RoutedEventArgs(Button.ClickEvent));
+
+            string scenario = initiallyVerified ? "unanswered refresh" : redetect ? "re-detection" : "disconnected refresh";
+            if (initiallyVerified) Pump(6300);
+            Check(sessions == 2 && first.Disposed && vm.IsConnected,
+                scenario + " rebuilds a stale session on the same port and accepts the fresh snapshot");
+        }
+        finally { window.Close(); }
     }
 
     internal static void RenderPreviews(string directory)
